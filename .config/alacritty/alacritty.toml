@@ -1,0 +1,52 @@
+# Colors (Tomorrow Night Bright)
+
+# Default colors
+[colors.primary]
+background = '#000000'
+foreground = '#eaeaea'
+
+# Normal colors
+[colors.normal]
+black   = '#000000'
+red     = '#d54e53'
+green   = '#b9ca4a'
+yellow  = '#e6c547'
+blue    = '#7aa6da'
+magenta = '#c397d8'
+cyan    = '#70c0ba'
+white   = '#424242'
+
+# Bright colors
+[colors.bright]
+black   = '#666666'
+red     = '#ff3334'
+green   = '#9ec400'
+yellow  = '#e7c547'
+blue    = '#7aa6da'
+magenta = '#b77ee0'
+cyan    = '#54ced6'
+white   = '#2a2a2a'
+
+[font]
+normal.family = "Rec Mono Duotone"
+# normal.style = ""
+bold.family = "Zed mono"
+italic.family = "Zed mono"
+size = 14.0
+
+[window]
+opacity = 1
+blur = true
+padding = { x = 5, y = 5 }
+# decorations = "none"
+dimensions = { columns = 100, lines = 30 }
+
+[keyboard]
+bindings = [
+  # Open a new terminal
+  { key = "Return", mods = "Control|Shift", action = "SpawnNewInstance" },
+]
+
+[shell]
+program = "/bin/tmux"
+args = ["new", "-A", "-s", "main"]
