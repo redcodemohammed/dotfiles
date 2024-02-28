@@ -26,6 +26,9 @@ exec --no-startup-id dex --autostart --environment i3
 # using feh to set wallpaper
 exec --no-startup-id feh --bg-fill ~/Pictures/wallpapers/pink.png
 
+# run picom for transparency with custom config
+exec --no-startup-id picom -b --config ./picom.conf
+
 # The combination of xss-lock, nm-applet and pactl is a popular choice, so
 # they are included here as an example. Modify as you see fit.
 
@@ -199,4 +202,16 @@ for_window [class="^.*"] border pixel 0
 gaps inner 10
 gaps outer 1
 
+# add a pine rose color border
+for_window [class=".*"] border pixel 3 #f54b76
 
+    # class                 border  backgr. text    indicator
+    client.focused          #f54b76 #f54b76 #e82951 #FDF6E3
+    client.unfocused        #d1adb6 #d1adb6 #FFB6C1 #d1adb6
+    client.focused_inactive #d1adb6 #d1adb6 #FFB6C1 #d1adb6
+    client.placeholder      #d1adb6 #d1adb6 #FFB6C1 #d1adb6
+    client.urgent           #CB4B16 #FDF6E3 #FFB6C1 #CB4B16
+
+    client.background       #242424
+
+    ##STOP THEMING WM

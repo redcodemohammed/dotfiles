@@ -1,41 +1,87 @@
-# Colors (Tomorrow Night Bright)
-
-# Default colors
+# # Colors (RosePine)
 [colors.primary]
-background = '#000000'
-foreground = '#eaeaea'
+foreground = "#e0def4"
+background = "#191724"
+dim_foreground = "#908caa"
+bright_foreground = "#e0def4"
 
-# Normal colors
+[colors.cursor]
+text = "#e0def4"
+cursor = "#524f67"
+
+[colors.vi_mode_cursor]
+text = "#e0def4"
+cursor = "#524f67"
+
+[colors.search.matches]
+foreground = "#908caa"
+background = "#26233a"
+
+[colors.search.focused_match]
+foreground = "#191724"
+background = "#ebbcba"
+
+[colors.hints.start]
+foreground = "#908caa"
+background = "#1f1d2e"
+
+[colors.hints.end]
+foreground = "#6e6a86"
+background = "#1f1d2e"
+
+[colors.line_indicator]
+foreground = "None"
+background = "None"
+
+[colors.footer_bar]
+foreground = "#e0def4"
+background = "#1f1d2e"
+
+[colors.selection]
+text = "#e0def4"
+background = "#403d52"
+
 [colors.normal]
-black = '#000000'
-red = '#d54e53'
-green = '#b9ca4a'
-yellow = '#e6c547'
-blue = '#7aa6da'
-magenta = '#c397d8'
-cyan = '#70c0ba'
-white = '#424242'
+black = "#26233a"
+red = "#eb6f92"
+green = "#31748f"
+yellow = "#f6c177"
+blue = "#9ccfd8"
+magenta = "#c4a7e7"
+cyan = "#ebbcba"
+white = "#e0def4"
 
-# Bright colors
 [colors.bright]
-black = '#666666'
-red = '#ff3334'
-green = '#9ec400'
-yellow = '#e7c547'
-blue = '#7aa6da'
-magenta = '#b77ee0'
-cyan = '#54ced6'
-white = '#2a2a2a'
+black = "#6e6a86"
+red = "#eb6f92"
+green = "#31748f"
+yellow = "#f6c177"
+blue = "#9ccfd8"
+magenta = "#c4a7e7"
+cyan = "#ebbcba"
+white = "#e0def4"
+
+[colors.dim]
+black = "#6e6a86"
+red = "#eb6f92"
+green = "#31748f"
+yellow = "#f6c177"
+blue = "#9ccfd8"
+magenta = "#c4a7e7"
+cyan = "#ebbcba"
+white = "#e0def4"
 
 [font]
 normal.family = "Rec Mono Duotone"
+bold.family = "Rec Mono Duotone"
+italic.family = "Rec Mono Duotone"
 # normal.style = ""
-bold.family = "Zed mono"
-italic.family = "Zed mono"
+# bold.family = "Zed mono"
+# italic.family = "Zed mono"
 size = 14.0
 
 [window]
-opacity = 0.95
+opacity = 0.99
 blur = true
 padding = { x = 5, y = 5 }
 # decorations = "none"
@@ -47,6 +93,6 @@ bindings = [
   { key = "Return", mods = "Control|Shift", action = "SpawnNewInstance" },
 ]
 
-# [shell]
-# program = "/bin/tmux"
-# args = ["new", "-A", "-s", "main"]
+[shell]
+program = "/bin/tmux"
+args = ["new", "-A", "-s", "main"]
