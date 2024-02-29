@@ -15,3 +15,5 @@ set VISUAL code
 # init zoxide
 zoxide init fish | source
 
+
+fish_add_path /home/mohammed/.spicetify
