@@ -3,7 +3,8 @@ if status is-interactive
 end
 
 # set alias
-alias ls 'exa'
+alias ex 'exa --long --header --git'
+alias tree 'exa --header -a --tree -I .git'
 alias cat 'bat'
 
 # disable greeting
@@ -17,3 +18,5 @@ zoxide init fish | source
 
 
 fish_add_path /home/mohammed/.spicetify
+set -gx VOLTA_HOME "$HOME/.volta"
+set -gx PATH "$VOLTA_HOME/bin" $PATH

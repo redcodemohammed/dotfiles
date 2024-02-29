@@ -72,12 +72,9 @@ cyan = "#ebbcba"
 white = "#e0def4"
 
 [font]
-normal.family = "Rec Mono Duotone"
-bold.family = "Rec Mono Duotone"
-italic.family = "Rec Mono Duotone"
-# normal.style = ""
-# bold.family = "Zed mono"
-# italic.family = "Zed mono"
+normal.family = "JetBrains Mono"
+bold.family = "JetBrains Mono"
+italic.family = "JetBrains Mono"
 size = 14.0
 
 [window]
