@@ -12,8 +12,11 @@ return require('packer').startup(function(use)
 
     -- Rose Pine colorscheme
     use {
-        'rose-pine/neovim',
-        as = 'rose-pine'
+        'daltonmenezes/aura-theme',
+        rtp = 'packages/neovim',
+        config = function()
+            vim.cmd("colorscheme aura-dark") -- Or any Aura theme available
+        end
     }
 
 
