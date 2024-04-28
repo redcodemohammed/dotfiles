@@ -23,11 +23,11 @@ font pango:monospace 8
 # https://wiki.archlinux.org/index.php/XDG_Autostart
 exec --no-startup-id dex --autostart --environment i3
 
-# using feh to set wallpaper
-exec --no-startup-id feh --bg-fill ~/Pictures/wallpapers/pink.png
+# using feh to set wallpape
+exec --no-startup-id feh --bg-fill ~/Pictures/wallpapers/1218412.jpg
 
 # run picom for transparency with custom config
-exec --no-startup-id picom -b --config ./picom.conf
+exec_always --no-startup-id picom -b --config /home/mohammed/.config/i3/picom.conf
 
 # The combination of xss-lock, nm-applet and pactl is a popular choice, so
 # they are included here as an example. Modify as you see fit.

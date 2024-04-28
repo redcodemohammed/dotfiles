@@ -1,46 +1,49 @@
+# Colors (One Dark)
+
+# Default colors
 [colors.primary]
-background = "#15141b"
-foreground = "#edecee"
+background = '#282c34'
+foreground = '#abb2bf'
 
-[colors.cursor]
-cursor = "#a277ff"
-
-[colors.selection]
-text = "CellForeground"
-background = "#29263c"
-
+# Normal colors
 [colors.normal]
-black = "#110f18"
-red = "#ff6767"
-green = "#61ffca"
-yellow = "#ffca85"
-blue = "#a277ff"
-magenta = "#a277ff"
-cyan = "#61ffca"
-white = "#edecee"
+black = '#1e2127'
+red = '#e06c75'
+green = '#98c379'
+yellow = '#d19a66'
+blue = '#61afef'
+magenta = '#c678dd'
+cyan = '#56b6c2'
+white = '#abb2bf'
 
+# Bright colors
 [colors.bright]
-black = "#4d4d4d"
-red = "#ff6767"
-green = "#61ffca"
-yellow = "#ffca85"
-blue = "#a277ff"
-magenta = "#a277ff"
-cyan = "#61ffca"
-white = "#edecee"
+black = '#5c6370'
+red = '#e06c75'
+green = '#98c379'
+yellow = '#d19a66'
+blue = '#61afef'
+magenta = '#c678dd'
+cyan = '#56b6c2'
+white = '#ffffff'
+
+
+[colors.hints]
+start = { foreground = '#908caa', background = '#2a273f' }
+end = { foreground = '#6e6a86', background = '#2a273f' }
 
 [font]
-normal.family = "Cascadia Code"
-bold.family = "Cascadia Code"
-italic.family = "Cascadia Code"
+normal.family = "Iosevka"
+bold.family = "Iosevka"
+italic.family = "Iosevka"
 size = 14.0
 
 [window]
-opacity = 0.9
+opacity = 0.98
 blur = true
 padding = { x = 5, y = 5 }
+dimensions = { columns = 140, lines = 25 }
 # decorations = "none"
-dimensions = { columns = 100, lines = 30 }
 
 [keyboard]
 bindings = [

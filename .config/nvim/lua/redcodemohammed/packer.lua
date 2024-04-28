@@ -19,6 +19,7 @@ return require('packer').startup(function(use)
         end
     }
 
+    use { "catppuccin/nvim", as = "catppuccin" }
 
     -- Treesitter
     use {
