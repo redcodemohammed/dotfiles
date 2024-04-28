@@ -1,31 +1,32 @@
-# Colors (One Dark)
+# Theme: enfocado_dark
+# Source:  https://github.com/wuelnerdotexe/vim-enfocado
 
 # Default colors
 [colors.primary]
-background = '#282c34'
-foreground = '#abb2bf'
+background = '#181818'
+foreground = '#b9b9b9'
 
 # Normal colors
 [colors.normal]
-black = '#1e2127'
-red = '#e06c75'
-green = '#98c379'
-yellow = '#d19a66'
-blue = '#61afef'
-magenta = '#c678dd'
-cyan = '#56b6c2'
-white = '#abb2bf'
+black = '#3b3b3b'
+red = '#ed4a46'
+green = '#70b433'
+yellow = '#dbb32d'
+blue = '#368aeb'
+magenta = '#eb6eb7'
+cyan = '#3fc5b7'
+white = '#b9b9b9'
 
 # Bright colors
 [colors.bright]
-black = '#5c6370'
-red = '#e06c75'
-green = '#98c379'
-yellow = '#d19a66'
-blue = '#61afef'
-magenta = '#c678dd'
-cyan = '#56b6c2'
-white = '#ffffff'
+black = '#777777'
+red = '#ff5e56'
+green = '#83c746'
+yellow = '#efc541'
+blue = '#4f9cfe'
+magenta = '#ff81ca'
+cyan = '#56d8c9'
+white = '#dedede'
 
 
 [colors.hints]
