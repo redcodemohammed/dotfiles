@@ -1,0 +1,75 @@
+{
+    "layer": "top",
+    "height": 32,
+    "spacing": 5,
+    // Choose the order of the modules
+    "modules-left": [
+        "hyprland/workspaces"
+    ],
+    "modules-center": [
+        "hyprland/window"
+    ],
+    "modules-right": [
+        "tray",
+        "wireplumber",
+        "network",
+        "battery",
+        "clock",
+        "custom/locale",
+        "custom/power"
+    ],
+    "hyprland/window": {
+        "separate-outputs": true
+    },
+    "hyprland/workspaces": {
+        "disable-scroll": true,
+        "all-outputs": true,
+        "on-click": "activate"
+    },
+    "tray": {
+        // "icon-size": 21,
+        "spacing": 10
+    },
+    "clock": {
+        "tooltip-format": "{:%A, %B %d, %Y}",
+        "format": "{:%A, %B %d %H:%M}"
+    },
+    "battery": {
+        "states": {
+            "warning": 20
+        },
+        "format": "{capacity}% {icon}",
+        "format-icons": [ "󰂎", "󰁺", "󰁻", "󰁼", "󰁽", "󰁾", "󰁿", "󰂀", "󰂁", "󰂂", "󰁹" ],
+        "format-charging": "󰂄",
+        "format-warning": "󰂃",
+        "tooltip-format": "{capacity}% capacity"
+    },
+    "network": {
+        "format-wifi": "󰤨",
+        "format-disconnected": "󰤭",
+        "tooltip-format": "Connected to {essid}",
+        "on-click": "hyprctl dispatch exec '[float]' 'alacritty -e nmtui'"
+    },
+    "wireplumber": {
+        // "scroll-step": 1, // %, can be a float
+        "format": "{volume}% {icon}",
+        "format-muted": "󰖁",
+        "format-icons": {
+            "default": ["", "", "󰕾"]
+        },
+        "tooltip-format": "{volume}% volume",
+        "on-click": "pavucontrol"
+    },
+    "custom/power": {
+        "format": "󰐥",
+        "on-click": "sleep 0.15 && hyprctl dispatch exec 'rofi -show power-menu -modi power-menu:rofi-power-menu'"
+    },
+
+    "custom/locale":{
+        "interval": 1,
+        "exec": "hyprctl devices -j | jq -r '.keyboards[] | select(.name == \"at-translated-set-2-keyboard\") | .active_keymap' | head -n1 | cut -c1-2 | tr 'a-z' 'A-Z'",
+        "format": "{}"
+    }
+}
+
+// vim: ft=jsonc

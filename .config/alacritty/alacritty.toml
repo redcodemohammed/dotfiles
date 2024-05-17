@@ -34,9 +34,9 @@ start = { foreground = '#908caa', background = '#2a273f' }
 end = { foreground = '#6e6a86', background = '#2a273f' }
 
 [font]
-normal.family = "Recursive Monospace Casual"
-bold.family = "Recursive Monospace Casual"
-italic.family = "Recursive Monospace Casual"
+normal.family = "RecMonoCasual"
+bold.family = "RecMonoCasual"
+italic.family = "RecMonoCasual"
 size = 14.0
 
 [window]
