@@ -1,0 +1,49 @@
+cookie: "sp_t=765b1a91da52daf6bbccaf1e784d9b44; sp_landing=https%3A%2F%2Fopen.spotify.com%2F%3Fsp_cid%3D765b1a91da52daf6bbccaf1e784d9b44%26device%3Ddesktop%26utm_source%3Dpwa_install; _gcl_au=1.1.1159993128.1715950534; sp_m=us; sp_dc=AQA9tlcq8a44oPFTSXCe58CNKnH0BfP5ApsfOYM2yBfCQCCjSxZHyVchlP-nCOtY31D-FQCiBpNWZ3SmdgJ8tVh9q746YVugidEXeeIkRGuOrDzPuDinB4jPWju61mWxYHLfAVtc-bDKPCk38scQMHHDg4qcnxUu; sp_key=51d2892b-26c8-4f2f-b0ab-aa29c4e381ab; sp_gaid=0088fce60d23f72be7dd3ebb6d39c789074c326ccbfb625ff7e37c; _ga=GA1.2.1274388751.1716008732; _gid=GA1.2.1952667377.1716008732; OptanonConsent=isGpcEnabled=0&datestamp=Sat+May+18+2024+08%3A22%3A09+GMT%2B0300+(Arabian+Standard+Time)&version=202309.1.0&browserGpcFlag=0&isIABGlobal=false&hosts=&consentId=9a6559cf-9d28-401e-ac32-92f0bb0a0851&interactionCount=1&landingPath=NotLandingPage&groups=s00%3A1%2Cf00%3A0%2Cm00%3A0%2Ct00%3A0%2Cf11%3A0%2Ci00%3A0%2CV2STACK3%3A0%2CV2STACK11%3A0%2CV2STACK20%3A0%2Cm03%3A1&AwaitingReconsent=false"
+player: spotify
+host: lyricsapi.vercel.app
+ignoreErrors: true
+timerInterval: 200
+updateInterval: 2000
+style:
+  hAlignment: center
+  before:
+    background: ""
+    foreground: ""
+    bold: true
+    italic: false
+    underline: false
+    strikethrough: false
+    blink: false
+    faint: false
+  current:
+    background: ""
+    foreground: ""
+    bold: true
+    italic: false
+    underline: false
+    strikethrough: false
+    blink: false
+    faint: false
+  after:
+    background: ""
+    foreground: ""
+    bold: false
+    italic: false
+    underline: false
+    strikethrough: false
+    blink: false
+    faint: true
+pipe:
+  length: 0
+  overflow: word
+mpd:
+  address: 127.0.0.1:6600
+  password: ""
+mopidy:
+  address: 127.0.0.1:6680
+mpris:
+  players: []
+browser:
+  port: 8974
+local:
+  folder: ""

@@ -36,3 +36,6 @@ set -x PATH $ANDROID_HOME/tools $PATH
 set -x PATH $ANDROID_HOME/tools/bin $PATH
 set -x PATH $ANDROID_HOME/platform-tools $PATH
 # android end
+
+#dircolors
+eval (dircolors -c ~/.dircolors)
