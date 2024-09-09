@@ -26,7 +26,6 @@ enable_notify = true
 enable_cover_image_cache = true
 default_device = "spotify-player"
 notify_streaming_only = false
-
 [notify_format]
 summary = "{track} • {artists}"
 body = "{album}"

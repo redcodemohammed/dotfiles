@@ -1,10 +1,11 @@
 if status is-interactive
-    
+jhinsay    
+atuin init fish | source
 end
 
 # set alias
 alias ex 'exa --long --header --git --icons'
-alias tree 'exa --header -a --tree -I .git --icons'
+alias tree 'exa --header -a --tree -I .git  --icons'
 alias cat 'bat'
 alias ls 'ex'
 
@@ -39,3 +40,7 @@ set -x PATH $ANDROID_HOME/platform-tools $PATH
 
 #dircolors
 eval (dircolors -c ~/.dircolors)
+
+# bun
+set --export BUN_INSTALL "$HOME/.bun"
+set --export PATH $BUN_INSTALL/bin $PATH

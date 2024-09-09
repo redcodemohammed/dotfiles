@@ -1,6 +1,6 @@
 # This file contains fish universal variable definitions.
 # VERSION: 3.0
-SETUVAR --export FZF_DEFAULT_OPTS:\x2d\x2dcolor\x3dfg\x3a\x23f8f8f2\x2cbg\x3a\x23282a36\x2chl\x3a\x23bd93f9\x20\x2d\x2dcolor\x3dfg\x2b\x3a\x23f8f8f2\x2cbg\x2b\x3a\x2344475a\x2chl\x2b\x3a\x23bd93f9\x20\x2d\x2dcolor\x3dinfo\x3a\x23ffb86c\x2cprompt\x3a\x2350fa7b\x2cpointer\x3a\x23ff79c6\x20\x2d\x2dcolor\x3dmarker\x3a\x23ff79c6\x2cspinner\x3a\x23ffb86c\x2cheader\x3a\x236272a4
+SETUVAR --export EDITOR:nvim
 SETUVAR __fish_initialized:3400
 SETUVAR fish_color_autosuggestion:brblack
 SETUVAR fish_color_cancel:\x2dr
@@ -30,4 +30,4 @@ SETUVAR fish_pager_color_description:yellow\x1e\x2di
 SETUVAR fish_pager_color_prefix:normal\x1e\x2d\x2dbold\x1e\x2d\x2dunderline
 SETUVAR fish_pager_color_progress:brwhite\x1e\x2d\x2dbackground\x3dcyan
 SETUVAR fish_pager_color_selected_background:\x2dr
-SETUVAR fish_user_paths:/home/mohammed/\x2elocal/scripts\x1e/home/mohammed/\x2espicetify\x1e/home/mohammed/Android/Sdk/emulator\x1e/home/mohammed/Android/Sdk/cmdline\x2dtools
+SETUVAR fish_user_paths:/home/mohammed/\x2efly/bin\x1e/home/mohammed/\x2emeteor\x1e/home/mohammed/\x2elocal/bin\x1e/home/mohammed/\x2elocal/scripts\x1e/home/mohammed/\x2espicetify\x1e/home/mohammed/Android/Sdk/emulator\x1e/home/mohammed/Android/Sdk/cmdline\x2dtools

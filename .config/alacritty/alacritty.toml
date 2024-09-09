@@ -58,27 +58,27 @@ background = "#282a36"
 [font]
 size = 14
 
-  [font.normal]
-  style = "bold"
-  family = "RecMonoCasual nerd font"
+[font.normal]
+style = "bold"
+family = "Mononoki"
 
-  [font.bold]
-  family = "RecMonoCasual nerd font"
+[font.bold]
+family = "Mononoki"
 
-  [font.italic]
-  family = "RecMonoCasual nerd font"
+[font.italic]
+family = "Mononoki"
 
 [window]
 opacity = 0.95
 blur = true
 
-  [window.padding]
-  x = 5
-  y = 5
+[window.padding]
+x = 5
+y = 5
 
-  [window.dimensions]
-  columns = 120
-  lines = 30
+[window.dimensions]
+columns = 120
+lines = 30
 
 [[keyboard.bindings]]
 key = "Return"
@@ -87,4 +87,4 @@ action = "SpawnNewInstance"
 
 [shell]
 program = "/bin/tmux"
-args = [ "new", "-A", "-s", "main" ]
+args = ["new", "-A", "-s", "main"]

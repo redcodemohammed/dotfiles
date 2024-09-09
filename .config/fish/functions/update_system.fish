@@ -6,6 +6,3 @@ function update_system
         send_telegram_notification "❗ System Update Failed" "Failed to update your system." "Sent from my Fish script"
     end
 end
-
-# Call the wrapper function
-update_system
