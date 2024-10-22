@@ -59,22 +59,23 @@ background = "#282a36"
 size = 14
 
 [font.normal]
-style = "bold"
-family = "Mononoki"
+style = "normal"
+family = "RecMonoCasual nerd font"
 
 [font.bold]
-family = "Mononoki"
+family = "RecMonoCasual nerd font"
 
 [font.italic]
-family = "Mononoki"
+family = "RecMonoCasual nerd font"
 
-[window]
-opacity = 0.95
-blur = true
+# [window]
+# opacity = 0.95
+# blur = true
+# decorations = "none"
 
 [window.padding]
-x = 5
-y = 5
+x = 10
+y = 10
 
 [window.dimensions]
 columns = 120
