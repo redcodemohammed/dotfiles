@@ -86,6 +86,8 @@ key = "Return"
 mods = "Control|Shift"
 action = "SpawnNewInstance"
 
-[shell]
+[terminal]
+
+[terminal.shell]
 program = "/bin/tmux"
 args = ["new", "-A", "-s", "main"]

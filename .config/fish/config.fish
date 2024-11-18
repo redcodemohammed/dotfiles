@@ -1,11 +1,10 @@
 if status is-interactive
-jhinsay    
-atuin init fish | source
+ atuin init fish --disable-up-arrow | source
 end
 
 # set alias
-alias ex 'exa --long --header --git --icons'
-alias tree 'exa --header -a --tree -I .git  --icons'
+alias ex 'eza --long --header --git --icons'
+alias tree 'eza --header -a --tree -I .git  --icons'
 alias cat 'bat'
 alias ls 'ex'
 
