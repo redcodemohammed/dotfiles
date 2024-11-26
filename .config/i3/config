@@ -24,7 +24,7 @@ font pango:monospace 8
 exec --no-startup-id dex --autostart --environment i3
 
 # using feh to set wallpape
-exec --no-startup-id feh --bg-fill ~/Pictures/wallpapers/1218412.jpg
+exec --no-startup-id feh --bg-fill ~/Pictures/Wallpapers/1108478.png
 
 # run picom for transparency with custom config
 exec_always --no-startup-id picom -b --config /home/mohammed/.config/i3/picom.conf

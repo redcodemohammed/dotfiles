@@ -62,7 +62,7 @@
     },
     "custom/power": {
         "format": "󰐥",
-        "on-click": "sleep 0.15 && hyprctl dispatch exec 'rofi -show power-menu -modi power-menu:rofi-power-menu'"
+        "on-click": "sleep 0.15 && hyprctl dispatch exec '~/.config/rofi/bin/powermenu'"
     },
 
     "custom/locale":{
