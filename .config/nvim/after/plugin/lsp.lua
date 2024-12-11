@@ -7,7 +7,7 @@ lsp.on_attach(function(client, bufnr)
 end)
 
 lsp.setup_servers({
-    'tsserver',
+    'ts-ls',
     'rust_analyzer',
     'eslint',
     'lua_ls',
@@ -36,9 +36,9 @@ cmp.setup({
     mapping = cmp.mapping.preset.insert({
         ['<C-y>'] = cmp.mapping.complete(),
         ['<C-p>'] = cmp.mapping.select_prev_item(cmp_select),
-        ['<C-n>'] = cmp.mapping.select_prev_item(cmp_select),
+        ['<C-n>'] = cmp.mapping.select_next_item(cmp_select),
         ['<CR>'] = cmp.mapping.confirm({ select = false }),
-
+         
     })
 })
 

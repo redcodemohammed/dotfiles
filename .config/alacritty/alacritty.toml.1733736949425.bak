@@ -1,4 +1,3 @@
-
 [font]
 size = 14
 
@@ -35,5 +34,5 @@ args = [ "new", "-A", "-s", "main" ]
 
 [general]
 import = [
-  "/home/mohammed/.local/share/pnpm/global/5/.pnpm/alacritty-themes@6.0.2/node_modules/alacritty-themes/themes/Ayu-Dark.toml"
+  "/home/mohammed/.local/share/pnpm/global/5/.pnpm/alacritty-themes@6.0.2/node_modules/alacritty-themes/themes/Digerati.toml"
 ]
