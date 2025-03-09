@@ -7,7 +7,7 @@ lsp.on_attach(function(client, bufnr)
 end)
 
 lsp.setup_servers({
-    'ts-ls',
+    'ts_ls',
     'rust_analyzer',
     'eslint',
     'lua_ls',
@@ -47,7 +47,7 @@ cmp.setup({
 require('mason').setup({})
 require('mason-lspconfig').setup({
     ensure_installed = {
-        'tsserver',
+        'ts_ls',
         'rust_analyzer',
         'eslint',
         'lua_ls',

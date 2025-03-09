@@ -1,2 +1,17 @@
  
 New instance of bashtop version: 0.9.25 Pid: 108745
+ 
+New instance of bashtop version: 0.9.25 Pid: 73042
+ 
+New instance of bashtop version: 0.9.25 Pid: 7409
+/tmp/k1xSyEOot4Mo/bashtop.psutil:103: DeprecationWarning: 'count' is passed as positional argument
+  name = re.sub( ".*" + rem_line + ".*:", "", line,1).lstrip()
+ 
+New instance of bashtop version: 0.9.25 Pid: 155464
+/tmp/eE6xJrLQVsBo/bashtop.psutil:103: DeprecationWarning: 'count' is passed as positional argument
+  name = re.sub( ".*" + rem_line + ".*:", "", line,1).lstrip()
+/usr/bin/bashtop: line 3405: pid_Pid:_graph: invalid variable name
+ 
+New instance of bashtop version: 0.9.25 Pid: 155735
+/tmp/A9FBznU3Vk34/bashtop.psutil:103: DeprecationWarning: 'count' is passed as positional argument
+  name = re.sub( ".*" + rem_line + ".*:", "", line,1).lstrip()

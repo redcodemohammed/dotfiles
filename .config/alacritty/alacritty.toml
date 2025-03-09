@@ -1,28 +1,29 @@
 
 [font]
-size = 12
+size = 15
 
-  [font.normal]
-  style = "bold"
-  family = "JetbrainsMonoNL Nerd font"
+[font.normal]
+family = "Iosevka"
 
-  [font.bold]
-  family = "JetbrainsMonoNL Nerd font"
+[font.bold]
+family = "Iosevka"
 
-  [font.italic]
-  family = "Iosevka"
+[font.italic]
+family = "Iosevka"
 
 [window]
-opacity = 0.95
+opacity = 0.93
 blur = true
+decorations = "none"
 
-  [window.padding]
-  x = 10
-  y = 10
+[window.padding]
+x = 10
+y = 10
 
-  [window.dimensions]
-  columns = 120
-  lines = 30
+[window.dimensions]
+columns = 110
+lines = 28
+
 
 [[keyboard.bindings]]
 key = "Return"
@@ -31,9 +32,9 @@ action = "SpawnNewInstance"
 
 [terminal.shell]
 program = "/bin/tmux"
-args = [ "new", "-A", "-s", "main" ]
+args = ["new", "-A", "-s", "alacritty"]
 
 [general]
 import = [
-  "/home/mohammed/.local/share/pnpm/global/5/.pnpm/alacritty-themes@6.0.2/node_modules/alacritty-themes/themes/Ayu-Dark.toml"
+  "/home/mohammed/.local/share/pnpm/global/5/.pnpm/alacritty-themes@6.0.2/node_modules/alacritty-themes/themes/Ayu-Dark.toml",
 ]

@@ -1,14 +1,15 @@
 if status is-interactive
- atuin init fish --disable-up-arrow | source
+    atuin init fish --disable-up-arrow | source
 end
 
 # set alias
 alias ex 'eza --long --header --git --icons'
-alias tree 'eza --header -a --tree -I .git  --icons'
+alias tree 'eza --header -a --tree --git-ignore  --icons'
 alias cat 'bat'
 alias ls 'ex'
-
-# disable greeting
+alias logged_in_at "last | grep 'system boot' | sed -E 's/( [A-Za-z]{3})[ ]+([0-9]) /\1 0\2 /' | grep (date +'%b %d') | tail -n 1 | cut -d ' ' -f 13"
+alias v "vscli recent"
+alias vo "vscli open"
 set -g fish_greeting
 
 # set defaults
@@ -30,12 +31,16 @@ end
 # pnpm end
 
 # android
-set -x ANDROID_HOME $HOME/Android/Sdk
+set -x ANDROID_HOME $HOME/Android
 set -x PATH $ANDROID_HOME/emulator $PATH
 set -x PATH $ANDROID_HOME/tools $PATH
 set -x PATH $ANDROID_HOME/tools/bin $PATH
 set -x PATH $ANDROID_HOME/platform-tools $PATH
 # android end
+
+#other
+set -x CHROME_EXECUTABLE /usr/bin/google-chrome-stable
+#other end
 
 #dircolors
 eval (dircolors -c ~/.dircolors)
@@ -43,3 +48,4 @@ eval (dircolors -c ~/.dircolors)
 # bun
 set --export BUN_INSTALL "$HOME/.bun"
 set --export PATH $BUN_INSTALL/bin $PATH
+
