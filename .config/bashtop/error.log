@@ -15,3 +15,23 @@ New instance of bashtop version: 0.9.25 Pid: 155464
 New instance of bashtop version: 0.9.25 Pid: 155735
 /tmp/A9FBznU3Vk34/bashtop.psutil:103: DeprecationWarning: 'count' is passed as positional argument
   name = re.sub( ".*" + rem_line + ".*:", "", line,1).lstrip()
+ 
+New instance of bashtop version: 0.9.25 Pid: 30407
+/tmp/olAslgUEJzek/bashtop.psutil:103: DeprecationWarning: 'count' is passed as positional argument
+  name = re.sub( ".*" + rem_line + ".*:", "", line,1).lstrip()
+ 
+New instance of bashtop version: 0.9.25 Pid: 68737
+/tmp/VX9ls749W7Ay/bashtop.psutil:103: DeprecationWarning: 'count' is passed as positional argument
+  name = re.sub( ".*" + rem_line + ".*:", "", line,1).lstrip()
+ 
+New instance of bashtop version: 0.9.25 Pid: 13999
+/tmp/i4KlLlAoraUq/bashtop.psutil:103: DeprecationWarning: 'count' is passed as positional argument
+  name = re.sub( ".*" + rem_line + ".*:", "", line,1).lstrip()
+ 
+New instance of bashtop version: 0.9.25 Pid: 97004
+/tmp/r5MezqsTZlHg/bashtop.psutil:103: DeprecationWarning: 'count' is passed as positional argument
+  name = re.sub( ".*" + rem_line + ".*:", "", line,1).lstrip()
+ 
+New instance of bashtop version: 0.9.25 Pid: 97462
+/tmp/0F71CrhQ7cms/bashtop.psutil:103: DeprecationWarning: 'count' is passed as positional argument
+  name = re.sub( ".*" + rem_line + ".*:", "", line,1).lstrip()

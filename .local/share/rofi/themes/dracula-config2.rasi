@@ -19,7 +19,7 @@ configuration {
     drac-red: #ff5555;
     drac-yel: #f1fa8c;
 
-    font: "RecMonoCasual 18";
+    font: "RecMonoCasual Nerd Font 14";
 
     foreground: @drac-fgd;
     background-color: @drac-bgd;

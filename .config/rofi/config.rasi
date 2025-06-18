@@ -1,0 +1,5 @@
+
+@theme "/home/mohammed/.local/share/rofi/themes/dracula-config2.rasi"
+configuration {
+    modes: "window,run,ssh,drun,windowcd";
+}

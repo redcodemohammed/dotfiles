@@ -49,3 +49,16 @@ eval (dircolors -c ~/.dircolors)
 set --export BUN_INSTALL "$HOME/.bun"
 set --export PATH $BUN_INSTALL/bin $PATH
 
+
+function load_env_vars --description "Load variables from a .env file"
+    set lines (cat $argv | string split -n '\n' | string match -vre '^\s*#' | string match -vre '^\s*$')
+    for line in $lines
+        set arr (string split -n -m 1 = $line)
+        if test (count $arr) -ne 2
+            continue
+        end
+        set -gx $arr[1] $arr[2]
+    end
+end
+
+load_env_vars ~/dotfiles/.env

@@ -1,28 +1,26 @@
 
 [font]
-size = 15
+size = 12
 
 [font.normal]
-family = "Iosevka"
+family = "Cascadia Code PL"
 
 [font.bold]
-family = "Iosevka"
+family = "Cascadia Code PL"
 
 [font.italic]
-family = "Iosevka"
+family = "Cascadia Code PL"
 
 [window]
-opacity = 0.93
+opacity = 0.5
 blur = true
-decorations = "none"
-
 [window.padding]
 x = 10
 y = 10
 
 [window.dimensions]
-columns = 110
-lines = 28
+columns = 120
+lines = 38
 
 
 [[keyboard.bindings]]
