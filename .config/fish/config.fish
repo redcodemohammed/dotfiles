@@ -31,7 +31,7 @@ end
 # pnpm end
 
 # android
-set -x ANDROID_HOME $HOME/Android
+set -x ANDROID_HOME $HOME/Android/Sdk
 set -x PATH $ANDROID_HOME/emulator $PATH
 set -x PATH $ANDROID_HOME/tools $PATH
 set -x PATH $ANDROID_HOME/tools/bin $PATH
