@@ -1,19 +1,21 @@
 
 [font]
-size = 12
+size = 15
 
 [font.normal]
-family = "Cascadia Code PL"
+family = "RecMonoCasual Nerd Font"
 
 [font.bold]
-family = "Cascadia Code PL"
+family = "RecMonoCasual Nerd Font"
 
 [font.italic]
-family = "Cascadia Code PL"
+family = "RecMonoCasual Nerd Font"
 
 [window]
-opacity = 0.5
+opacity = 0.90
 blur = true
+decorations = "none"
+
 [window.padding]
 x = 10
 y = 10
@@ -30,9 +32,9 @@ action = "SpawnNewInstance"
 
 [terminal.shell]
 program = "/bin/tmux"
-args = ["new", "-A", "-s", "alacritty"]
 
 [general]
 import = [
-  "/home/mohammed/.local/share/pnpm/global/5/.pnpm/alacritty-themes@6.0.2/node_modules/alacritty-themes/themes/Ayu-Dark.toml",
+  # "/home/mohammed/.local/share/pnpm/global/5/.pnpm/alacritty-themes@6.0.2/node_modules/alacritty-themes/themes/Ayu-Dark.toml",
+  "~/.config/alacritty/catppuccin-mocha.toml"
 ]

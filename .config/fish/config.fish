@@ -3,6 +3,7 @@ if status is-interactive
 end
 
 # set alias
+alias emulator 'prime-run emulator'
 alias ex 'eza --long --header --git --icons'
 alias tree 'eza --header -a --tree --git-ignore  --icons'
 alias cat 'bat'
@@ -35,7 +36,7 @@ set -x ANDROID_HOME $HOME/Android/Sdk
 set -x PATH $ANDROID_HOME/emulator $PATH
 set -x PATH $ANDROID_HOME/tools $PATH
 set -x PATH $ANDROID_HOME/tools/bin $PATH
-set -x PATH $ANDROID_HOME/platform-tools $PATH
+# set -x PATH $ANDROID_HOME/platform-tools $PATH
 # android end
 
 #other
@@ -62,3 +63,5 @@ function load_env_vars --description "Load variables from a .env file"
 end
 
 load_env_vars ~/dotfiles/.env
+
+fortune /home/mohammed/jhinsay/jhins | cowsay -f jhin | lolcat

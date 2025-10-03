@@ -105,3 +105,4 @@ SETUVAR pure_symbol_virtualenv_prefix:
 SETUVAR pure_threshold_command_duration:5
 SETUVAR pure_truncate_prompt_current_directory_keeps:\x2d1
 SETUVAR pure_truncate_window_title_current_directory_keeps:\x2d1
+SETUVAR yimmy_solarized:true
