@@ -1,20 +1,19 @@
 
 [font]
-size = 15
+size = 16
 
 [font.normal]
-family = "RecMonoCasual Nerd Font"
+family = "Google Sans Code"
 
 [font.bold]
-family = "RecMonoCasual Nerd Font"
+family = "Google Sans Code"
 
 [font.italic]
-family = "RecMonoCasual Nerd Font"
+family = "Google Sans Code"
 
 [window]
 opacity = 0.90
 blur = true
-decorations = "none"
 
 [window.padding]
 x = 10
@@ -38,3 +37,4 @@ import = [
   # "/home/mohammed/.local/share/pnpm/global/5/.pnpm/alacritty-themes@6.0.2/node_modules/alacritty-themes/themes/Ayu-Dark.toml",
   "~/.config/alacritty/catppuccin-mocha.toml"
 ]
+
