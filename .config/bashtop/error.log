@@ -75,3 +75,15 @@ New instance of bashtop version: 0.9.25 Pid: 40289
 New instance of bashtop version: 0.9.25 Pid: 51477
 /tmp/QjPD6MVKfB3K/bashtop.psutil:103: DeprecationWarning: 'count' is passed as positional argument
   name = re.sub( ".*" + rem_line + ".*:", "", line,1).lstrip()
+ 
+New instance of bashtop version: 0.9.25 Pid: 14178
+/tmp/EmKy52yorJYD/bashtop.psutil:103: DeprecationWarning: 'count' is passed as positional argument
+  name = re.sub( ".*" + rem_line + ".*:", "", line,1).lstrip()
+/usr/bin/bashtop: line 1337: ((: Pid: Program:       Arguments:                                                         Threads: User:    Mem%       Cpu%: arithmetic syntax error in expression (error token is ": Program:       Arguments:                                                         Threads: User:    Mem%       Cpu%")
+/usr/bin/bashtop: line 1347: ((: Pid: Program:       Arguments:                                                         Threads: User:    Mem%       Cpu%: arithmetic syntax error in expression (error token is ": Program:       Arguments:                                                         Threads: User:    Mem%       Cpu%")
+/usr/bin/bashtop: line 1353: ((: Pid: Program:       Arguments:                                                         Threads: User:    Mem%       Cpu%: arithmetic syntax error in expression (error token is ": Program:       Arguments:                                                         Threads: User:    Mem%       Cpu%")
+/usr/bin/bashtop: line 1334: ((: Pid: Program:       Arguments:                                                         Threads: User:    Mem%       Cpu%: arithmetic syntax error in expression (error token is ": Program:       Arguments:                                                         Threads: User:    Mem%       Cpu%")
+/usr/bin/bashtop: line 1347: ((: Pid: Program:       Arguments:                                                         Threads: User:    Mem%       Cpu%: arithmetic syntax error in expression (error token is ": Program:       Arguments:                                                         Threads: User:    Mem%       Cpu%")
+/usr/bin/bashtop: line 1353: ((: Pid: Program:       Arguments:                                                         Threads: User:    Mem%       Cpu%: arithmetic syntax error in expression (error token is ": Program:       Arguments:                                                         Threads: User:    Mem%       Cpu%")
+/usr/bin/bashtop: line 1334: ((: Pid: Program:       Arguments:                                                         Threads: User:    Mem%       Cpu%: arithmetic syntax error in expression (error token is ": Program:       Arguments:                                                         Threads: User:    Mem%       Cpu%")
+/usr/bin/bashtop: line 3037: Pid: Program:       Arguments:                                                         Threads: User:    Mem%       Cpu%: arithmetic syntax error in expression (error token is ": Program:       Arguments:                                                         Threads: User:    Mem%       Cpu%")

@@ -1,6 +1,6 @@
 
 [font]
-size = 16
+size = 14
 
 [font.normal]
 family = "Google Sans Code"
@@ -12,8 +12,7 @@ family = "Google Sans Code"
 family = "Google Sans Code"
 
 [window]
-opacity = 0.90
-blur = true
+opacity = 0.99
 
 [window.padding]
 x = 10
