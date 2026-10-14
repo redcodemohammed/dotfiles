@@ -119,8 +119,13 @@ Done (section 4):
   Brightness row is now live. Works.
 - **SUPER+E** runs `~/.local/scripts/vicinae-emulator.sh` (Android emulator picker; owner's request,
   not in the spec). Works. Note: `hyprctl binds` shows Lua keycode binds with an empty key.
-- **tmux in Alacritty** (owner's choice): `[terminal] shell` runs `tmux new-session -A -s main`, so
-  every window joins one session `main`; closing a window only detaches. Works.
+- **tmux in Alacritty** (owner's choice, changed from one shared session): `[terminal] shell` runs
+  `tmux new-session ; set-option destroy-unattached on`, so every window is its own session and it
+  ends when the window closes (set per session, so hand-made sessions survive a detach). Works.
+- **Old tmux setup, partly back** (owner picked from the 2026-10 config in git, `8c83df1^`): windows
+  and panes from 1, renumber-windows, new windows/splits in the current directory, Alt+arrows panes
+  and Shift+arrows windows without the prefix (tmux-only, no Hyprland clash). Palette status bar
+  kept; tokyo-night theme, mouse, status-at-top, tmux-sensible and tmux-resurrect not wanted. Works.
 
 Notes:
 - GTK is not stowed on purpose (see `.stow-local-ignore` and section 6).
