@@ -214,8 +214,11 @@ hl.config({
 
 hl.config({
     misc = {
-        force_default_wallpaper = -1,    -- Set to 0 or 1 to disable the anime mascot wallpapers
-        disable_hyprland_logo   = false, -- If true disables the random hyprland logo / anime girl background. :(
+        -- Wallpaper: solid bg from the palette, painted by Hyprland itself (no swaybg needed).
+        force_default_wallpaper = 0,
+        disable_hyprland_logo   = true,  -- required for background_color
+        disable_splash_rendering = true, -- no splash text at the bottom of the screen
+        background_color        = palette.bg,
         -- If the lock screen crashes, another locker (hyprlock) may take over the session lock.
         allow_session_lock_restore = true,
     },
