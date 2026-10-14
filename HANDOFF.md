@@ -108,6 +108,10 @@ Done (section 4):
   watching D-Bus: `Activate` and dbusmenu `AboutToShow`/`GetLayout` went out, no menu appeared.
   The menus use Qt's own style, not the design system; the owner is fine with that (a QML menu via
   `QsMenuOpener` is the alternative).
+- **Step 11.3 brightness keys: work** on the laptop panel (backlight `nvidia_0`). No `video` group
+  needed: `brightnessctl` 0.5 is linked to libsystemd and falls back to logind `SetBrightness`,
+  which logind allows only from the foreground session (calls from a background session fail with
+  "Operation not permitted" / "Session is not in foreground"). Externals: DDC, not done.
 
 Notes:
 - GTK is not stowed on purpose (see `.stow-local-ignore` and section 6).
