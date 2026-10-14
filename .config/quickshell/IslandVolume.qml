@@ -5,9 +5,11 @@ import Quickshell.Services.Pipewire
 // Compact 260x24: speaker, level bar, number. Expanded: output name, then
 // Volume, Mic (and Brightness on hardware that has it) as label, bar, number.
 // Level bars: foreground fill on a muted track. Muting changes the glyph only.
+// Brightness keys show the same pill with a sun and the brightness level (owner's choice).
 Item {
     id: root
     required property bool open
+    readonly property bool isBrightness: IslandState.kind === "brightness"
     readonly property var sink: Pipewire.defaultAudioSink
     readonly property var source: Pipewire.defaultAudioSource
     readonly property real volume: sink && sink.audio ? sink.audio.volume : 0
@@ -68,7 +70,8 @@ Item {
         Text {
             id: speaker
             anchors.verticalCenter: parent.verticalCenter
-            text: root.muted ? Icons.speakerSlash
+            text: root.isBrightness ? Icons.sun
+                : root.muted ? Icons.speakerSlash
                 : root.volume <= 0 ? Icons.speakerNone
                 : root.volume < 0.5 ? Icons.speakerLow
                 : Icons.speakerHigh
@@ -80,14 +83,14 @@ Item {
             x: speaker.width + 8
             width: parent.width - x - 8 - 24
             anchors.verticalCenter: parent.verticalCenter
-            level: root.muted ? 0 : root.volume
+            level: root.isBrightness ? IslandState.brightness : root.muted ? 0 : root.volume
         }
         Text {
             width: 24
             anchors.right: parent.right
             anchors.verticalCenter: parent.verticalCenter
             horizontalAlignment: Text.AlignRight
-            text: Math.round(root.volume * 100)
+            text: Math.round((root.isBrightness ? IslandState.brightness : root.volume) * 100)
             font.family: "JetBrainsMono Nerd Font"
             font.pixelSize: 13
             color: Theme.fg
@@ -117,6 +120,6 @@ Item {
         }
         LevelRow { label: "Volume"; level: root.volume; off: root.muted }
         LevelRow { label: "Mic"; level: root.micVolume; off: root.micMuted; visible: root.source !== null }
-        LevelRow { label: "Brightness"; level: 0; visible: IslandState.hasBrightness }
+        LevelRow { label: "Brightness"; level: IslandState.brightness; visible: IslandState.hasBrightness }
     }
 }

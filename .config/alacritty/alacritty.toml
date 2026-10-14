@@ -15,3 +15,8 @@ size = 9.75
 
 [cursor]
 style = { shape = "Block" }
+
+# Every window joins one tmux session, "main": created by the first window, attached by the rest.
+# Closing a window only detaches; the session keeps running.
+[terminal]
+shell = { program = "tmux", args = ["new-session", "-A", "-s", "main"] }

@@ -31,4 +31,6 @@ Singleton {
     readonly property string batteryLow: "\ue0c4"
     readonly property string batteryCharging: "\ue0ba" // on AC
     readonly property string batteryWarning: "\ue0c8" // critical, 10% or less on battery
+
+    readonly property string sun: "\ue472" // island brightness
 }

@@ -17,11 +17,12 @@ Singleton {
         media:   [280, 24, 440, 256],
         notify:  [0,   0,  360, 232],
         volume:  [260, 24, 320, hasBrightness ? 148 : 116], // design draws 140 and clips the 4th row
+        brightness: [260, 24, 320, 148], // compact: sun and level; expanded: the volume panel
         record:  [240, 24, 340, 172],
         battery: [260, 24, 340, 148],
         build:   [320, 24, 440, 192],
     })
-    readonly property var timeouts: ({ notify: 8000, volume: 2500, battery: 3000, build: 6000 })
+    readonly property var timeouts: ({ notify: 8000, volume: 2500, brightness: 2500, battery: 3000, build: 6000 })
 
     property var active: null // current transient: { kind, data, persistent }
     property var queued: null
@@ -29,8 +30,18 @@ Singleton {
     property bool media: false
     property bool expanded: false
 
-    // No backlight on the test VM; the laptop wires brightness here (deferred).
-    readonly property bool hasBrightness: false
+    // Backlight level 0-1 (laptop panel); -1 until read, and on hardware without a backlight.
+    property real brightness: -1
+    readonly property bool hasBrightness: brightness >= 0
+    property bool brightnessStarted: false // the first read only sets the level, no island
+    property bool brightnessPending: false // a change event came in while a read was running
+
+    function readBrightness() {
+        if (brightnessRead.running)
+            brightnessPending = true
+        else
+            brightnessRead.running = true
+    }
 
     readonly property string kind: active ? active.kind
         : recording ? "record"
@@ -103,6 +114,44 @@ Singleton {
         function onMutedChanged() { root.push("volume", {}, false) }
     }
 
+    // Brightness: the kernel sends a udev "change" event for every backlight write (keys, logind,
+    // anything), so listen for those and re-read the level. No polling.
+    Process {
+        running: true
+        command: ["udevadm", "monitor", "--udev", "--subsystem-match=backlight"]
+        stdout: SplitParser {
+            onRead: line => {
+                if (line.includes(" change "))
+                    root.readBrightness()
+            }
+        }
+    }
+
+    // brightnessctl -m prints "device,class,current,percent%,max". Fails without a backlight.
+    Process {
+        id: brightnessRead
+        running: true // first read at startup
+        command: ["brightnessctl", "-m", "-c", "backlight", "info"]
+        stdout: StdioCollector {
+            id: brightnessOut
+            onStreamFinished: {
+                const f = brightnessOut.text.trim().split(",")
+                if (f.length < 5 || Number(f[4]) <= 0)
+                    return
+                root.brightness = Number(f[2]) / Number(f[4])
+                if (root.brightnessStarted)
+                    root.push("brightness", {}, false)
+                root.brightnessStarted = true
+            }
+        }
+        onExited: {
+            if (root.brightnessPending) {
+                root.brightnessPending = false
+                Qt.callLater(() => brightnessRead.running = true)
+            }
+        }
+    }
+
     Timer {
         id: timer
         interval: root.active ? (root.timeouts[root.active.kind] ?? 0) : 0
@@ -110,7 +159,7 @@ Singleton {
     }
 
     // Test hook until the real sources are wired:
-    //   qs ipc call island test volume|battery|build|notify|buildfail
+    //   qs ipc call island test volume|brightness|battery|build|notify|buildfail
     //   qs ipc call island test media|record   (toggles the persistent states)
     //   qs ipc call island expand|collapse|clear
     IpcHandler {

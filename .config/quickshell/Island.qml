@@ -63,7 +63,7 @@ PanelWindow {
 
         IslandVolume {
             anchors.fill: parent
-            visible: IslandState.kind === "volume"
+            visible: IslandState.kind === "volume" || IslandState.kind === "brightness"
             open: IslandState.open
         }
 
@@ -83,7 +83,7 @@ PanelWindow {
 
         // Placeholder content for states not built yet (media, recording, battery).
         Text {
-            visible: ["volume", "notify", "build"].indexOf(IslandState.kind) < 0
+            visible: ["volume", "brightness", "notify", "build"].indexOf(IslandState.kind) < 0
             x: IslandState.open ? 12 : 8
             y: IslandState.open ? 12 : (parent.height - height) / 2
             text: IslandState.kind + (IslandState.open ? " · expanded" : "")

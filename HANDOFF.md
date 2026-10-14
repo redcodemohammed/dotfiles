@@ -112,6 +112,15 @@ Done (section 4):
   needed: `brightnessctl` 0.5 is linked to libsystemd and falls back to logind `SetBrightness`,
   which logind allows only from the foreground session (calls from a background session fail with
   "Operation not permitted" / "Session is not in foreground"). Externals: DDC, not done.
+- **Island brightness.** The kernel sends a udev `change` event per backlight write, so
+  `IslandState.qml` runs `udevadm monitor --subsystem-match=backlight` and re-reads the level with
+  `brightnessctl -m` (no polling). New transient kind `brightness` (owner's choice): the compact
+  volume pill with a sun and the brightness level, 2.5 s; expanded is the volume panel, whose
+  Brightness row is now live. Works.
+- **SUPER+E** runs `~/.local/scripts/vicinae-emulator.sh` (Android emulator picker; owner's request,
+  not in the spec). Works. Note: `hyprctl binds` shows Lua keycode binds with an empty key.
+- **tmux in Alacritty** (owner's choice): `[terminal] shell` runs `tmux new-session -A -s main`, so
+  every window joins one session `main`; closing a window only detaches. Works.
 
 Notes:
 - GTK is not stowed on purpose (see `.stow-local-ignore` and section 6).
@@ -200,6 +209,7 @@ build 6 s. Transient arriving while one is open: queue one. Paused media hides a
 | SUPER+Return | Alacritty | |
 | SUPER+/ | Vicinae | 61 |
 | SUPER+I | notification inbox (`qs ipc call inbox toggle`) | 31 |
+| SUPER+E | Android emulator picker (`~/.local/scripts/vicinae-emulator.sh`, owner's addition) | 26 |
 | SUPER+Space | layout toggle (XKB `grp:win_space_toggle`, `us,ara`) | |
 | SUPER+Q | close window | 24 |
 | SUPER+V | float toggle (sized, centred) | 55 |
