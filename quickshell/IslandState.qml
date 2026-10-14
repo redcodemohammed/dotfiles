@@ -19,10 +19,9 @@ Singleton {
         volume:  [260, 24, 320, hasBrightness ? 148 : 116], // design draws 140 and clips the 4th row
         record:  [240, 24, 340, 172],
         battery: [260, 24, 340, 148],
-        event:   [280, 24, 340, 128],
         build:   [320, 24, 440, 192],
     })
-    readonly property var timeouts: ({ notify: 8000, volume: 2500, battery: 3000, event: 6000, build: 6000 })
+    readonly property var timeouts: ({ notify: 8000, volume: 2500, battery: 3000, build: 6000 })
 
     property var active: null // current transient: { kind, data, persistent }
     property var queued: null
@@ -111,7 +110,7 @@ Singleton {
     }
 
     // Test hook until the real sources are wired:
-    //   qs ipc call island test volume|battery|event|build|notify|buildfail
+    //   qs ipc call island test volume|battery|build|notify|buildfail
     //   qs ipc call island test media|record   (toggles the persistent states)
     //   qs ipc call island expand|collapse|clear
     IpcHandler {
