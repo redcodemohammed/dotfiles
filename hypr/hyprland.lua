@@ -285,7 +285,7 @@ hl.bind(mainMod .. " + Print",           hl.dsp.exec_cmd(shot .. "-m window -m a
 hl.bind(mainMod .. " + SHIFT + Print",   hl.dsp.exec_cmd(shot .. "-m output -m active"))
 -- Annotate the newest shot. Saves a -annotated copy next to it, original untouched.
 hl.bind(mainMod .. " + CTRL + Print", hl.dsp.exec_cmd([[sh -c 'f=$(ls -t ~/Pictures/Screenshots/*.png 2>/dev/null | head -1); [ -n "$f" ] && satty -f "$f" -o "${f%.png}-annotated.png" --copy-command wl-copy']]))
-hl.bind(mainMod .. " + Q", hl.dsp.exec_cmd(terminal))
+hl.bind(mainMod .. " + code:24", hl.dsp.window.close()) -- Q key, any layout
 local closeWindowBind = hl.bind(mainMod .. " + C", hl.dsp.window.close())
 -- closeWindowBind:set_enabled(false)
 hl.bind(mainMod .. " + M", hl.dsp.exec_cmd("command -v hyprshutdown >/dev/null 2>&1 && hyprshutdown || hyprctl dispatch 'hl.dsp.exit()'"))
