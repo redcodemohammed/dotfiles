@@ -55,11 +55,19 @@ Done (section 4):
   right 11-15 (hyprsplit matches name or description **exactly**, unlike `hl.monitor`'s `desc:`
   prefix; port names chosen by the owner). `Workspaces.qml` shows each monitor's own workspaces
   as slots 1-5 (`((id - 1) % 5) + 1`). Untested until step 9: `hyprctl workspaces`, SUPER+1-5 per screen.
+- **Before step 9 (cross-desktop check).** uwsm runs XDG autostart and `graphical-session.target`
+  services in Hyprland too. Vicinae: `hyprland.lua` no longer runs `vicinae server`; the owner's
+  `vicinae.service` (`--replace`, `PartOf=graphical-session.target`) starts it in both desktops.
+  `~/.config/autostart` (not in the repo): `NotShowIn=Hyprland;` added to greenclip (second
+  clipboard history next to Vicinae), localsend_app and xpad (not installed, dead entry); FDM starts
+  in both. Checked with the systemd xdg-autostart generator: skipped in Hyprland, still started in
+  COSMIC. Kept on purpose: `hyprland.lua` sets gsettings `icon-theme Papirus-Dark`; gsettings are
+  per user, so COSMIC's GTK apps (had `Colloid-Pink-Catppuccin-Dark`) see it too.
 
 Notes:
 - GTK is not stowed on purpose (see `.stow-local-ignore` and section 6).
-- Vicinae runs in COSMIC as a systemd user service: `systemctl --user restart vicinae` after a
-  config change. Its window is 640 wide (section 2).
+- Vicinae runs as a systemd user service in both desktops: `systemctl --user restart vicinae`
+  after a config change. Its window is 640 wide (section 2).
 - Keep the tarball, the `.pre-dotfiles-*` folders and `~/Projects/hyprland-handoff` until
   Hyprland is stable.
 - The LocalSend autostart unit fails at every login since before this project (`localsend-bin`
