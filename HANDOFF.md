@@ -90,6 +90,11 @@ Done (section 4):
 - **Layout indicator** (owner's request, not in the spec). `KeyboardLayout.qml`: gray `EN`/`AR`
   after the clock on all bars. Reads the main keyboard from `hyprctl -j devices` once, then follows
   Hyprland's `activelayout` event (same as the lock). Works on both keyboards.
+- **Spotifast theme** (owner's request). `generate.py` writes `spotifast/Hypr.json` (roles as in
+  `gtk_roles`; warning = fg, no shadow) and copies it as a real file to
+  `~/.config/spotifast/themes/Hypr.json`: Spotifast skips symlinked themes, so `spotifast/` is in
+  `.stow-local-ignore`. Copies happen only when content differs. Pick "Hypr" in Settings >
+  Appearance > Theme. Works.
 
 Notes:
 - GTK is not stowed on purpose (see `.stow-local-ignore` and section 6).
@@ -118,6 +123,7 @@ Notes:
 | `.config/quickshell-lock/` | the lock screen, a separate Quickshell instance |
 | `pam/quickshell-lock` | the lock's PAM service (loaded from here, `/etc/pam.d` untouched) |
 | `palette/palette.toml` | **the one palette**; `palette/generate.py` writes every app's colors |
+| `spotifast/Hypr.json` | generated Spotifast theme; `generate.py` copies it into `~/.config` (no stow: the app skips symlinks) |
 | `.config/{alacritty,nvim,tmux,vicinae,satty,gtk-3.0,gtk-4.0}/` | app configs (colors generated) |
 | `.local/share/vicinae/themes/hypr.toml` | Vicinae theme (generated) |
 | `keyd/default.conf` | Caps Lock: tap Escape, hold Ctrl |

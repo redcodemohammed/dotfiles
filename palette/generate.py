@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Generate app color files from palette.toml. Rerun after editing the palette."""
+import json
 import tomllib
 from pathlib import Path
 
@@ -205,6 +206,22 @@ decoration, window.csd { box-shadow: none; }
 """
 
 
+def spotifast_theme(palette):
+    # Spotifast palette, listed as "Hypr" in Settings > Appearance > Theme. Same roles as gtk_roles.
+    # JSON has no comments, so this file carries no HEADER.
+    ui, bright = palette["ui"], palette["ansi"]["bright"]
+    colors = {
+        "window": ui["surface"], "panel": ui["bg"], "surface": ui["surface_selected"],
+        "surface_hover": ui["border"], "surface_active": ui["border"], "outline": ui["border"],
+        "text": ui["fg"], "secondary": ui["fg_muted"], "dim": ui["fg_dim"],
+        "accent": ui["accent"], "accent_hover": bright["yellow"], "on_accent": ui["on_accent"],
+        "danger": ui["alert"],
+        "warning": ui["fg"],  # No amber warnings: amber means focus, never caution.
+        "shadow": "#00000000",  # No shadows.
+    }
+    return json.dumps({"base": "dark", "colors": colors}, indent=2) + "\n"
+
+
 def gtk3_css(palette):
     colors = "\n".join(f"@define-color {role}_color {value};" for role, value in gtk_roles(palette).items())
     return f"/* {HEADER} */\n/* GTK3 via adw-gtk3: overrides its named colors. */\n{colors}\n@define-color borders {palette['ui']['border']};\n{GTK_SHAPE}"
@@ -232,6 +249,13 @@ OUTPUTS = {
     ".config/alacritty/colors.toml": alacritty_colors,
     ".config/nvim/lua/hypr_palette.lua": nvim_palette,
     ".config/openrgb-kb/color.env": keyboard_env,
+    "spotifast/Hypr.json": spotifast_theme,  # not stowed: see COPIES
+}
+
+# Apps that skip symlinked files get a real copy in $HOME; the repo file stays the tracked source.
+# Written only when the content differs, so setup/check.sh changes nothing when up to date.
+COPIES = {
+    "spotifast/Hypr.json": "~/.config/spotifast/themes/Hypr.json",
 }
 
 
@@ -242,6 +266,13 @@ def main():
         out.parent.mkdir(parents=True, exist_ok=True)
         out.write_text(render(palette))
         print(f"wrote {path}")
+    for src, dest in COPIES.items():
+        out, data = Path(dest).expanduser(), (ROOT / src).read_bytes()
+        if out.exists() and out.read_bytes() == data:
+            continue
+        out.parent.mkdir(parents=True, exist_ok=True)
+        out.write_bytes(data)
+        print(f"copied {src} -> {dest}")
 
 
 if __name__ == "__main__":
