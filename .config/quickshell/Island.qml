@@ -12,8 +12,17 @@ PanelWindow {
     required property var modelData
     screen: modelData
     readonly property var monitor: Hyprland.monitorFor(modelData)
-    // Main screen: the first screen for now. The real machine pins this to the main external.
-    readonly property bool isMain: modelData === Quickshell.screens[0]
+    // Main screen: the Odyssey G5 when connected, else the laptop panel, else the first screen.
+    // Matched by model, like the Hyprland monitor rule: Qt's screen order is not stable.
+    readonly property var mainScreen: {
+        const screens = Quickshell.screens
+        for (let i = 0; i < screens.length; i++)
+            if (screens[i].model === "Odyssey G5") return screens[i]
+        for (let i = 0; i < screens.length; i++)
+            if (screens[i].name === "eDP-1") return screens[i]
+        return screens[0]
+    }
+    readonly property bool isMain: modelData === mainScreen
     readonly property bool fullscreen: monitor && monitor.activeWorkspace
         ? monitor.activeWorkspace.hasFullscreen : false
 
