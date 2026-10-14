@@ -2,6 +2,7 @@ pragma Singleton
 import QtQuick
 import Quickshell
 import Quickshell.Io
+import Quickshell.Services.Pipewire
 
 // Island state machine (island spec + design canvas "Desktop test").
 // One state at a time: transient > recording > media > nothing.
@@ -15,7 +16,7 @@ Singleton {
     readonly property var sizes: ({
         media:   [280, 24, 440, 256],
         notify:  [0,   0,  360, 232],
-        volume:  [260, 24, 320, 140],
+        volume:  [260, 24, 320, hasBrightness ? 148 : 116], // design draws 140 and clips the 4th row
         record:  [240, 24, 340, 172],
         battery: [260, 24, 340, 148],
         event:   [280, 24, 340, 128],
@@ -28,6 +29,9 @@ Singleton {
     property bool recording: false
     property bool media: false
     property bool expanded: false
+
+    // No backlight on the test VM; the laptop wires brightness here (deferred).
+    readonly property bool hasBrightness: false
 
     readonly property string kind: active ? active.kind
         : recording ? "record"
@@ -43,6 +47,13 @@ Singleton {
     // A new transient. persistent: no timer (urgent notification, critical battery, failed build).
     function push(kind, data, persistent) {
         const t = { kind: kind, data: data, persistent: !!persistent }
+        // Same kind already showing (e.g. holding a volume key): refresh it, never queue it.
+        if (active && active.kind === kind) {
+            active = t
+            if (!expanded && !t.persistent && timeouts[kind])
+                timer.restart()
+            return
+        }
         if (active && open) {
             queued = t // queue one while something is open (a notification opens by itself)
             return
@@ -80,6 +91,17 @@ Singleton {
             next()
         else
             expanded = false
+    }
+
+    // Volume: any change of the default output's volume or mute.
+    PwObjectTracker {
+        objects: [Pipewire.defaultAudioSink, Pipewire.defaultAudioSource]
+    }
+
+    Connections {
+        target: Pipewire.defaultAudioSink ? Pipewire.defaultAudioSink.audio : null
+        function onVolumeChanged() { root.push("volume", {}, false) }
+        function onMutedChanged() { root.push("volume", {}, false) }
     }
 
     Timer {

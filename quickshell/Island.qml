@@ -49,8 +49,15 @@ PanelWindow {
             onClicked: IslandState.expand()
         }
 
-        // Placeholder content until each state is built (island steps 2-8).
+        IslandVolume {
+            anchors.fill: parent
+            visible: IslandState.kind === "volume"
+            open: IslandState.open
+        }
+
+        // Placeholder content for states not built yet (island steps 2, 4-8).
         Text {
+            visible: IslandState.kind !== "volume"
             x: IslandState.open ? 12 : 8
             y: IslandState.open ? 12 : (parent.height - height) / 2
             text: IslandState.kind + (IslandState.open ? " · expanded" : "")
