@@ -34,6 +34,10 @@ Done (section 4):
   Real folders that were in the way are in `~/.config/<name>.pre-dotfiles-20261014-220228`:
   hypr, cava, kitty, rofi, waybar (leftover KooL Hyprland dots; the owner's own repo versions are
   linked now), quickshell (an old shell config) and vicinae (the owner's old settings).
+- **Step 5 prep.** Removed `xremap-cosmic-bin`, its user unit and `~/.config/xremap`. It grabbed
+  every keyboard and the mouse only to make SUPER+scroll switch COSMIC workspaces; next to keyd,
+  two grabbing remappers would chain in startup order. SUPER+scroll in COSMIC is gone (Hyprland
+  binds it natively).
 
 Notes:
 - GTK is not stowed on purpose (see `.stow-local-ignore` and section 6).
