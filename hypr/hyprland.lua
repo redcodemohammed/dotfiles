@@ -67,6 +67,7 @@ hl.on("hyprland.start", function ()
     hl.exec_cmd("vicinae server") -- launcher daemon, opened with SUPER + /
     hl.exec_cmd("qs")             -- Quickshell: bar, notifications, OSD
     hl.exec_cmd("hypridle")       -- idle chain: lock 5 min, screens off 6 min, suspend 30 min on battery
+    hl.exec_cmd("hyprsunset")     -- night light, 21:00 to 06:30 (hypr/hyprsunset.conf)
 end)
 
 
