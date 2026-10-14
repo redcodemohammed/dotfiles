@@ -345,6 +345,9 @@ Test (configured, untested on the VM):
 - `hypridle` `inhibit_sleep = 3` waits for any session lock (auto mode looks for hyprlock).
 - `pam_faillock` is in `system-auth`: never script repeated wrong-password tests.
 - `notify-send --wait -A default=Open` is a good way to test the inbox/island Reply action.
+- (Laptop) Electron apps don't recognise `XDG_CURRENT_DESKTOP=Hyprland` and claim there is no OS
+  keyring (gnome-keyring runs and is unlocked). VS Code: `"password-store": "gnome-libsecret"` in
+  `~/.vscode/argv.json` (done, not in the repo). Other Electron apps: `--password-store=gnome-libsecret`.
 - (Laptop) `console.log` is debug level: a probe's output may not show. Use `console.warn`.
 - (Laptop) `WheelHandler` received no wheel events on our layer-shell windows; `MouseArea.onWheel`
   did in a test window (but not in a `Volume.qml` attempt, cause unknown).
