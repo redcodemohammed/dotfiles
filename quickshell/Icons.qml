@@ -12,4 +12,9 @@ Singleton {
     readonly property string speakerLow: ""
     readonly property string speakerNone: ""
     readonly property string speakerSlash: ""
+
+    readonly property string network: ""
+    readonly property string networkSlash: ""
+    readonly property string wifiHigh: ""
+    readonly property string wifiSlash: ""
 }

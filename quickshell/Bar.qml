@@ -34,6 +34,9 @@ PanelWindow {
         spacing: 8
 
         Volume {}
+        Network {
+            anchors.verticalCenter: parent.verticalCenter
+        }
     }
 
     WindowTitle {
