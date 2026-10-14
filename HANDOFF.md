@@ -78,7 +78,10 @@ Done (section 4):
   border, inbox keys and Clear all, `--wait -A default` action, bell DND); `qs` owns
   `org.freedesktop.Notifications`; history file gets new entries. Still open: history across a logout.
   Island: works (volume compact/expanded, build pill red and staying, test hook). The owner's
-  keyboard has no volume keys: how to change volume is an open question (spec has no bind).
+  keyboard has no volume keys. Scroll on the bar's volume item was tried and dropped by the owner
+  ("don't need it"): `WheelHandler` got no wheel events at all; in a test layer window only
+  `MouseArea.onWheel` did, but a `MouseArea` version of `Volume.qml` still did nothing on the bar
+  (cause not found). `Volume.qml` stays display-only.
 
 Notes:
 - GTK is not stowed on purpose (see `.stow-local-ignore` and section 6).
@@ -93,7 +96,7 @@ Notes:
 - The LocalSend autostart unit fails at every login since before this project (`localsend-bin`
   misses `libayatana-indicator3.so.7`). Not ours.
 
-**Next: step 10** (section 5 re-tests, one item at a time): island (volume, build, test hook) next.
+**Next: step 10** (section 5 re-tests, one item at a time): lock screen next.
 
 ## 1. What this repo is
 
