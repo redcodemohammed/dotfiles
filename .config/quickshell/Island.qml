@@ -58,7 +58,7 @@ PanelWindow {
     exclusionMode: ExclusionMode.Ignore // starts at the screen edge, over the bar's reserved strip
     WlrLayershell.layer: WlrLayer.Overlay
     color: "transparent"
-    implicitWidth: 440 + 2 * (ear + edge) // widest state plus a shoulder on each side
+    implicitWidth: 640 + 2 * (ear + edge) // widest state (media) plus a shoulder on each side
     implicitHeight: barTop + 256
     mask: Region { item: pill }
 

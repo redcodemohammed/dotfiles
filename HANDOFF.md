@@ -131,6 +131,15 @@ Done (section 4):
   artist, elapsed. Expanded 440x172: 72px art, title, artist, album, source · output, progress,
   shuffle/repeat, prev/play/next, output volume. The design's "Up next" is left out: Spotifast
   publishes no TrackList. The position is refreshed once a second while playing and shown.
+  Now 640 wide, compact and expanded (owner: longer titles and lyric lines; about the limit before
+  it covers the G5's right-hand blocks).
+- **Lyrics** (owner's addition): a mode toggled by the microphone button in the expanded media
+  notch; it stays on when the notch collapses. On: expanded shows five synced lines (the sung one
+  bright) instead of the player; compact shows the sung line with a microphone glyph instead of
+  title and artist. Source: LRCLIB (`lrclib.net/api/search`, via `curl`, owner's choice): title and
+  artist go to lrclib.net, once per track, only while the mode is on; the result closest to the
+  track length (within 3 s) wins, synced over plain. Plain-only lyrics: drag to scroll; compact
+  keeps the title. Position refresh is 250 ms while lyrics are on.
 - **Island as a notch** (owner): joined to the screen's top edge in the bar colour, rounded bottom
   corners (12), shoulders that flare into the edge (`IslandEar.qml`, Qt Quick Shapes, 24px; 10 was
   invisible, 32 looked wrong), drawn after the notch so they cover its side border. No border
@@ -422,5 +431,8 @@ Test (configured, untested on the VM):
   did in a test window (but not in a `Volume.qml` attempt, cause unknown).
 - (Laptop) An inline `component` declared inside `Island.qml` (root: `PanelWindow`) failed with
   "Ear is not a type"; inside Item-rooted files it works. Use a separate file there.
+- (Laptop) Renaming a QML property: rename its change handler too, which is capitalised
+  (`lyricsOpen` -> `lyricsOn` also means `onLyricsOpenChanged` -> `onLyricsOnChanged`), or the
+  reload fails with "Cannot assign to non-existent property".
 - (Laptop) Adding a new QML file plus a `Bar.qml` edit: the reload can miss the edit. Check on
   screen; append a comment to `Bar.qml` to force a reload.

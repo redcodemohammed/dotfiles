@@ -16,7 +16,7 @@ Singleton {
 
     // [compact w, h, expanded w, h]. Notification has no compact form: it opens expanded.
     readonly property var sizes: ({
-        media:   [440, 24, 440, 172], // compact as wide as expanded for long titles (owner; design 280); design 256 includes "Up next", which MPRIS can't fill
+        media:   [640, 24, 640, 172], // wide for long titles and lyric lines (owner; design 280/440); design 256 includes "Up next", which MPRIS can't fill
         notify:  [0,   0,  360, 232],
         volume:  [260, 24, 320, hasBrightness ? 148 : 116], // design draws 140 and clips the 4th row
         brightness: [260, 24, 320, 148], // compact: sun and level; expanded: the volume panel
