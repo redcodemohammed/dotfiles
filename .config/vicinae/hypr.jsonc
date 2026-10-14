@@ -1,0 +1,43 @@
+// Hand-written Vicinae settings, imported by settings.json.
+// settings.json is rewritten by the Vicinae GUI and wins over this file,
+// so keep it to the imports line and set everything here.
+{
+	// No system info sent to the Vicinae server.
+	"telemetry": {
+		"system_info": false
+	},
+
+	// No input monitoring helper. Clipboard entries copy instead of paste,
+	// and snippet expansion is off.
+	"input_server": {
+		"enabled": false
+	},
+
+	// Generated from the shared palette: themes/hypr.toml.
+	// Dark only: both appearances use it, since the portal reports no preference.
+	"theme": {
+		"light": { "name": "hypr" },
+		"dark": { "name": "hypr" }
+	},
+
+	// Same font as the bar and terminal. Size left to Vicinae.
+	"font": {
+		"normal": { "family": "JetBrainsMono Nerd Font" }
+	},
+
+	// Sharp, flat, solid. 560px wide per the spec. Height is a starting
+	// value: 48 search + 8 rows of 40 + footer, tune on screen.
+	"launcher_window": {
+		"material": "none",
+		"rounding": 0,
+		"client_side_decorations": {
+			"enabled": true,
+			"border_width": 2,
+			"shadow_size": 0
+		},
+		"size": {
+			"width": 560,
+			"height": 416
+		}
+	}
+}

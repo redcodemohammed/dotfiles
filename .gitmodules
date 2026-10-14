@@ -4,3 +4,6 @@
 [submodule ".tmux/plugins/tpm"]
 	path = .tmux/plugins/tpm
 	url = https://github.com/tmux-plugins/tpm
+[submodule "hypr/hyprsplit"]
+	path = .config/hypr/hyprsplit
+	url = https://github.com/shezdy/hyprsplit.git

@@ -1,0 +1,4 @@
+#%PAM-1.0
+# Quickshell lock screen. Loaded from this directory via PamContext.configDirectory,
+# so /etc/pam.d is never edited. Same checks as a normal login (incl. pam_faillock).
+auth include /etc/pam.d/system-auth

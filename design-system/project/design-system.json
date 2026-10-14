@@ -1,0 +1,197 @@
+{
+  "v": 3,
+  "assetGroups": {
+    "Icons": {
+      "files": {
+        "battery-full.svg": {
+          "blob": "19cb3ac72cd3f44d8c9eaeacd146e86b",
+          "name": "battery-full.svg",
+          "size": 483,
+          "type": "image/svg+xml"
+        },
+        "battery-medium.svg": {
+          "blob": "74a7876123177cf5de1db56ab618ea0a",
+          "name": "battery-medium.svg",
+          "size": 397,
+          "type": "image/svg+xml"
+        },
+        "battery-warning.svg": {
+          "blob": "d9395343acc9c7c0da25b3078b6456e9",
+          "name": "battery-warning.svg",
+          "size": 417,
+          "type": "image/svg+xml"
+        },
+        "bell-simple-fill.svg": {
+          "blob": "eb9dc5744d72f765fcf9a3d565db7e2b",
+          "name": "bell-simple-fill.svg",
+          "size": 304,
+          "type": "image/svg+xml"
+        },
+        "bell-simple.svg": {
+          "blob": "d8afea5f89e529370d316ca2aceb2688",
+          "name": "bell-simple.svg",
+          "size": 410,
+          "type": "image/svg+xml"
+        },
+        "bell-slash.svg": {
+          "blob": "9607d359f7b715477c1b10f921d6b9f8",
+          "name": "bell-slash.svg",
+          "size": 618,
+          "type": "image/svg+xml"
+        },
+        "bluetooth-connected.svg": {
+          "blob": "e5bc06d8316370c1b9b2fb88852dc41f",
+          "name": "bluetooth-connected.svg",
+          "size": 439,
+          "type": "image/svg+xml"
+        },
+        "bluetooth-slash.svg": {
+          "blob": "06fe40327475979ea99c65b1686dc8d9",
+          "name": "bluetooth-slash.svg",
+          "size": 424,
+          "type": "image/svg+xml"
+        },
+        "bluetooth.svg": {
+          "blob": "d605f11e3c7d6e54128f16165129bcd0",
+          "name": "bluetooth.svg",
+          "size": 348,
+          "type": "image/svg+xml"
+        },
+        "camera-fill.svg": {
+          "blob": "4f73dcf1e80540f3d2eea571f5aeef92",
+          "name": "camera-fill.svg",
+          "size": 311,
+          "type": "image/svg+xml"
+        },
+        "camera.svg": {
+          "blob": "27256d286a3113da2d66c11cc26d6b36",
+          "name": "camera.svg",
+          "size": 500,
+          "type": "image/svg+xml"
+        },
+        "lock-simple.svg": {
+          "blob": "8af64b647cbc8ca6c18bd9b9c87de144",
+          "name": "lock-simple.svg",
+          "size": 276,
+          "type": "image/svg+xml"
+        },
+        "magnifying-glass.svg": {
+          "blob": "2ac642c493e218f53311da6988a9d44c",
+          "name": "magnifying-glass.svg",
+          "size": 244,
+          "type": "image/svg+xml"
+        },
+        "microphone-fill.svg": {
+          "blob": "6ac566adb157caf47dc583967a60b62f",
+          "name": "microphone-fill.svg",
+          "size": 281,
+          "type": "image/svg+xml"
+        },
+        "microphone.svg": {
+          "blob": "069f78a788407471a0e452521a9e531e",
+          "name": "microphone.svg",
+          "size": 363,
+          "type": "image/svg+xml"
+        },
+        "music-notes.svg": {
+          "blob": "389fc2f429c51fd9c1d5e598979df264",
+          "name": "music-notes.svg",
+          "size": 371,
+          "type": "image/svg+xml"
+        },
+        "play.svg": {
+          "blob": "c79e14f8e6429ca3e306bd6f700486b1",
+          "name": "play.svg",
+          "size": 294,
+          "type": "image/svg+xml"
+        },
+        "record-fill.svg": {
+          "blob": "1b0ea11476686d18329572987cf395f2",
+          "name": "record-fill.svg",
+          "size": 258,
+          "type": "image/svg+xml"
+        },
+        "record.svg": {
+          "blob": "cc295011abef4813a980b42e59907d98",
+          "name": "record.svg",
+          "size": 308,
+          "type": "image/svg+xml"
+        },
+        "speaker-high.svg": {
+          "blob": "335476366683563f830aafb3450e97d4",
+          "name": "speaker-high.svg",
+          "size": 515,
+          "type": "image/svg+xml"
+        },
+        "speaker-slash.svg": {
+          "blob": "879b25f0fcf7208df393b0a797a731d7",
+          "name": "speaker-slash.svg",
+          "size": 648,
+          "type": "image/svg+xml"
+        },
+        "wifi-high.svg": {
+          "blob": "c8760a833be5abeff9bc2710e6c673af",
+          "name": "wifi-high.svg",
+          "size": 468,
+          "type": "image/svg+xml"
+        },
+        "wifi-slash.svg": {
+          "blob": "7e484145afb23b2b6d1ea9fb754bb2b8",
+          "name": "wifi-slash.svg",
+          "size": 787,
+          "type": "image/svg+xml"
+        }
+      },
+      "name": "Icons",
+      "order": [
+        "battery-full.svg",
+        "battery-medium.svg",
+        "battery-warning.svg",
+        "bell-simple-fill.svg",
+        "bell-simple.svg",
+        "bell-slash.svg",
+        "bluetooth-connected.svg",
+        "bluetooth-slash.svg",
+        "bluetooth.svg",
+        "camera-fill.svg",
+        "camera.svg",
+        "lock-simple.svg",
+        "magnifying-glass.svg",
+        "microphone-fill.svg",
+        "microphone.svg",
+        "music-notes.svg",
+        "play.svg",
+        "record-fill.svg",
+        "record.svg",
+        "speaker-high.svg",
+        "speaker-slash.svg",
+        "wifi-high.svg",
+        "wifi-slash.svg"
+      ],
+      "tile": "s"
+    }
+  },
+  "blobs": {},
+  "createdOnFiles": {
+    "at": "2026-10-13T12:03:09Z",
+    "v": 1
+  },
+  "docs": {
+    "readme": "project/README.md",
+    "sections": []
+  },
+  "groups": [
+    "Icons"
+  ],
+  "lastChange": {
+    "at": "2026-10-13T12:03:09Z",
+    "by": "Mohammed Wisam",
+    "note": "Initial design system from the Hyprland design spec",
+    "via": "Claude Code"
+  },
+  "layout": "files",
+  "libraries": [],
+  "namespace": "Hyprland",
+  "sections": {},
+  "title": "Hyprland Desktop"
+}

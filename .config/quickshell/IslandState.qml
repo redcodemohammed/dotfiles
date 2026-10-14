@@ -1,0 +1,147 @@
+pragma Singleton
+import QtQuick
+import Quickshell
+import Quickshell.Io
+import Quickshell.Services.Pipewire
+
+// Island state machine (island spec + design canvas "Desktop test").
+// One state at a time: transient > recording > media > nothing.
+// A transient ends on its own timer; expanding stops the timer; closing an expanded
+// transient dismisses it. One transient waits in the queue while another is expanded.
+// ("transient" is a reserved word in QML, so the current one is held in `active`.)
+Singleton {
+    id: root
+
+    // [compact w, h, expanded w, h]. Notification has no compact form: it opens expanded.
+    readonly property var sizes: ({
+        media:   [280, 24, 440, 256],
+        notify:  [0,   0,  360, 232],
+        volume:  [260, 24, 320, hasBrightness ? 148 : 116], // design draws 140 and clips the 4th row
+        record:  [240, 24, 340, 172],
+        battery: [260, 24, 340, 148],
+        build:   [320, 24, 440, 192],
+    })
+    readonly property var timeouts: ({ notify: 8000, volume: 2500, battery: 3000, build: 6000 })
+
+    property var active: null // current transient: { kind, data, persistent }
+    property var queued: null
+    property bool recording: false
+    property bool media: false
+    property bool expanded: false
+
+    // No backlight on the test VM; the laptop wires brightness here (deferred).
+    readonly property bool hasBrightness: false
+
+    readonly property string kind: active ? active.kind
+        : recording ? "record"
+        : media ? "media"
+        : ""
+    readonly property bool open: expanded || kind === "notify"
+    readonly property var size: {
+        const s = sizes[kind]
+        if (!s) return [0, 0]
+        return open ? [s[2], s[3]] : [s[0], s[1]]
+    }
+
+    // A new transient. persistent: no timer (urgent notification, critical battery, failed build).
+    function push(kind, data, persistent) {
+        const t = { kind: kind, data: data, persistent: !!persistent }
+        // Same kind already showing (e.g. holding a volume key): refresh it, never queue it.
+        if (active && active.kind === kind) {
+            active = t
+            if (!expanded && !t.persistent && timeouts[kind])
+                timer.restart()
+            return
+        }
+        if (active && open) {
+            queued = t // queue one while something is open (a notification opens by itself)
+            return
+        }
+        show(t)
+    }
+
+    function show(t) {
+        active = t
+        expanded = false
+        timer.stop()
+        if (!t.persistent && timeouts[t.kind])
+            timer.start()
+    }
+
+    function next() {
+        active = null
+        expanded = false
+        timer.stop()
+        if (queued) {
+            const q = queued
+            queued = null
+            show(q)
+        }
+    }
+
+    function expand() {
+        expanded = true
+        timer.stop() // expanding cancels the timer
+    }
+
+    // Chevron. Expanded transient: dismiss. Expanded media or recording: back to compact.
+    function collapse() {
+        if (active)
+            next()
+        else
+            expanded = false
+    }
+
+    // Volume: any change of the default output's volume or mute.
+    PwObjectTracker {
+        objects: [Pipewire.defaultAudioSink, Pipewire.defaultAudioSource]
+    }
+
+    Connections {
+        target: Pipewire.defaultAudioSink ? Pipewire.defaultAudioSink.audio : null
+        function onVolumeChanged() { root.push("volume", {}, false) }
+        function onMutedChanged() { root.push("volume", {}, false) }
+    }
+
+    Timer {
+        id: timer
+        interval: root.active ? (root.timeouts[root.active.kind] ?? 0) : 0
+        onTriggered: root.next()
+    }
+
+    // Test hook until the real sources are wired:
+    //   qs ipc call island test volume|battery|build|notify|buildfail
+    //   qs ipc call island test media|record   (toggles the persistent states)
+    //   qs ipc call island expand|collapse|clear
+    IpcHandler {
+        target: "island"
+        function test(kind: string): void {
+            if (kind === "media") root.media = !root.media
+            else if (kind === "record") root.recording = !root.recording
+            else if (kind === "buildfail") root.push("build", { failed: true }, true)
+            else root.push(kind, {}, false)
+        }
+        // Build hook (bin/island-build). Failure persists with a red border until dismissed.
+        function build(ok: bool, command: string, project: string, meta: string, lines: string, window: string): void {
+            root.push("build", {
+                failed: !ok,
+                title: ok ? command + " · " + project : "Build failed · " + project,
+                meta: meta,
+                lines: lines.split("\n").slice(-4),
+                window: window,
+            }, !ok)
+        }
+        function state(): string {
+            return JSON.stringify({ kind: root.kind, open: root.open, expanded: root.expanded,
+                                    queued: root.queued ? root.queued.kind : null, timer: timer.running })
+        }
+        function expand(): void { root.expand() }
+        function collapse(): void { root.collapse() }
+        function clear(): void {
+            root.queued = null
+            root.next()
+            root.media = false
+            root.recording = false
+        }
+    }
+}

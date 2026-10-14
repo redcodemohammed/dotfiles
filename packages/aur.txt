@@ -1,0 +1,5 @@
+# AUR. Bootstrap yay first (see HANDOFF.md), then: yay -S --needed vicinae-bin ttf-phosphor-icons vazirmatn-fonts
+# Read each PKGBUILD before installing (notes in HANDOFF.md).
+vicinae-bin
+ttf-phosphor-icons
+vazirmatn-fonts
