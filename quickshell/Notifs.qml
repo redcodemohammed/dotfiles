@@ -137,8 +137,10 @@ Singleton {
                 root.hidePopup(notification)
                 entry.notification = null // sender closed it; the inbox keeps the copy
             })
-            if (!root.dnd && !root.inboxOpen)
+            if (!root.dnd && !root.inboxOpen) {
                 root.popups = [notification, ...root.popups]
+                IslandState.push("notify", { entry: entry }, entry.urgent) // urgent stays until dismissed
+            }
         }
     }
 

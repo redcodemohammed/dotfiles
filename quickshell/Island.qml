@@ -31,12 +31,15 @@ PanelWindow {
         y: 4
         anchors.horizontalCenter: parent.horizontalCenter
         width: IslandState.size[0]
-        height: IslandState.size[1]
+        // Notifications size to their content (body length, Earlier list, Arabic line height).
+        height: IslandState.kind === "notify" ? notify.implicitHeight + 4 : IslandState.size[1]
         clip: true
         color: Theme.surface
         border.width: 2
+        readonly property var info: IslandState.active ? IslandState.active.data : ({})
         border.color: IslandState.kind === "record"
-            || (IslandState.kind === "build" && IslandState.active && IslandState.active.data.failed)
+            || (IslandState.kind === "build" && info.failed)
+            || (IslandState.kind === "notify" && info.entry && info.entry.urgent)
             ? Theme.alert : Theme.border
 
         Behavior on width { NumberAnimation { duration: 120; easing.type: Easing.Linear } }
@@ -55,9 +58,16 @@ PanelWindow {
             open: IslandState.open
         }
 
-        // Placeholder content for states not built yet (island steps 2, 4-8).
+        IslandNotify {
+            id: notify
+            anchors.fill: parent
+            visible: IslandState.kind === "notify"
+            entry: pill.info.entry ?? null
+        }
+
+        // Placeholder content for states not built yet (island steps 2, 5-8).
         Text {
-            visible: IslandState.kind !== "volume"
+            visible: IslandState.kind !== "volume" && IslandState.kind !== "notify"
             x: IslandState.open ? 12 : 8
             y: IslandState.open ? 12 : (parent.height - height) / 2
             text: IslandState.kind + (IslandState.open ? " · expanded" : "")
@@ -68,8 +78,9 @@ PanelWindow {
         }
 
         // Expanded: chevron top right collapses (dismisses a transient).
+        // Notifications close with their own Dismiss button instead.
         Item {
-            visible: IslandState.open
+            visible: IslandState.open && IslandState.kind !== "notify"
             width: 24
             height: 24
             x: parent.width - 12 - width
