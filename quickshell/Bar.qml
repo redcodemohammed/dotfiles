@@ -15,8 +15,16 @@ PanelWindow {
     color: Theme.bg
 
     Workspaces {
+        id: workspaces
         screen: modelData
         anchors.left: parent.left
+        anchors.leftMargin: 8
+        anchors.verticalCenter: parent.verticalCenter
+    }
+
+    WindowTitle {
+        screen: modelData
+        anchors.left: workspaces.right
         anchors.leftMargin: 8
         anchors.verticalCenter: parent.verticalCenter
     }
