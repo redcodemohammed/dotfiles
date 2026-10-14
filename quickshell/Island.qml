@@ -65,9 +65,16 @@ PanelWindow {
             entry: pill.info.entry ?? null
         }
 
-        // Placeholder content for states not built yet (island steps 2, 5-8).
+        IslandBuild {
+            anchors.fill: parent
+            visible: IslandState.kind === "build"
+            open: IslandState.open
+            info: pill.info
+        }
+
+        // Placeholder content for states not built yet (media, recording, battery).
         Text {
-            visible: IslandState.kind !== "volume" && IslandState.kind !== "notify"
+            visible: ["volume", "notify", "build"].indexOf(IslandState.kind) < 0
             x: IslandState.open ? 12 : 8
             y: IslandState.open ? 12 : (parent.height - height) / 2
             text: IslandState.kind + (IslandState.open ? " · expanded" : "")

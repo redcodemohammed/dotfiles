@@ -1,0 +1,45 @@
+#!/usr/bin/env bash
+# island-build: run a build command and report the result to the Quickshell island.
+#   island-build cargo build
+# Output still streams to the terminal. The island shows a check or cross, the project,
+# and the time (ok) or error count (failed); expanded: the last 4 lines and Open terminal.
+# Exit status is the command's.
+
+set -o pipefail
+if [ $# -eq 0 ]; then
+    echo "usage: island-build <command> [args...]" >&2
+    exit 2
+fi
+
+root=$(git rev-parse --show-toplevel 2>/dev/null || pwd)
+project=$(basename "$root")
+window=$(hyprctl -j activewindow 2>/dev/null | jq -r '.address // empty' 2>/dev/null)
+
+log=$(mktemp)
+trap 'rm -f "$log"' EXIT
+
+start=$(date +%s%N)
+"$@" 2>&1 | tee "$log"
+status=${PIPESTATUS[0]}
+ms=$(( ($(date +%s%N) - start) / 1000000 ))
+
+lines=$(tail -n 4 "$log" | sed 's/\x1b\[[0-9;]*[A-Za-z]//g')
+if [ "$status" -eq 0 ]; then
+    ok=true
+    meta="$((ms / 1000)).$(( (ms % 1000) / 100 ))s"
+else
+    ok=false
+    errors=$(grep -cE '^error' "$log")
+    if [ "$errors" -gt 0 ]; then
+        meta="$errors error$([ "$errors" -gt 1 ] && echo s)"
+    else
+        meta="exit $status"
+    fi
+fi
+
+# Title like the design's "cargo build": the command and its subcommand, no flags or paths.
+name="$1"
+case "$2" in ""|-*|*/*) ;; *) name="$1 $2" ;; esac
+
+qs ipc call island build "$ok" "$name" "$project" "$meta" "$lines" "$window" >/dev/null 2>&1 || true
+exit "$status"

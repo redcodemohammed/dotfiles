@@ -121,6 +121,16 @@ Singleton {
             else if (kind === "buildfail") root.push("build", { failed: true }, true)
             else root.push(kind, {}, false)
         }
+        // Build hook (bin/island-build). Failure persists with a red border until dismissed.
+        function build(ok: bool, command: string, project: string, meta: string, lines: string, window: string): void {
+            root.push("build", {
+                failed: !ok,
+                title: ok ? command + " · " + project : "Build failed · " + project,
+                meta: meta,
+                lines: lines.split("\n").slice(-4),
+                window: window,
+            }, !ok)
+        }
         function state(): string {
             return JSON.stringify({ kind: root.kind, open: root.open, expanded: root.expanded,
                                     queued: root.queued ? root.queued.kind : null, timer: timer.running })

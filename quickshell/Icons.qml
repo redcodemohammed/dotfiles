@@ -22,4 +22,6 @@ Singleton {
     readonly property string bellSlash: ""
 
     readonly property string caretUp: "\ue13c" // island collapse chevron
+    readonly property string check: "\ue182" // build ok
+    readonly property string cross: "\ue4f6" // build failed
 }
