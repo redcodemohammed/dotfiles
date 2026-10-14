@@ -24,6 +24,12 @@ Done (section 4):
   `ca1a1fd` snapshot of local changes, `0a9be36` reshape for stow, `8c83df1` old alacritty, tmux,
   nvim and hypr removed (new ones replace them), `43c1359` merge. The owner's other configs stay.
   The old tmux plugins went with the old tmux config; add any back only if the owner asks.
+- **Step 3.** The local package database was a week old, so the repo list went in with a full
+  upgrade, one transaction: `grep -v -e '^#' -e '^$' packages/repo.txt | sudo pacman -Syu --needed -`
+  (single quotes: fish rejects `"^$"`), then `yay -S --needed ttf-phosphor-icons vazirmatn-fonts`.
+  `vicinae-bin` (AUR, 2026-10-02) and `gnome-keyring` were already installed. `vazirmatn-fonts`
+  comes prebuilt from the laptop's chaotic-aur repo. `gsr-kms-server` has `cap_sys_admin`. keyd is
+  installed, not started. Rebooted, COSMIC fine, greeter lists Hyprland and Hyprland (uwsm-managed).
 - **Step 4.** `stow -R .` done; `setup/check.sh` links all pass except `/etc/keyd` (step 5).
   Real folders that were in the way are in `~/.config/<name>.pre-dotfiles-20261014-220228`:
   hypr, cava, kitty, rofi, waybar (leftover KooL Hyprland dots; the owner's own repo versions are
@@ -35,8 +41,10 @@ Notes:
   config change. Its window is 640 wide (section 2).
 - Keep the tarball, the `.pre-dotfiles-*` folders and `~/Projects/hyprland-handoff` until
   Hyprland is stable.
+- The LocalSend autostart unit fails at every login since before this project (`localsend-bin`
+  misses `libayatana-indicator3.so.7`). Not ours.
 
-**Next: step 3 (packages).** Skip the yay bootstrap; yay-bin is installed.
+**Next: step 5 (keyd).**
 
 ## 1. What this repo is
 
