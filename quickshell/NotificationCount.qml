@@ -2,27 +2,41 @@ import QtQuick
 
 // Anything unread? Gray bell at zero. Amber filled bell plus count when unread.
 // Do Not Disturb swaps the glyph to a slashed bell; amber still means unread.
-Row {
+// Click toggles Do Not Disturb: popups stop, the inbox still collects.
+Item {
+    id: root
     readonly property int unread: Notifs.unread
     readonly property bool dnd: Notifs.dnd
     readonly property color tint: unread > 0 ? Theme.accent : Theme.fgMuted
 
-    spacing: 4
+    implicitWidth: row.implicitWidth
+    implicitHeight: row.implicitHeight
 
-    Text {
-        anchors.verticalCenter: parent.verticalCenter
-        text: parent.dnd ? Icons.bellSlash : Icons.bellSimple
-        font.family: parent.unread > 0 && !parent.dnd ? Icons.fill : Icons.regular
-        font.pixelSize: 16
-        color: parent.tint
+    Row {
+        id: row
+        spacing: 4
+
+        Text {
+            anchors.verticalCenter: parent.verticalCenter
+            text: root.dnd ? Icons.bellSlash : Icons.bellSimple
+            font.family: root.unread > 0 && !root.dnd ? Icons.fill : Icons.regular
+            font.pixelSize: 16
+            color: root.tint
+        }
+
+        Text {
+            anchors.verticalCenter: parent.verticalCenter
+            visible: root.unread > 0
+            text: root.unread
+            font.family: "JetBrainsMono Nerd Font"
+            font.pixelSize: 13
+            color: root.tint
+        }
     }
 
-    Text {
-        anchors.verticalCenter: parent.verticalCenter
-        visible: parent.unread > 0
-        text: parent.unread
-        font.family: "JetBrainsMono Nerd Font"
-        font.pixelSize: 13
-        color: parent.tint
+    MouseArea {
+        anchors.fill: parent
+        anchors.margins: -8 // easier to hit
+        onClicked: Notifs.dnd = !Notifs.dnd
     }
 }
