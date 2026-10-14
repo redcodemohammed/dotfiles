@@ -77,6 +77,8 @@ Done (section 4):
   is ID 8; title, tray, clock, volume, network). Notifications: works (island card, urgent red
   border, inbox keys and Clear all, `--wait -A default` action, bell DND); `qs` owns
   `org.freedesktop.Notifications`; history file gets new entries. Still open: history across a logout.
+  Island: works (volume compact/expanded, build pill red and staying, test hook). The owner's
+  keyboard has no volume keys: how to change volume is an open question (spec has no bind).
 
 Notes:
 - GTK is not stowed on purpose (see `.stow-local-ignore` and section 6).
