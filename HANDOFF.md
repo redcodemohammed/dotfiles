@@ -82,8 +82,8 @@ Done (section 4):
   ("don't need it"): `WheelHandler` got no wheel events at all; in a test layer window only
   `MouseArea.onWheel` did, but a `MouseArea` version of `Volume.qml` still did nothing on the bar
   (cause not found). `Volume.qml` stays display-only. Lock (SUPER+Escape): works on the laptop
-  with three screens (tested by the owner, failsafe left at 0); typed dots shared across all three
-  screens not confirmed yet. Screenshots: works (region, window 1274x1400, screen 2560x1440 one G5
+  with three screens (tested by the owner, failsafe left at 0); typed dots show on all three
+  screens (section 6 item done). Screenshots: works (region, window 1274x1400, screen 2560x1440 one G5
   only, clipboard, satty annotate saves `-annotated.png` with amber default). Not tried: a region
   across the laptop/G5 border (mixed scale).
 
