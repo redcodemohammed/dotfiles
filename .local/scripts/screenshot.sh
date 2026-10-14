@@ -1,6 +1,16 @@
 #!/usr/bin/env bash
 
-export G="$(slurp -d)"
-export IPATH="$(xdg-user-dir PICTURES)/Screenshots/$(date +'%s_grim.png')"
+LOG=/tmp/screenshot-debug.log
+IMG="/tmp/screenshot-$(date +%s).png"
 
-grim -g $G $IPATH
+echo "started $(date)" >> "$LOG"
+
+sleep 0.7
+
+GEOM=$(/usr/bin/slurp 2>> "$LOG")
+echo "GEOM=$GEOM" >> "$LOG"
+
+[ -z "$GEOM" ] && exit 1
+
+/usr/bin/grim -g "$GEOM" "$IMG" 2>> "$LOG"
+/usr/bin/satty --filename "$IMG" 2>> "$LOG"

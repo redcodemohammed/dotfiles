@@ -7,10 +7,7 @@ alias emulator 'prime-run emulator'
 alias ex 'eza --long --header --git --icons'
 alias tree 'eza --header -a --tree --git-ignore  --icons'
 alias cat 'bat'
-alias ls 'ex'
-alias logged_in_at "last | grep 'system boot' | sed -E 's/( [A-Za-z]{3})[ ]+([0-9]) /\1 0\2 /' | grep (date +'%b %d') | tail -n 1 | cut -d ' ' -f 13"
-alias v "vscli recent"
-alias vo "vscli open"
+
 set -g fish_greeting
 
 # set defaults
@@ -64,14 +61,10 @@ end
 
 load_env_vars ~/dotfiles/.env
 
-fortune /home/mohammed/jhinsay/jhins | cowsay -f jhin | lolcat
-
 set -Ux FZF_DEFAULT_OPTS "
-	--color=fg:$subtle,bg:$base,hl:$rose
-	--color=fg+:$text,bg+:$overlay,hl+:$rose
-	--color=border:$highlightMed,header:$pine,gutter:$base
-	--color=spinner:$gold,info:$foam
-	--color=pointer:$iris,marker:$love,prompt:$subtle"
-
-fish_config theme choose rose
+	--color=fg:#908caa,bg:#191724,hl:#ebbcba
+	--color=fg+:#e0def4,bg+:#26233a,hl+:#ebbcba
+	--color=border:#403d52,header:#31748f,gutter:#191724
+	--color=spinner:#f6c177,info:#9ccfd8
+	--color=pointer:#c4a7e7,marker:#eb6f92,prompt:#908caa"
 

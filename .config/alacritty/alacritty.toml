@@ -3,16 +3,17 @@
 size = 14
 
 [font.normal]
-family = "Google Sans Code"
+family = "JetBrainsMono Nerd Font"
 
 [font.bold]
-family = "Google Sans Code"
+family = "JetBrainsMono Nerd Font"
 
 [font.italic]
-family = "Google Sans Code"
+family = "JetBrainsMono Nerd Font"
 
 [window]
 opacity = 0.99
+decorations = "None"
 
 [window.padding]
 x = 10
@@ -32,8 +33,4 @@ action = "SpawnNewInstance"
 program = "/bin/tmux"
 
 [general]
-import = [
-  # "/home/mohammed/.local/share/pnpm/global/5/.pnpm/alacritty-themes@6.0.2/node_modules/alacritty-themes/themes/Ayu-Dark.toml",
-  "~/.config/alacritty/catppuccin-mocha.toml"
-]
-
+	import = ["rose-pine.toml"]
