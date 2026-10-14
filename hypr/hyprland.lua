@@ -63,6 +63,8 @@ local terminal    = "alacritty"
 -- end)
 
 hl.on("hyprland.start", function ()
+    -- GTK: dark adw-gtk3, dark preference (GTK4, portal), Papirus icons. Mirrors gtk-3.0/gtk-4.0 settings.ini.
+    hl.exec_cmd("gsettings set org.gnome.desktop.interface gtk-theme adw-gtk3-dark; gsettings set org.gnome.desktop.interface color-scheme prefer-dark; gsettings set org.gnome.desktop.interface icon-theme Papirus-Dark")
     hl.exec_cmd("/usr/lib/polkit-gnome/polkit-gnome-authentication-agent-1") -- password prompts for polkit
     hl.exec_cmd("vicinae server") -- launcher daemon, opened with SUPER + /
     hl.exec_cmd("qs")             -- Quickshell: bar, notifications, OSD
