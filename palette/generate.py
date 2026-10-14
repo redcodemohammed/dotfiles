@@ -26,12 +26,37 @@ def theme_qml(palette):
     return f"// {HEADER}\npragma Singleton\nimport QtQuick\nimport Quickshell\n\nSingleton {{\n{props}\n}}\n"
 
 
+def alacritty_colors(palette):
+    ui = palette["ui"]
+    sections = {
+        "primary": {"background": ui["bg"], "foreground": ui["fg"]},
+        # Amber block cursor, dark glyph under it.
+        "cursor": {"cursor": ui["accent"], "text": ui["on_accent"]},
+        # Selection is a surface shade, never amber. Text keeps its own color.
+        "selection": {"background": ui["surface_selected"], "text": "CellForeground"},
+        "normal": palette["ansi"]["normal"],
+        "bright": palette["ansi"]["bright"],
+    }
+    body = "\n\n".join(
+        f"[colors.{name}]\n" + "\n".join(f'{key} = "{value}"' for key, value in table.items())
+        for name, table in sections.items()
+    )
+    return f"# {HEADER}\n\n{body}\n"
+
+
+OUTPUTS = {
+    "quickshell/Theme.qml": theme_qml,
+    "alacritty/colors.toml": alacritty_colors,
+}
+
+
 def main():
     palette = tomllib.loads((ROOT / "palette/palette.toml").read_text())
-    out = ROOT / "quickshell/Theme.qml"
-    out.parent.mkdir(exist_ok=True)
-    out.write_text(theme_qml(palette))
-    print(f"wrote {out.relative_to(ROOT)}")
+    for path, render in OUTPUTS.items():
+        out = ROOT / path
+        out.parent.mkdir(exist_ok=True)
+        out.write_text(render(palette))
+        print(f"wrote {path}")
 
 
 if __name__ == "__main__":
