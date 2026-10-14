@@ -44,9 +44,28 @@ def alacritty_colors(palette):
     return f"# {HEADER}\n\n{body}\n"
 
 
+def nvim_palette(palette):
+    def table(colors):
+        return "\n".join(f'    {name} = "{value}",' for name, value in colors.items())
+
+    return (
+        f"-- {HEADER}\nreturn {{\n"
+        + "".join(
+            f"  {section} = {{\n{table(colors)}\n  }},\n"
+            for section, colors in (
+                ("ui", palette["ui"]),
+                ("normal", palette["ansi"]["normal"]),
+                ("bright", palette["ansi"]["bright"]),
+            )
+        )
+        + "}\n"
+    )
+
+
 OUTPUTS = {
     "quickshell/Theme.qml": theme_qml,
     "alacritty/colors.toml": alacritty_colors,
+    "nvim/lua/hypr_palette.lua": nvim_palette,
 }
 
 
@@ -54,7 +73,7 @@ def main():
     palette = tomllib.loads((ROOT / "palette/palette.toml").read_text())
     for path, render in OUTPUTS.items():
         out = ROOT / path
-        out.parent.mkdir(exist_ok=True)
+        out.parent.mkdir(parents=True, exist_ok=True)
         out.write_text(render(palette))
         print(f"wrote {path}")
 
