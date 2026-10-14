@@ -86,7 +86,61 @@ def tmux_colors(palette):
     return f"# {HEADER}\n\n" + "\n".join(lines) + "\n"
 
 
+def vicinae_theme(palette):
+    ui, n = palette["ui"], palette["ansi"]["normal"]
+    tables = {
+        "meta": {
+            "name": "Hypr", "description": "Shared palette", "variant": "dark",
+            "inherits": "vicinae-dark",
+        },
+        "colors.core": {
+            "accent": ui["accent"], "accent_foreground": ui["on_accent"],
+            "background": ui["surface"], "foreground": ui["fg"],
+            "secondary_background": ui["surface"], "border": ui["border"],
+        },
+        "colors.main_window": {"border": ui["border"]},
+        "colors.settings_window": {"border": ui["border"]},
+        "colors.accents": {
+            "blue": n["blue"], "green": n["green"], "magenta": n["magenta"],
+            "orange": n["yellow"], "red": n["red"], "yellow": n["yellow"],
+            "cyan": n["cyan"], "purple": n["magenta"],
+        },
+        "colors.shortcut": {"border": ui["border"]},
+        "colors.text": {
+            "default": ui["fg"], "muted": ui["fg_muted"], "danger": ui["alert"],
+            "success": n["green"], "placeholder": ui["fg_muted"],
+        },
+        # Text selection is a surface shade, never amber.
+        "colors.text.selection": {"background": ui["surface_selected"], "foreground": ui["fg"]},
+        "colors.text.links": {"default": n["blue"], "visited": n["magenta"]},
+        # Typing border is amber, like the lock screen field.
+        "colors.input": {
+            "border": ui["border"], "border_focus": ui["accent"], "border_error": ui["alert"],
+        },
+        "colors.button.primary": {"background": ui["surface_selected"], "foreground": ui["fg"]},
+        "colors.button.primary.hover": {"background": ui["border"]},
+        "colors.button.primary.focus": {"outline": ui["accent"]},
+        "colors.list.item.hover": {"foreground": ui["fg"], "secondary_foreground": ui["fg"]},
+        # Selected row: lighter surface. No amber fill.
+        "colors.list.item.selection": {
+            "background": ui["surface_selected"], "foreground": ui["fg"],
+            "secondary_background": ui["surface_selected"], "secondary_foreground": ui["fg"],
+        },
+        "colors.grid.item": {"background": ui["surface"]},
+        "colors.grid.item.hover": {"outline": ui["border"]},
+        "colors.grid.item.selection": {"outline": ui["accent"]},
+        "colors.scrollbars": {"background": ui["border"]},
+        "colors.loading": {"bar": ui["fg_muted"], "spinner": ui["fg_muted"]},
+    }
+    body = "\n\n".join(
+        f"[{name}]\n" + "\n".join(f'{key} = "{value}"' for key, value in table.items())
+        for name, table in tables.items()
+    )
+    return f"# {HEADER}\n\n{body}\n"
+
+
 OUTPUTS = {
+    "vicinae/themes/hypr.toml": vicinae_theme,
     "tmux/colors.conf": tmux_colors,
     "quickshell/Theme.qml": theme_qml,
     "alacritty/colors.toml": alacritty_colors,
