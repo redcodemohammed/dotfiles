@@ -1,0 +1,9 @@
+import Quickshell
+
+ShellRoot {
+    // One bar per connected screen, created and destroyed as screens change.
+    Variants {
+        model: Quickshell.screens
+        Bar {}
+    }
+}
