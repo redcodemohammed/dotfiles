@@ -15,7 +15,6 @@ for p in .config/hypr .config/quickshell .config/quickshell-lock .config/alacrit
          .config/tmux .config/vicinae .config/satty .local/share/vicinae/themes/hypr.toml .local/bin/island-build; do
     [ "$(readlink -f "$HOME/$p")" = "$D/$p" ] && pass "~/$p" || bad "~/$p should resolve to $D/$p (cd $D && stow -R .)"
 done
-[ "$(readlink /etc/keyd/default.conf)" = "$D/keyd/default.conf" ] && pass "/etc/keyd/default.conf" || bad "/etc/keyd/default.conf should link to $D/keyd/default.conf (sudo, see HANDOFF.md)"
 
 echo "== submodule"
 [ -f "$D/.config/hypr/hyprsplit/init.lua" ] && pass "hyprsplit present" || bad "hyprsplit missing: git -C $D submodule update --init"
@@ -27,8 +26,6 @@ after=$(git -C "$D" status --porcelain)
 [ "$before" = "$after" ] && pass "generated files up to date" || bad "generate.py changed files: review git diff"
 
 echo "== services"
-systemctl is-enabled keyd >/dev/null 2>&1 && pass "keyd enabled" || bad "keyd not enabled"
-systemctl is-active keyd >/dev/null 2>&1 && pass "keyd active" || bad "keyd not running"
 pactl info >/dev/null 2>&1 && pass "pipewire-pulse answers" || bad "pactl cannot connect"
 
 echo "== session (inside Hyprland only)"

@@ -37,7 +37,12 @@ Done (section 4):
 - **Step 5 prep.** Removed `xremap-cosmic-bin`, its user unit and `~/.config/xremap`. It grabbed
   every keyboard and the mouse only to make SUPER+scroll switch COSMIC workspaces; next to keyd,
   two grabbing remappers would chain in startup order. SUPER+scroll in COSMIC is gone (Hyprland
-  binds it natively).
+  binds it natively). The owner left the `input` group and deleted `/etc/udev/rules.d/99-input.rules`
+  (both only for xremap); takes effect after a reboot, not verified yet. `60-weylus.rules` stays.
+- **Step 5 skipped** (owner's choice). keyd is installed but not configured, started or enabled:
+  Caps Lock stays a normal key. `keyd/default.conf` stays in the repo for later; the keyd checks
+  were removed from `setup/check.sh`. If keyd comes back, copy the config
+  (`sudo install -Dm644 ...`) rather than link it: keyd runs `command()` actions as root.
 
 Notes:
 - GTK is not stowed on purpose (see `.stow-local-ignore` and section 6).
@@ -48,7 +53,8 @@ Notes:
 - The LocalSend autostart unit fails at every login since before this project (`localsend-bin`
   misses `libayatana-indicator3.so.7`). Not ours.
 
-**Next: step 5 (keyd).**
+**Next: step 6 (monitors).** Then, after the pending reboot, check `id -nG` has no `input` and
+`/dev/uinput` is `root:uinput` without a per-user ACL.
 
 ## 1. What this repo is
 
