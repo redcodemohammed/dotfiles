@@ -201,7 +201,11 @@ Never edit generated files by hand (they say so in their first line).
 - hyprsplit: the C++ plugin is deprecated and its hyprpm pins stop at Hyprland 0.54.3. Use the
   Lua library (submodule). Native fallback: swap `hs.dsp.*` back to `hl.dsp.*`, drop the require.
   No `hyprpm` at all.
-- Wallpaper: Hyprland paints solid `bg` itself (`misc.background_color`). No swaybg.
+- Wallpaper: an image now (owner, 2026-10-15, overriding the spec's "solid color is final"):
+  hyprpaper 0.8 with `.config/hypr/hyprpaper.conf` (one `wallpaper {}` block, empty `monitor` =
+  every screen, `fit_mode = cover`, `splash = false`), started from `hyprland.lua`. The image is
+  `~/Pictures/Wallpapers/177901-…-landscape.jpg`, outside the repo. Hyprland's solid `bg`
+  (`misc.background_color`) stays underneath. The lock screen stays solid.
 - Lock screen: Quickshell `WlSessionLock` + `PamContext` in its own instance, run by SUPER+Escape
   through `flock`. PAM file lives in `pam/` and includes `/etc/pam.d/system-auth` by **absolute**
   path (a relative include fails: PAM looks inside the custom dir). hyprlock stays installed as

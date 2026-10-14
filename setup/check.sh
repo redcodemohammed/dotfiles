@@ -33,6 +33,7 @@ if [ -n "${HYPRLAND_INSTANCE_SIGNATURE:-}" ]; then
     [ -z "$(hyprctl configerrors)" ] && pass "hyprland config: no errors" || bad "hyprctl configerrors not empty"
     pgrep -x qs >/dev/null && pass "quickshell running" || bad "quickshell (qs) not running"
     pgrep -x hypridle >/dev/null && pass "hypridle running" || bad "hypridle not running"
+    pgrep -x hyprpaper >/dev/null && pass "hyprpaper running" || bad "hyprpaper not running"
     pgrep -f polkit-gnome-authentication-agent >/dev/null && pass "polkit agent running" || bad "polkit agent not running"
     pgrep -f vicinae-server >/dev/null && pass "vicinae server running" || bad "vicinae server not running"
     [ "$(gsettings get org.gnome.desktop.interface color-scheme)" = "'prefer-dark'" ] && pass "gsettings dark" || bad "gsettings color-scheme not prefer-dark"

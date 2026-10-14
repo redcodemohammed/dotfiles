@@ -24,6 +24,7 @@ quickshell
 hyprlock
 hypridle
 hyprsunset
+hyprpaper
 # Screenshots, recording
 hyprshot
 satty
