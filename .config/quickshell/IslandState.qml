@@ -18,8 +18,8 @@ Singleton {
     readonly property var sizes: ({
         media:   [640, 24, 640, 172], // wide for long titles and lyric lines (owner; design 280/440); design 256 includes "Up next", which MPRIS can't fill
         notify:  [0,   0,  360, 232],
-        volume:  [260, 24, 320, hasBrightness ? 148 : 116], // design draws 140 and clips the 4th row
-        brightness: [260, 24, 320, 148], // compact: sun and level; expanded: the volume panel
+        volume:  [260, 24, 320, volumeHeight], // expanded grows with the device lists (owner)
+        brightness: [260, 24, 320, volumeHeight], // compact: sun and level; expanded: the volume panel
         record:  [240, 24, 340, 172],
         battery: [260, 24, 340, 148],
         build:   [320, 24, 440, 192],
@@ -55,6 +55,24 @@ Singleton {
         id: mediaPausedHold
         interval: 30000
         onTriggered: root.mediaPlayer = null
+    }
+
+    // Audio devices for the volume panel's lists: real outputs and inputs, not app streams.
+    readonly property var audioSinks: Pipewire.nodes.values.filter(n => n.audio && n.isSink && !n.isStream)
+    readonly property var audioSources: Pipewire.nodes.values.filter(n => n.audio && !n.isSink && !n.isStream)
+    // Expanded volume panel: padding 12, slider rows of 24 (8 apart), then each device list
+    // (8 above it; divider, caption and rows as in IslandVolume.qml: 22 + 28 per device).
+    readonly property int volumeHeight: {
+        const rows = 2 + (hasBrightness ? 1 : 0)
+        const list = n => 8 + 22 + 28 * n
+        return 12 + rows * 24 + (rows - 1) * 8 + list(audioSinks.length) + list(audioSources.length) + 12
+    }
+
+    // The bar's volume block: open the expanded volume panel now, in place of whatever shows.
+    function showVolume() {
+        queued = null
+        show({ kind: "volume", data: {}, persistent: false })
+        expand()
     }
 
     // Backlight level 0-1 (laptop panel); -1 until read, and on hardware without a backlight.

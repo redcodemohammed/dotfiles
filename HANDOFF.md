@@ -153,6 +153,11 @@ Done (section 4):
 - **Bar widgets float**: the bar is transparent, each widget sits on a `BarBlock` (bar colour, 32px,
   8px padding, 6px apart, the notch's subtle 2px border). Block visibility is bound to the widget's condition, not its `visible`
   (a child of a hidden block reads as hidden, so it would never come back).
+- **Audio devices** (owner): the expanded volume panel lists outputs and inputs under the sliders,
+  always visible (`IslandDeviceList.qml`; PipeWire nodes that are not streams). The current one has
+  the amber marker; a click sets `Pipewire.preferredDefaultAudioSink/Source`. The panel's height
+  grows with the lists (`IslandState.volumeHeight`). Clicking the bar's volume block opens it
+  (`BarBlock.clickable`, `IslandState.showVolume()`). Works.
 - **SUPER+E** runs `~/.local/scripts/vicinae-emulator.sh` (Android emulator picker; owner's request,
   not in the spec). Works. Note: `hyprctl binds` shows Lua keycode binds with an empty key.
 - **tmux in Alacritty** (owner's choice, changed from one shared session): `[terminal] shell` runs
@@ -434,8 +439,9 @@ Test (configured, untested on the VM):
 - (Laptop) `console.log` is debug level: a probe's output may not show. Use `console.warn`.
 - (Laptop) `WheelHandler` received no wheel events on our layer-shell windows; `MouseArea.onWheel`
   did in a test window (but not in a `Volume.qml` attempt, cause unknown).
-- (Laptop) An inline `component` declared inside `Island.qml` (root: `PanelWindow`) failed with
-  "Ear is not a type"; inside Item-rooted files it works. Use a separate file there.
+- (Laptop) Inline `component`s failed twice with "X is not a type" (`Ear` in `Island.qml`,
+  `DeviceList` in `IslandVolume.qml`, where `Bar`/`LevelRow` work). Cause not found; put new parts
+  in their own files (`IslandEar.qml`, `IslandDeviceList.qml`) instead.
 - (Laptop) Hyprland's automatic reload on save applies most options (gaps did) but not monitor
   rules: after editing `hl.monitor`, run `hyprctl reload`.
 - (Laptop) Renaming a QML property: rename its change handler too, which is capitalised

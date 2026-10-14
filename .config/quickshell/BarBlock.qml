@@ -12,6 +12,14 @@ Rectangle {
     color: Theme.bg
     border.width: 2 // the notch's subtle border, drawn inside the 32px (owner)
     border.color: Theme.border
+    property bool clickable: false
+    signal clicked()
+
+    MouseArea { // under the content, so a widget's own mouse areas still win
+        anchors.fill: parent
+        enabled: block.clickable
+        onClicked: block.clicked()
+    }
 
     Item {
         id: inner

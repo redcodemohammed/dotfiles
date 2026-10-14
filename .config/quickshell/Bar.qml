@@ -64,8 +64,10 @@ PanelWindow {
                 id: keyboardLayout
             }
         }
-        BarBlock {
+        BarBlock { // click: the volume island with the device lists
             visible: volume.sink !== null
+            clickable: true
+            onClicked: IslandState.showVolume()
             Volume {
                 id: volume
             }

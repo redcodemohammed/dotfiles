@@ -2,8 +2,10 @@ import QtQuick
 import Quickshell.Services.Pipewire
 
 // Island volume state (design: Desktop prototype, isVolume / isVolumeOpen).
-// Compact 260x24: speaker, level bar, number. Expanded: output name, then
-// Volume, Mic (and Brightness on hardware that has it) as label, bar, number.
+// Compact 260x24: speaker, level bar, number. Expanded: Volume, Mic (and Brightness on hardware
+// that has it) as label, bar, number; then the output and input device lists, always visible
+// (owner, 2026-10-15): the current device has the amber marker, clicking one makes it the default.
+// Clicking the bar's volume block opens this expanded panel.
 // Level bars: foreground fill on a muted track. Muting changes the glyph only.
 // Brightness keys show the same pill with a sun and the brightness level (owner's choice).
 Item {
@@ -32,7 +34,7 @@ Item {
         property string label
         property real level
         property bool off
-        width: parent.width
+        width: parent.width - 32 // the island's chevron sits top right
         height: 24
         Text {
             width: 80
@@ -97,7 +99,7 @@ Item {
         }
     }
 
-    // Expanded (the island draws the chevron in the header row's right corner)
+    // Expanded (the island draws the chevron top right)
     Column {
         visible: root.open
         x: 12
@@ -105,21 +107,21 @@ Item {
         width: parent.width - 24
         spacing: 8
 
-        Item {
-            width: parent.width
-            height: 24
-            Text {
-                width: parent.width - 32
-                anchors.verticalCenter: parent.verticalCenter
-                text: "Output · " + (root.sink ? (root.sink.nickname || root.sink.description || root.sink.name) : "none")
-                elide: Text.ElideRight
-                font.family: "JetBrainsMono Nerd Font"
-                font.pixelSize: 12
-                color: Theme.fgMuted
-            }
-        }
         LevelRow { label: "Volume"; level: root.volume; off: root.muted }
         LevelRow { label: "Mic"; level: root.micVolume; off: root.micMuted; visible: root.source !== null }
         LevelRow { label: "Brightness"; level: IslandState.brightness; visible: IslandState.hasBrightness }
+
+        IslandDeviceList {
+            title: "Output"
+            nodes: IslandState.audioSinks
+            current: root.sink
+            onPicked: node => Pipewire.preferredDefaultAudioSink = node
+        }
+        IslandDeviceList {
+            title: "Input"
+            nodes: IslandState.audioSources
+            current: root.source
+            onPicked: node => Pipewire.preferredDefaultAudioSource = node
+        }
     }
 }

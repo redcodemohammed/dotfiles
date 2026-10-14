@@ -50,7 +50,7 @@ PanelWindow {
     WlrLayershell.layer: WlrLayer.Overlay
     color: "transparent"
     implicitWidth: 640 // widest state (media)
-    implicitHeight: barTop + 256
+    implicitHeight: barTop + edge + Math.max(256, IslandState.volumeHeight) // tallest state
     mask: Region { item: pill }
 
 
