@@ -17,4 +17,9 @@ ShellRoot {
         model: Quickshell.screens
         Inbox {}
     }
+
+    Variants {
+        model: Quickshell.screens
+        Osd {}
+    }
 }
