@@ -69,9 +69,10 @@ Done (section 4):
   screens and bars by eye: works. From its log: no config errors; descriptions are
   `Samsung Electric Company Odyssey G5 HNAY600194 (HDMI-A-1)`,
   `Samsung Electric Company LF24T35 HK2TC00515 (DP-2)`, `AU Optronics 0xC1A5 0x0000C1A5 (eDP-1)`,
-  so the `desc:` prefixes match; hyprsplit took the priority list. Not run inside Hyprland yet:
-  `setup/check.sh`, `hyprctl monitors` (applied scale, mode, position are not in the log),
-  `hyprctl workspaces`.
+  so the `desc:` prefixes match; hyprsplit took the priority list. Inside Hyprland:
+  `setup/check.sh` 52 ok, no FAIL; `hyprctl configerrors` empty; `hyprctl monitors` matches the
+  step 6 rules (modes, scale 1.6, positions); workspaces 1 on HDMI-A-1, 6 on eDP-1, 11 on DP-2;
+  every bar shows slot 1 amber and 2-5 dim (`#5c5c5c`, measured); test island opens on the G5.
 
 Notes:
 - GTK is not stowed on purpose (see `.stow-local-ignore` and section 6).
@@ -79,11 +80,14 @@ Notes:
   after a config change. Its window is 640 wide (section 2).
 - Keep the tarball, the `.pre-dotfiles-*` folders and `~/Projects/hyprland-handoff` until
   Hyprland is stable.
+- Claude Code may run as a background daemon started in COSMIC; `claude attach` from Hyprland
+  reuses it, so its tools see COSMIC's environment (no `HYPRLAND_INSTANCE_SIGNATURE`). Copy
+  `HYPRLAND_INSTANCE_SIGNATURE`, `WAYLAND_DISPLAY`, `XDG_CURRENT_DESKTOP` from the attached
+  process's `/proc/<pid>/environ` before `hyprctl`, `qs ipc` or `grim`.
 - The LocalSend autostart unit fails at every login since before this project (`localsend-bin`
   misses `libayatana-indicator3.so.7`). Not ours.
 
-**Next: inside Hyprland,** run the step 9 checks (`setup/check.sh`, `hyprctl monitors`,
-`hyprctl workspaces`), then **step 10** (section 5 re-tests).
+**Next: step 10** (section 5 re-tests, one item at a time), starting with the bar.
 
 ## 1. What this repo is
 
