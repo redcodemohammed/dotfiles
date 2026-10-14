@@ -73,6 +73,8 @@ Done (section 4):
   `setup/check.sh` 52 ok, no FAIL; `hyprctl configerrors` empty; `hyprctl monitors` matches the
   step 6 rules (modes, scale 1.6, positions); workspaces 1 on HDMI-A-1, 6 on eDP-1, 11 on DP-2;
   every bar shows slot 1 amber and 2-5 dim (`#5c5c5c`, measured); test island opens on the G5.
+- **Step 10 (section 5 re-tests).** Bar: works (per-screen workspaces, e.g. SUPER+3 on the laptop
+  is ID 8; title, tray, clock, volume, network).
 
 Notes:
 - GTK is not stowed on purpose (see `.stow-local-ignore` and section 6).
@@ -87,7 +89,7 @@ Notes:
 - The LocalSend autostart unit fails at every login since before this project (`localsend-bin`
   misses `libayatana-indicator3.so.7`). Not ours.
 
-**Next: step 10** (section 5 re-tests, one item at a time), starting with the bar.
+**Next: step 10** (section 5 re-tests, one item at a time): notifications next.
 
 ## 1. What this repo is
 
