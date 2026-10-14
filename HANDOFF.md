@@ -38,7 +38,9 @@ Done (section 4):
   every keyboard and the mouse only to make SUPER+scroll switch COSMIC workspaces; next to keyd,
   two grabbing remappers would chain in startup order. SUPER+scroll in COSMIC is gone (Hyprland
   binds it natively). The owner left the `input` group and deleted `/etc/udev/rules.d/99-input.rules`
-  (both only for xremap); takes effect after a reboot, not verified yet. `60-weylus.rules` stays.
+  (both only for xremap). Verified after the reboot: no `input` group, `/dev/uinput` is
+  `root:uinput`. The per-user ACL left on it comes from Steam's `60-steam-input.rules` (uaccess,
+  can create virtual devices, cannot read keys). `60-weylus.rules` stays.
 - **Step 5 skipped** (owner's choice). keyd is installed but not configured, started or enabled:
   Caps Lock stays a normal key. `keyd/default.conf` stays in the repo for later; the keyd checks
   were removed from `setup/check.sh`. If keyd comes back, copy the config
@@ -63,6 +65,13 @@ Done (section 4):
   in both. Checked with the systemd xdg-autostart generator: skipped in Hyprland, still started in
   COSMIC. Kept on purpose: `hyprland.lua` sets gsettings `icon-theme Papirus-Dark`; gsettings are
   per user, so COSMIC's GTK apps (had `Colloid-Pink-Catppuccin-Dark`) see it too.
+- **Step 9.** First login through "Hyprland (uwsm-managed)", about a minute; the owner checked
+  screens and bars by eye: works. From its log: no config errors; descriptions are
+  `Samsung Electric Company Odyssey G5 HNAY600194 (HDMI-A-1)`,
+  `Samsung Electric Company LF24T35 HK2TC00515 (DP-2)`, `AU Optronics 0xC1A5 0x0000C1A5 (eDP-1)`,
+  so the `desc:` prefixes match; hyprsplit took the priority list. Not run inside Hyprland yet:
+  `setup/check.sh`, `hyprctl monitors` (applied scale, mode, position are not in the log),
+  `hyprctl workspaces`.
 
 Notes:
 - GTK is not stowed on purpose (see `.stow-local-ignore` and section 6).
@@ -73,8 +82,8 @@ Notes:
 - The LocalSend autostart unit fails at every login since before this project (`localsend-bin`
   misses `libayatana-indicator3.so.7`). Not ours.
 
-**Next: step 9 (first Hyprland login).** Also, after the pending reboot, check `id -nG` has no `input` and
-`/dev/uinput` is `root:uinput` without a per-user ACL.
+**Next: inside Hyprland,** run the step 9 checks (`setup/check.sh`, `hyprctl monitors`,
+`hyprctl workspaces`), then **step 10** (section 5 re-tests).
 
 ## 1. What this repo is
 
