@@ -286,7 +286,7 @@ hl.bind(mainMod .. " + SHIFT + Print",   hl.dsp.exec_cmd(shot .. "-m output -m a
 hl.bind(mainMod .. " + CTRL + Print", hl.dsp.exec_cmd([[sh -c 'f=$(ls -t ~/Pictures/Screenshots/*.png 2>/dev/null | head -1); [ -n "$f" ] && satty -f "$f" -o "${f%.png}-annotated.png" --copy-command wl-copy']]))
 hl.bind(mainMod .. " + code:24", hl.dsp.window.close()) -- Q key, any layout
 hl.bind(mainMod .. " + SHIFT + Escape", hl.dsp.exec_cmd("command -v hyprshutdown >/dev/null 2>&1 && hyprshutdown || hyprctl dispatch 'hl.dsp.exit()'")) -- log out
-hl.bind(mainMod .. " + V", hl.dsp.window.float({ action = "toggle" }))
+hl.bind(mainMod .. " + code:55", hl.dsp.window.float({ action = "toggle" })) -- V key, any layout
 
 -- Move focus with mainMod + arrow keys
 hl.bind(mainMod .. " + left",  hl.dsp.focus({ direction = "left" }))
@@ -294,11 +294,11 @@ hl.bind(mainMod .. " + right", hl.dsp.focus({ direction = "right" }))
 hl.bind(mainMod .. " + up",    hl.dsp.focus({ direction = "up" }))
 hl.bind(mainMod .. " + down",  hl.dsp.focus({ direction = "down" }))
 
--- Switch workspaces with mainMod + [0-9]
--- Move active window to a workspace with mainMod + SHIFT + [0-9]
-for i = 1, 10 do
-    local key = i % 10 -- 10 maps to key 0
-    hl.bind(mainMod .. " + " .. key,             hl.dsp.focus({ workspace = i}))
+-- Workspaces 1 to 5: SUPER + 1-5 switches, SUPER + Shift + 1-5 sends the window.
+-- Digit keys by keycode (1 = code:10 ... 5 = code:14), so any layout works.
+for i = 1, 5 do
+    local key = "code:" .. (i + 9)
+    hl.bind(mainMod .. " + " .. key,             hl.dsp.focus({ workspace = i }))
     hl.bind(mainMod .. " + SHIFT + " .. key,     hl.dsp.window.move({ workspace = i }))
 end
 
