@@ -12,6 +12,12 @@ PanelWindow {
         left: true
         right: true
     }
+    // Floats 6px from the screen's top and sides, like the window gaps (owner, 2026-10-15).
+    margins {
+        top: 6
+        left: 6
+        right: 6
+    }
     implicitHeight: 32
     color: Theme.bg
 

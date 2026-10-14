@@ -209,6 +209,9 @@ Never edit generated files by hand (they say so in their first line).
 - Gaps: 6px everywhere (owner, 2026-10-15), screen edges and bar-to-window included:
   `gaps_in = 3` (per window edge), `gaps_out = 6`. The spec had 4 between and 0 at the edges.
   Hidden workspaces re-tile only when shown, so `hyprctl clients` shows their old geometry.
+- The bar floats 6px from the top and sides too (`margins` in `Bar.qml`); Quickshell's automatic
+  exclusive zone includes the margin (reserved top 38), so windows keep 6px below it. The island
+  pill moved to y=10 to stay 4px inside the bar. The inbox still sits 4px below the bar, flush right.
 - Lock screen: Quickshell `WlSessionLock` + `PamContext` in its own instance, run by SUPER+Escape
   through `flock`. PAM file lives in `pam/` and includes `/etc/pam.d/system-auth` by **absolute**
   path (a relative include fails: PAM looks inside the custom dir). hyprlock stays installed as

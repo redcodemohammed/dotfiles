@@ -3,7 +3,7 @@ import Quickshell
 import Quickshell.Hyprland
 import Quickshell.Wayland
 
-// The island: top 4px, centred, on the main screen only. Compact 24px tall inside
+// The island: 4px into the bar (bar 6px from the top: 10px), centred, on the main screen only. Compact 24px tall inside
 // the bar; expanded grows down from the same spot. Width and height animate 120ms
 // linear; contents swap instantly. Floats over windows, never takes keyboard focus,
 // hidden in true fullscreen. The window is click-through outside the pill.
@@ -32,12 +32,12 @@ PanelWindow {
     WlrLayershell.layer: WlrLayer.Overlay
     color: "transparent"
     implicitWidth: 440
-    implicitHeight: 4 + 256
+    implicitHeight: 10 + 256
     mask: Region { item: pill }
 
     Rectangle {
         id: pill
-        y: 4
+        y: 10 // the bar floats 6px down; the pill sits 4px into it
         anchors.horizontalCenter: parent.horizontalCenter
         width: IslandState.size[0]
         // Notifications size to their content (body length, Earlier list, Arabic line height).
