@@ -49,7 +49,7 @@ ShellRoot {
 
     PamContext {
         id: pam
-        configDirectory: "/home/dev/dotfiles/pam"
+        configDirectory: Quickshell.env("HOME") + "/dotfiles/pam" // dotfiles must live at ~/dotfiles
         config: "quickshell-lock"
         onPamMessage: {
             if (responseRequired)
@@ -78,9 +78,13 @@ ShellRoot {
         command: ["hyprctl", "-j", "devices"]
         stdout: StdioCollector {
             onStreamFinished: {
-                const main = JSON.parse(text).keyboards.find(k => k.main)
-                if (main)
-                    root.layout = main.active_keymap
+                try {
+                    const main = JSON.parse(text).keyboards.find(k => k.main)
+                    if (main)
+                        root.layout = main.active_keymap
+                } catch (err) {
+                    // No layout label is better than a broken lock screen.
+                }
             }
         }
     }
