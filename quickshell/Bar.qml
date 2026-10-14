@@ -22,6 +22,10 @@ PanelWindow {
         anchors.verticalCenter: parent.verticalCenter
     }
 
+    Clock {
+        anchors.centerIn: parent
+    }
+
     WindowTitle {
         screen: modelData
         anchors.left: workspaces.right
