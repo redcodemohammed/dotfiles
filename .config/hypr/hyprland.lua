@@ -22,11 +22,31 @@
 ------------------
 
 -- See https://wiki.hypr.land/Configuring/Basics/Monitors/
--- Test VM: one screen. Real machine adds main, right, laptop here.
+-- Layout copied from COSMIC: laptop left, main centre, right external.
+-- Positions are logical pixels (after scale). Externals match by description
+-- (make + model), so a port change doesn't matter.
+
+-- Laptop (left). 2560x1600 / 1.6 = 1600x1000 logical (1.5 is not a clean divisor).
 hl.monitor({
-    output   = "Virtual-1",
-    mode     = "preferred",
-    position = "0x0",
+    output   = "eDP-1",
+    mode     = "2560x1600@165.04",
+    position = "0x201",
+    scale    = 1.6,
+})
+
+-- Main (centre): Samsung Odyssey G5.
+hl.monitor({
+    output   = "desc:Samsung Electric Company Odyssey G5",
+    mode     = "2560x1440@144",
+    position = "1600x0",
+    scale    = 1,
+})
+
+-- Right: Samsung LF24T35.
+hl.monitor({
+    output   = "desc:Samsung Electric Company LF24T35",
+    mode     = "1920x1080@74.97",
+    position = "4160x161",
     scale    = 1,
 })
 

@@ -43,6 +43,11 @@ Done (section 4):
   Caps Lock stays a normal key. `keyd/default.conf` stays in the repo for later; the keyd checks
   were removed from `setup/check.sh`. If keyd comes back, copy the config
   (`sudo install -Dm644 ...`) rather than link it: keyd runs `command()` actions as root.
+- **Step 6.** Monitor rules in `hyprland.lua` copied from the COSMIC layout: `eDP-1` 2560x1600@165.04
+  scale 1.6 at 0x201 (1.5 is not a clean divisor), `desc:Samsung Electric Company Odyssey G5`
+  2560x1440@144 at 1600x0 (main, HDMI-A-1 now), `desc:Samsung Electric Company LF24T35`
+  1920x1080@74.97 at 4160x161 (right, DP-2 now). Catch-all kept. `--verify-config` ok; the desc
+  strings come from COSMIC's EDID read: confirm with `hyprctl monitors` at step 9.
 
 Notes:
 - GTK is not stowed on purpose (see `.stow-local-ignore` and section 6).
@@ -53,7 +58,7 @@ Notes:
 - The LocalSend autostart unit fails at every login since before this project (`localsend-bin`
   misses `libayatana-indicator3.so.7`). Not ours.
 
-**Next: step 6 (monitors).** Then, after the pending reboot, check `id -nG` has no `input` and
+**Next: step 7 (island main screen).** Also, after the pending reboot, check `id -nG` has no `input` and
 `/dev/uinput` is `root:uinput` without a per-user ACL.
 
 ## 1. What this repo is
