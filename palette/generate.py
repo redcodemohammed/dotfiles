@@ -161,7 +161,14 @@ palette = [{swatches}]
 """
 
 
+def hypr_palette(palette):
+    # Hyprland color strings, e.g. rgb(f5a524).
+    colors = "\n".join(f'    {name} = "rgb({value[1:]})",' for name, value in palette["ui"].items())
+    return f"-- {HEADER}\nreturn {{\n{colors}\n}}\n"
+
+
 OUTPUTS = {
+    "hypr/hypr_palette.lua": hypr_palette,
     "satty/config.toml": satty_config,
     "vicinae/themes/hypr.toml": vicinae_theme,
     "tmux/colors.conf": tmux_colors,
