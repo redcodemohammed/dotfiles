@@ -139,7 +139,30 @@ def vicinae_theme(palette):
     return f"# {HEADER}\n\n{body}\n"
 
 
+def satty_config(palette):
+    ui = palette["ui"]
+    # Amber first: the default annotation color. Satty wants #RRGGBBAA.
+    swatches = ", ".join(f'"{ui[name]}ff"' for name in ("accent", "alert", "fg", "bg"))
+    return f"""# {HEADER}
+
+[general]
+corner-roundness = 0
+default-round-caps = false
+initial-tool = "arrow"
+copy-command = "wl-copy"
+no-window-decoration = true
+
+[font]
+family = "JetBrainsMono Nerd Font"
+style = "Regular"
+
+[color-palette]
+palette = [{swatches}]
+"""
+
+
 OUTPUTS = {
+    "satty/config.toml": satty_config,
     "vicinae/themes/hypr.toml": vicinae_theme,
     "tmux/colors.conf": tmux_colors,
     "quickshell/Theme.qml": theme_qml,
