@@ -1,0 +1,15 @@
+// Vicinae user config, merged over the defaults (see `vicinae config default`).
+{
+	"$schema": "https://vicinae.com/schemas/config.json",
+
+	// No system info sent to the Vicinae server.
+	"telemetry": {
+		"system_info": false
+	},
+
+	// No input monitoring helper. Clipboard entries copy instead of paste,
+	// and snippet expansion is off.
+	"input_server": {
+		"enabled": false
+	}
+}
