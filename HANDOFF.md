@@ -82,7 +82,10 @@ Done (section 4):
   ("don't need it"): `WheelHandler` got no wheel events at all; in a test layer window only
   `MouseArea.onWheel` did, but a `MouseArea` version of `Volume.qml` still did nothing on the bar
   (cause not found). `Volume.qml` stays display-only. Lock (SUPER+Escape): works on the laptop
-  with three screens (tested by the owner, failsafe left at 0).
+  with three screens (tested by the owner, failsafe left at 0); typed dots shared across all three
+  screens not confirmed yet. Screenshots: works (region, window 1274x1400, screen 2560x1440 one G5
+  only, clipboard, satty annotate saves `-annotated.png` with amber default). Not tried: a region
+  across the laptop/G5 border (mixed scale).
 
 Notes:
 - GTK is not stowed on purpose (see `.stow-local-ignore` and section 6).
@@ -97,7 +100,7 @@ Notes:
 - The LocalSend autostart unit fails at every login since before this project (`localsend-bin`
   misses `libayatana-indicator3.so.7`). Not ours.
 
-**Next: step 10** (section 5 re-tests, one item at a time): screenshots next.
+**Next: step 10** (section 5 re-tests, one item at a time): keybinds next (SUPER+V, N, M, Space and Arabic).
 
 ## 1. What this repo is
 
