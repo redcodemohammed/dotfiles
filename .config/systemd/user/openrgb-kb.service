@@ -1,0 +1,15 @@
+[Unit]
+Description=Keyboard RGB in the theme accent (OpenRGB, AULA F87 Pro)
+# Direct mode reverts when OpenRGB exits; --server keeps it running and its driver
+# refreshes the keyboard every second. KB_COLOR comes from palette/generate.py.
+PartOf=graphical-session.target
+After=graphical-session.target
+
+[Service]
+EnvironmentFile=%h/.config/openrgb-kb/color.env
+ExecStart=/usr/bin/openrgb --server --device "AULA F87 Pro" --mode direct --color ${KB_COLOR}
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=graphical-session.target

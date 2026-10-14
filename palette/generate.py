@@ -167,6 +167,15 @@ def hypr_palette(palette):
     return f"-- {HEADER}\nreturn {{\n{colors}\n}}\n"
 
 
+def keyboard_env(palette):
+    # openrgb-kb.service reads KB_COLOR. The keyboard's direct mode has no brightness control,
+    # so the accent is scaled until its brightest channel is 255: same hue, full light.
+    rgb = [int(palette["ui"]["accent"][i:i + 2], 16) for i in (1, 3, 5)]
+    peak = max(rgb) or 1
+    color = "".join(f"{round(c * 255 / peak):02X}" for c in rgb)
+    return f"# {HEADER}\nKB_COLOR={color}\n"
+
+
 def gtk_roles(palette):
     # libadwaita color roles -> palette. Same mapping for GTK3 (adw-gtk3) and GTK4.
     ui, n = palette["ui"], palette["ansi"]["normal"]
@@ -222,6 +231,7 @@ OUTPUTS = {
     ".config/quickshell/Theme.qml": theme_qml,
     ".config/alacritty/colors.toml": alacritty_colors,
     ".config/nvim/lua/hypr_palette.lua": nvim_palette,
+    ".config/openrgb-kb/color.env": keyboard_env,
 }
 
 
