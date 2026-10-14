@@ -44,6 +44,9 @@ PanelWindow {
         Network {
             anchors.verticalCenter: parent.verticalCenter
         }
+        Battery { // laptop only: hidden without a laptop battery
+            anchors.verticalCenter: parent.verticalCenter
+        }
         NotificationCount {}
     }
 

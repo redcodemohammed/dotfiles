@@ -99,6 +99,10 @@ Done (section 4):
   `~/.config/strata/themes/<name>.toml` (`name` plus 14 colors, learned from a theme Strata wrote
   itself). `generate.py` writes `strata/hypr.toml` (syntax colors as in `nvim/colors/hypr.lua`) and
   copies it there as a real file (symlinks unverified). Selected as "Hypr". Works.
+- **Step 11.1 battery in the bar.** `Battery.qml` (UPower `displayDevice`; `percentage` is 0-1 and
+  the device is `ready` only a moment after start): gray glyph plus number after the network
+  item; charging glyph on AC, level glyphs on battery; critical (10% or less on battery) fill
+  glyph and number red. On all bars until slim bars exist. Plug/unplug works; critical untested.
 
 Notes:
 - GTK is not stowed on purpose (see `.stow-local-ignore` and section 6).

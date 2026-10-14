@@ -24,4 +24,11 @@ Singleton {
     readonly property string caretUp: "\ue13c" // island collapse chevron
     readonly property string check: "\ue182" // build ok
     readonly property string cross: "\ue4f6" // build failed
+
+    readonly property string batteryFull: "\ue0c0"
+    readonly property string batteryHigh: "\ue0c2"
+    readonly property string batteryMedium: "\ue0c6"
+    readonly property string batteryLow: "\ue0c4"
+    readonly property string batteryCharging: "\ue0ba" // on AC
+    readonly property string batteryWarning: "\ue0c8" // critical, 10% or less on battery
 }
