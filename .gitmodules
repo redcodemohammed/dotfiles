@@ -7,3 +7,15 @@
 [submodule "hypr/hyprsplit"]
 	path = .config/hypr/hyprsplit
 	url = https://github.com/shezdy/hyprsplit.git
+[submodule ".config/tmux/plugins/tmux-yank"]
+	path = .config/tmux/plugins/tmux-yank
+	url = https://github.com/tmux-plugins/tmux-yank
+[submodule ".config/tmux/plugins/tmux-fzf-url"]
+	path = .config/tmux/plugins/tmux-fzf-url
+	url = https://github.com/wfxr/tmux-fzf-url
+[submodule ".config/tmux/plugins/vim-tmux-navigator"]
+	path = .config/tmux/plugins/vim-tmux-navigator
+	url = https://github.com/christoomey/vim-tmux-navigator
+[submodule ".config/nvim/pack/plugins/start/vim-tmux-navigator"]
+	path = .config/nvim/pack/plugins/start/vim-tmux-navigator
+	url = https://github.com/christoomey/vim-tmux-navigator

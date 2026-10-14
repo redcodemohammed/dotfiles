@@ -126,6 +126,11 @@ Done (section 4):
   and panes from 1, renumber-windows, new windows/splits in the current directory, Alt+arrows panes
   and Shift+arrows windows without the prefix (tmux-only, no Hyprland clash). Palette status bar
   kept; tokyo-night theme, mouse, status-at-top, tmux-sensible and tmux-resurrect not wanted. Works.
+- **tmux plugins back** via TPM (the existing `.tmux/plugins/tpm` submodule @99469c4, run last in
+  `tmux.conf`), each a git submodule pinned to the old commits under `.config/tmux/plugins/`:
+  tmux-yank @acfd36e (copy-mode `y` to the clipboard), tmux-fzf-url @09d4998 (`prefix x`),
+  vim-tmux-navigator @c45243d (Ctrl+h/j/k/l). The navigator's Neovim half is the same repo @c45243d
+  in `.config/nvim/pack/plugins/start/` (native packages, no plugin manager). Works.
 
 Notes:
 - GTK is not stowed on purpose (see `.stow-local-ignore` and section 6).
@@ -148,6 +153,7 @@ Notes:
 | --- | --- |
 | `.config/hypr/hyprland.lua` | Hyprland config (0.56 uses **Lua**, not hyprland.conf) |
 | `.config/hypr/hyprsplit/` | git submodule, hyprsplit **Lua library** pinned at 6b00b67 |
+| `.config/tmux/plugins/*`, `.tmux/plugins/tpm`, `.config/nvim/pack/plugins/start/*` | tmux plugins, TPM and the Neovim navigator: pinned git submodules |
 | `.config/hypr/hypridle.conf`, `hyprlock.conf`, `hyprsunset.conf` | idle chain, fallback locker, night light |
 | `.config/hypr/hypr_palette.lua` | generated colors for the Hyprland config |
 | `.config/quickshell/` | bar, island, notification server and inbox |
