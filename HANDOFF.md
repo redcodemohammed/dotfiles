@@ -126,6 +126,19 @@ Done (section 4):
   about 2 s after Fn+Q: measured, the firmware file changes at once and the daemon publishes 2.0 s
   later; the owner keeps the delay (a POLLPRI watcher on `/sys/firmware/acpi/platform_profile`
   would make it instant). Works. Low (20%) and critical untested.
+- **Island media** (`IslandMedia.qml`, MPRIS): the playing player shows; paused stays 30 s; stop or
+  quit ends it. Compact 440x24 (owner: wider for long titles; design 280): bars glyph, title, muted
+  artist, elapsed. Expanded 440x172: 72px art, title, artist, album, source · output, progress,
+  shuffle/repeat, prev/play/next, output volume. The design's "Up next" is left out: Spotifast
+  publishes no TrackList. The position is refreshed once a second while playing and shown.
+- **Island as a notch** (owner): joined to the screen's top edge in the bar colour, rounded bottom
+  corners (12), shoulders that flare into the edge (`IslandEar.qml`, Qt Quick Shapes, 24px; 10 was
+  invisible, 32 looked wrong), drawn after the notch so they cover its side border. No border
+  except red for alerts. Slides down on appear and up on hide (120ms linear), keeping its last
+  content while it slides out. Compact reaches the bar's bottom edge (y 0-38).
+- **Bar widgets float**: the bar is transparent, each widget sits on a `BarBlock` (bar colour, 32px,
+  8px padding, 6px apart). Block visibility is bound to the widget's condition, not its `visible`
+  (a child of a hidden block reads as hidden, so it would never come back).
 - **SUPER+E** runs `~/.local/scripts/vicinae-emulator.sh` (Android emulator picker; owner's request,
   not in the spec). Works. Note: `hyprctl binds` shows Lua keycode binds with an empty key.
 - **tmux in Alacritty** (owner's choice, changed from one shared session): `[terminal] shell` runs
@@ -157,7 +170,9 @@ Notes:
 **Next: step 11** (section 6 real-machine list, one item per step).
 Open from 2026-10-15:
 - Verify `env-hyprland` after a re-login (see the Electron note in section 8).
-- Claude desktop has no tray icon. Its item `org.freedesktop.StatusNotifierItem-<pid>-1` exists
+- Claude desktop has no tray icon. Lead: the bar logs `Could not load icon "status_icon_0"`:
+  Chromium names its icon and points IconThemePath at a temp folder; Quickshell looks the name up
+  in the icon theme only. Its item `org.freedesktop.StatusNotifierItem-<pid>-1` exists
   (`/StatusNotifierItem` + `/com/canonical/dbusmenu`, IconPixmap `a(iiay)` 64x64), but it is not in
   the watcher's `RegisteredStatusNotifierItems`; the bar logged "Ignoring invalid
   StatusNotifierItem registration" and "Unable to create pixmap" for an earlier instance.
@@ -204,14 +219,15 @@ Never edit generated files by hand (they say so in their first line).
 - Wallpaper: an image now (owner, 2026-10-15, overriding the spec's "solid color is final"):
   hyprpaper 0.8 with `.config/hypr/hyprpaper.conf` (one `wallpaper {}` block, empty `monitor` =
   every screen, `fit_mode = cover`, `splash = false`), started from `hyprland.lua`. The image is
-  `~/Pictures/Wallpapers/177901-…-landscape.jpg`, outside the repo. Hyprland's solid `bg`
+  `~/Pictures/Wallpapers/1vw3sfub05841.png` (1920x1080), outside the repo; change it live with
+  `hyprctl hyprpaper wallpaper '<monitor>,<path>,cover'`. Hyprland's solid `bg`
   (`misc.background_color`) stays underneath. The lock screen stays solid.
 - Gaps: 6px everywhere (owner, 2026-10-15), screen edges and bar-to-window included:
   `gaps_in = 3` (per window edge), `gaps_out = 6`. The spec had 4 between and 0 at the edges.
   Hidden workspaces re-tile only when shown, so `hyprctl clients` shows their old geometry.
 - The bar floats 6px from the top and sides too (`margins` in `Bar.qml`); Quickshell's automatic
   exclusive zone includes the margin (reserved top 38), so windows keep 6px below it. The island
-  pill moved to y=10 to stay 4px inside the bar. The inbox still sits 4px below the bar, flush right.
+  pill moved to y=10 to stay 4px inside the bar. The inbox sits 6px below the bar and 6px from the right edge.
 - Lock screen: Quickshell `WlSessionLock` + `PamContext` in its own instance, run by SUPER+Escape
   through `flock`. PAM file lives in `pam/` and includes `/etc/pam.d/system-auth` by **absolute**
   path (a relative include fails: PAM looks inside the custom dir). hyprlock stays installed as
@@ -404,5 +420,7 @@ Test (configured, untested on the VM):
 - (Laptop) `console.log` is debug level: a probe's output may not show. Use `console.warn`.
 - (Laptop) `WheelHandler` received no wheel events on our layer-shell windows; `MouseArea.onWheel`
   did in a test window (but not in a `Volume.qml` attempt, cause unknown).
+- (Laptop) An inline `component` declared inside `Island.qml` (root: `PanelWindow`) failed with
+  "Ear is not a type"; inside Item-rooted files it works. Use a separate file there.
 - (Laptop) Adding a new QML file plus a `Bar.qml` edit: the reload can miss the edit. Check on
   screen; append a comment to `Bar.qml` to force a reload.

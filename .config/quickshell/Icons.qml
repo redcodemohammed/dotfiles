@@ -32,6 +32,17 @@ Singleton {
     readonly property string batteryCharging: "\ue0ba" // on AC
     readonly property string batteryWarning: "\ue0c8" // critical, 10% or less on battery
 
+    // Island media
+    readonly property string equalizer: "" // compact pill ("bars")
+    readonly property string musicNote: "" // no cover art
+    readonly property string play: ""
+    readonly property string pause: ""
+    readonly property string skipBack: ""
+    readonly property string skipForward: ""
+    readonly property string shuffle: ""
+    readonly property string repeat: ""
+    readonly property string repeatOnce: ""
+
     // Power profiles (island battery pill)
     readonly property string leaf: "" // Saver
     readonly property string scales: "" // Balanced

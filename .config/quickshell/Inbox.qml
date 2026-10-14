@@ -4,8 +4,8 @@ import Quickshell.Hyprland
 import Quickshell.Wayland
 import Quickshell.Widgets
 
-// Notification inbox. Same look as the island card: 360px wide, top-right, 4px below
-// the bar, flush with the right edge. Rows scroll when the list is long.
+// Notification inbox. Same look as the island card: 360px wide, top-right, 6px below
+// the bar and 6px from the right edge. Rows scroll when the list is long.
 // SUPER + I toggles, Escape closes. Opening clears the unread count.
 // J/K or arrows move, Enter runs the default action, X dismisses. Letters by keycode.
 PanelWindow {
@@ -19,11 +19,13 @@ PanelWindow {
         top: true
         right: true
     }
-    margins.top: 4
+    // 6px below the floating bar and from the right edge, like every other gap.
+    margins.top: 6
+    margins.right: 6
     exclusiveZone: 0
     color: "transparent"
     implicitWidth: 360
-    implicitHeight: Math.min(frame.implicitHeight, modelData.height - 32 - 8)
+    implicitHeight: Math.min(frame.implicitHeight, modelData.height - 38 - 12) // bar reserves 38; 6px gap above and below
     WlrLayershell.keyboardFocus: visible ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.None
 
     Rectangle {

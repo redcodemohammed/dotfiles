@@ -4,6 +4,7 @@ import Quickshell
 import Quickshell.Io
 import Quickshell.Services.Pipewire
 import Quickshell.Services.UPower
+import Quickshell.Services.Mpris
 
 // Island state machine (island spec + design canvas "Desktop test").
 // One state at a time: transient > recording > media > nothing.
@@ -15,7 +16,7 @@ Singleton {
 
     // [compact w, h, expanded w, h]. Notification has no compact form: it opens expanded.
     readonly property var sizes: ({
-        media:   [280, 24, 440, 256],
+        media:   [440, 24, 440, 172], // compact as wide as expanded for long titles (owner; design 280); design 256 includes "Up next", which MPRIS can't fill
         notify:  [0,   0,  360, 232],
         volume:  [260, 24, 320, hasBrightness ? 148 : 116], // design draws 140 and clips the 4th row
         brightness: [260, 24, 320, 148], // compact: sun and level; expanded: the volume panel
@@ -28,8 +29,33 @@ Singleton {
     property var active: null // current transient: { kind, data, persistent }
     property var queued: null
     property bool recording: false
-    property bool media: false
+    property bool mediaTest: false // test hook only: qs ipc call island test media
+    readonly property bool media: mediaTest || mediaPlayer !== null
     property bool expanded: false
+
+    // Media (MPRIS): the playing player. After a pause it stays 30 s (owner's choice); a stop or
+    // quit ends it at once. With several players, the first one playing wins.
+    property var mediaPlayer: null
+    readonly property var playingPlayer: Mpris.players.values.find(p => p.isPlaying) ?? null
+    onPlayingPlayerChanged: updateMedia()
+    Component.onCompleted: updateMedia()
+
+    function updateMedia() {
+        if (playingPlayer) {
+            mediaPlayer = playingPlayer
+            mediaPausedHold.stop()
+        } else if (mediaPlayer && mediaPlayer.playbackState === MprisPlaybackState.Paused) {
+            mediaPausedHold.restart()
+        } else {
+            mediaPlayer = null
+        }
+    }
+
+    Timer {
+        id: mediaPausedHold
+        interval: 30000
+        onTriggered: root.mediaPlayer = null
+    }
 
     // Backlight level 0-1 (laptop panel); -1 until read, and on hardware without a backlight.
     property real brightness: -1
@@ -210,7 +236,7 @@ Singleton {
     IpcHandler {
         target: "island"
         function test(kind: string): void {
-            if (kind === "media") root.media = !root.media
+            if (kind === "media") root.mediaTest = !root.mediaTest
             else if (kind === "record") root.recording = !root.recording
             else if (kind === "buildfail") root.push("build", { failed: true }, true)
             else root.push(kind, {}, false)
@@ -234,7 +260,7 @@ Singleton {
         function clear(): void {
             root.queued = null
             root.next()
-            root.media = false
+            root.mediaTest = false
             root.recording = false
         }
     }
