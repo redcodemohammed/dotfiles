@@ -65,6 +65,7 @@ local menu        = "hyprlauncher"
 -- end)
 
 hl.on("hyprland.start", function ()
+    hl.exec_cmd("/usr/lib/polkit-gnome/polkit-gnome-authentication-agent-1") -- password prompts for polkit
     hl.exec_cmd("vicinae server") -- launcher daemon, opened with SUPER + /
     hl.exec_cmd("qs")             -- Quickshell: bars, later notifications, OSD, lock
 end)
