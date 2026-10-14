@@ -11,4 +11,9 @@ ShellRoot {
         model: Quickshell.screens
         Popups {}
     }
+
+    Variants {
+        model: Quickshell.screens
+        Inbox {}
+    }
 }

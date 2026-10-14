@@ -9,7 +9,7 @@ PanelWindow {
     screen: modelData
     readonly property var monitor: Hyprland.monitorFor(modelData)
 
-    visible: monitor && monitor.focused && Notifs.popups.length > 0
+    visible: monitor && monitor.focused && Notifs.popups.length > 0 && !Notifs.inboxOpen
     anchors {
         top: true
         right: true

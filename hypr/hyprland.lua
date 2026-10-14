@@ -276,6 +276,7 @@ local mainMod = "SUPER" -- Sets "Windows" key as main modifier
 -- Example binds, see https://wiki.hypr.land/Configuring/Basics/Binds/ for more
 hl.bind(mainMod .. " + Return", hl.dsp.exec_cmd(terminal))
 hl.bind(mainMod .. " + code:61", hl.dsp.exec_cmd("vicinae toggle")) -- slash key, any layout
+hl.bind(mainMod .. " + code:31", hl.dsp.exec_cmd("qs ipc call inbox toggle")) -- I key: notification inbox
 
 -- Screenshots: saved to the folder and copied to the clipboard. Never all screens at once.
 local shot = "hyprshot -o ~/Pictures/Screenshots "
