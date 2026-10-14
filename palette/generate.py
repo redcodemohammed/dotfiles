@@ -211,16 +211,17 @@ def gtk4_css(palette):
     )
 
 
+# Paths are relative to the repo root, which mirrors $HOME (stow layout).
 OUTPUTS = {
-    "gtk-3.0/gtk.css": gtk3_css,
-    "gtk-4.0/gtk.css": gtk4_css,
-    "hypr/hypr_palette.lua": hypr_palette,
-    "satty/config.toml": satty_config,
-    "vicinae/themes/hypr.toml": vicinae_theme,
-    "tmux/colors.conf": tmux_colors,
-    "quickshell/Theme.qml": theme_qml,
-    "alacritty/colors.toml": alacritty_colors,
-    "nvim/lua/hypr_palette.lua": nvim_palette,
+    ".config/gtk-3.0/gtk.css": gtk3_css,
+    ".config/gtk-4.0/gtk.css": gtk4_css,
+    ".config/hypr/hypr_palette.lua": hypr_palette,
+    ".config/satty/config.toml": satty_config,
+    ".local/share/vicinae/themes/hypr.toml": vicinae_theme,
+    ".config/tmux/colors.conf": tmux_colors,
+    ".config/quickshell/Theme.qml": theme_qml,
+    ".config/alacritty/colors.toml": alacritty_colors,
+    ".config/nvim/lua/hypr_palette.lua": nvim_palette,
 }
 
 

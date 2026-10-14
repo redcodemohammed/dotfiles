@@ -1,0 +1,39 @@
+# What stow must NOT link into ~ (Perl regexes, one per line).
+# This file replaces stow's built-in ignore list, so those defaults are repeated first.
+# No "/" in a pattern: matches a file or folder name at any depth.
+# A "/" in a pattern: matches the path from the repo root, e.g. ^/spec.
+
+# stow's built-in defaults (Stow.pm, stow 2.4.1)
+RCS
+.+,v
+CVS
+\.\#.+
+\.cvsignore
+\.svn
+_darcs
+\.hg
+\.git
+\.gitignore
+\.gitmodules
+.+~
+\#.*\#
+^/README.*
+^/LICENSE.*
+^/COPYING
+
+# Hyprland project files: they live in the repo, not in ~
+^/CLAUDE\.md
+^/HANDOFF\.md
+^/pkglist-before\.txt
+^/spec
+^/design-system
+^/palette
+^/packages
+^/setup
+^/pam
+^/keyd
+
+# GTK stays with COSMIC for now: COSMIC rewrites gtk.css at every login.
+# When Hyprland is the daily desktop: turn off COSMIC's GTK theming, delete these two lines, restow.
+^/\.config/gtk-3\.0
+^/\.config/gtk-4\.0

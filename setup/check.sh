@@ -9,27 +9,16 @@ for p in $(grep -hv -e '^#' -e '^$' "$D/packages/repo.txt" "$D/packages/aur.txt"
     pacman -Q "$p" >/dev/null 2>&1 && pass "$p" || bad "$p not installed"
 done
 
-echo "== links"
-while read -r src dst; do
-    [ "$(readlink "$dst")" = "$D/$src" ] && pass "$dst" || bad "$dst should link to $D/$src"
-done <<LINKS
-hypr $HOME/.config/hypr
-quickshell $HOME/.config/quickshell
-quickshell-lock $HOME/.config/quickshell-lock
-alacritty $HOME/.config/alacritty
-nvim $HOME/.config/nvim
-tmux $HOME/.config/tmux
-vicinae $HOME/.config/vicinae
-vicinae/themes $HOME/.local/share/vicinae/themes
-satty $HOME/.config/satty
-gtk-3.0 $HOME/.config/gtk-3.0
-gtk-4.0 $HOME/.config/gtk-4.0
-bin/island-build $HOME/.local/bin/island-build
-LINKS
+echo "== links (stow: the repo mirrors \$HOME, so ~/X must resolve to $D/X)"
+# gtk-3.0 and gtk-4.0 are left out while COSMIC owns gtk.css (see .stow-local-ignore).
+for p in .config/hypr .config/quickshell .config/quickshell-lock .config/alacritty .config/nvim \
+         .config/tmux .config/vicinae .config/satty .local/share/vicinae/themes/hypr.toml .local/bin/island-build; do
+    [ "$(readlink -f "$HOME/$p")" = "$D/$p" ] && pass "~/$p" || bad "~/$p should resolve to $D/$p (cd $D && stow -R .)"
+done
 [ "$(readlink /etc/keyd/default.conf)" = "$D/keyd/default.conf" ] && pass "/etc/keyd/default.conf" || bad "/etc/keyd/default.conf should link to $D/keyd/default.conf (sudo, see HANDOFF.md)"
 
 echo "== submodule"
-[ -f "$D/hypr/hyprsplit/init.lua" ] && pass "hyprsplit present" || bad "hyprsplit missing: git -C $D submodule update --init"
+[ -f "$D/.config/hypr/hyprsplit/init.lua" ] && pass "hyprsplit present" || bad "hyprsplit missing: git -C $D submodule update --init"
 
 echo "== generated files match palette.toml"
 before=$(git -C "$D" status --porcelain)
