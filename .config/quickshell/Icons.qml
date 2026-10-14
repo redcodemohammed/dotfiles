@@ -32,5 +32,20 @@ Singleton {
     readonly property string batteryCharging: "\ue0ba" // on AC
     readonly property string batteryWarning: "\ue0c8" // critical, 10% or less on battery
 
+    // Power profiles (island battery pill)
+    readonly property string leaf: "" // Saver
+    readonly property string scales: "" // Balanced
+    readonly property string lightning: "" // Performance
+
+    // Battery glyph for a level 0-100, shared by the bar and the island.
+    function battery(level, onBattery, critical) {
+        return !onBattery ? batteryCharging
+            : critical ? batteryWarning
+            : level > 90 ? batteryFull
+            : level > 60 ? batteryHigh
+            : level > 30 ? batteryMedium
+            : batteryLow
+    }
+
     readonly property string sun: "\ue472" // island brightness
 }

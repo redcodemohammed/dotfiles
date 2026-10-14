@@ -49,6 +49,7 @@ PanelWindow {
         border.color: IslandState.kind === "record"
             || (IslandState.kind === "build" && info.failed)
             || (IslandState.kind === "notify" && info.entry && info.entry.urgent)
+            || (IslandState.kind === "battery" && IslandState.batteryCritical)
             ? Theme.alert : Theme.border
 
         Behavior on width { NumberAnimation { duration: 120; easing.type: Easing.Linear } }
@@ -74,6 +75,12 @@ PanelWindow {
             entry: pill.info.entry ?? null
         }
 
+        IslandBattery {
+            anchors.fill: parent
+            visible: IslandState.kind === "battery"
+            open: IslandState.open
+        }
+
         IslandBuild {
             anchors.fill: parent
             visible: IslandState.kind === "build"
@@ -81,9 +88,9 @@ PanelWindow {
             info: pill.info
         }
 
-        // Placeholder content for states not built yet (media, recording, battery).
+        // Placeholder content for states not built yet (media, recording).
         Text {
-            visible: ["volume", "brightness", "notify", "build"].indexOf(IslandState.kind) < 0
+            visible: ["volume", "brightness", "battery", "notify", "build"].indexOf(IslandState.kind) < 0
             x: IslandState.open ? 12 : 8
             y: IslandState.open ? 12 : (parent.height - height) / 2
             text: IslandState.kind + (IslandState.open ? " · expanded" : "")

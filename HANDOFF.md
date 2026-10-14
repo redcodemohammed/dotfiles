@@ -117,6 +117,15 @@ Done (section 4):
   `brightnessctl -m` (no polling). New transient kind `brightness` (owner's choice): the compact
   volume pill with a sun and the brightness level, 2.5 s; expanded is the volume panel, whose
   Brightness row is now live. Works.
+- **Island battery** (`IslandBattery.qml`, design canvas layout): plug and unplug pills (3 s), a
+  pill when dropping to 20% on battery (once), critical at 10% or less stays with a red border.
+  "Plugged in" is shown for AC without charging (the laptop's charge limit; the design only has
+  Charging/Unplugged). Expanded: percent, state and time, bar, power profile picker
+  (`PowerProfiles.profile`, power-profiles-daemon). A profile switch from anywhere (Fn+Q, picker,
+  `powerprofilesctl`) shows "Power profile · <mode>" (leaf/scales/lightning glyphs). It appears
+  about 2 s after Fn+Q: measured, the firmware file changes at once and the daemon publishes 2.0 s
+  later; the owner keeps the delay (a POLLPRI watcher on `/sys/firmware/acpi/platform_profile`
+  would make it instant). Works. Low (20%) and critical untested.
 - **SUPER+E** runs `~/.local/scripts/vicinae-emulator.sh` (Android emulator picker; owner's request,
   not in the spec). Works. Note: `hyprctl binds` shows Lua keycode binds with an empty key.
 - **tmux in Alacritty** (owner's choice, changed from one shared session): `[terminal] shell` runs

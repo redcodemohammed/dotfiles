@@ -14,12 +14,7 @@ Row {
 
     Text {
         anchors.verticalCenter: parent.verticalCenter
-        text: !UPower.onBattery ? Icons.batteryCharging
-            : root.critical ? Icons.batteryWarning
-            : root.level > 90 ? Icons.batteryFull
-            : root.level > 60 ? Icons.batteryHigh
-            : root.level > 30 ? Icons.batteryMedium
-            : Icons.batteryLow
+        text: Icons.battery(root.level, UPower.onBattery, root.critical)
         font.family: root.critical ? Icons.fill : Icons.regular
         font.pixelSize: 16
         color: root.critical ? Theme.alert : Theme.fgMuted

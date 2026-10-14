@@ -3,6 +3,7 @@ import QtQuick
 import Quickshell
 import Quickshell.Io
 import Quickshell.Services.Pipewire
+import Quickshell.Services.UPower
 
 // Island state machine (island spec + design canvas "Desktop test").
 // One state at a time: transient > recording > media > nothing.
@@ -60,7 +61,9 @@ Singleton {
         // Same kind already showing (e.g. holding a volume key): refresh it, never queue it.
         if (active && active.kind === kind) {
             active = t
-            if (!expanded && !t.persistent && timeouts[kind])
+            if (t.persistent)
+                timer.stop() // e.g. battery turning critical: it stays now
+            else if (!expanded && timeouts[kind])
                 timer.restart()
             return
         }
@@ -112,6 +115,48 @@ Singleton {
         target: Pipewire.defaultAudioSink ? Pipewire.defaultAudioSink.audio : null
         function onVolumeChanged() { root.push("volume", {}, false) }
         function onMutedChanged() { root.push("volume", {}, false) }
+    }
+
+    // Battery (UPower): plug and unplug show it for 3 s; dropping to 20% on battery (UPower's own
+    // "low" level) shows it once; 10% or less on battery stays with a red border until dismissed
+    // (it comes back at the next percent) or plugged in.
+    readonly property var batteryDevice: UPower.displayDevice
+    readonly property bool hasBattery: batteryDevice.ready && batteryDevice.isLaptopBattery
+    readonly property int batteryLevel: Math.round(batteryDevice.percentage * 100) // percentage is 0-1
+    readonly property bool batteryCritical: UPower.onBattery && batteryLevel <= 10
+    readonly property bool pluggedIn: !UPower.onBattery
+    property bool batteryLowShown: false
+
+    onPluggedInChanged: {
+        if (!hasBattery)
+            return
+        batteryLowShown = false
+        push("battery", {}, batteryCritical)
+    }
+    onBatteryLevelChanged: {
+        if (!hasBattery || !UPower.onBattery)
+            return
+        if (batteryCritical) {
+            if (!(active && active.kind === "battery" && active.persistent))
+                push("battery", {}, true)
+        } else if (batteryLevel <= 20 && !batteryLowShown) {
+            batteryLowShown = true
+            push("battery", {}, false)
+        }
+    }
+
+    // Power profile (power-profiles-daemon, which follows Fn+Q through the firmware platform
+    // profile): any switch shows the battery pill with the new profile for 3 s. Changes in the
+    // first seconds after start are the initial D-Bus read, not a switch.
+    readonly property int powerProfile: PowerProfiles.profile
+    onPowerProfileChanged: {
+        if (!profileGrace.running)
+            push("battery", { profile: true }, batteryCritical)
+    }
+    Timer {
+        id: profileGrace
+        running: true
+        interval: 3000
     }
 
     // Brightness: the kernel sends a udev "change" event for every backlight write (keys, logind,
