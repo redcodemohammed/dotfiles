@@ -60,6 +60,7 @@ Never edit generated files by hand (they say so in their first line).
   and the status icons (the bar centre belongs to the island).
 - Vicinae: telemetry off, input server off (paste falls back to copy). Settings live in
   `.config/vicinae/hypr.jsonc`; `settings.json` only imports it because the Vicinae GUI rewrites it.
+  Window 640x416, not the spec's 560 wide: the owner asked for a bit bigger on the laptop (2026-10-14).
 - Notification privacy: messaging apps and password managers are never written to disk
   (`noStoreApps` in `.config/quickshell/Notifs.qml`). History: `~/.local/state/quickshell/by-shell/*/notifications.json`, cap 200.
 - GTK: `adw-gtk3-dark` + generated `gtk.css` for GTK3 and GTK4 (palette, radius 0, no shadows).

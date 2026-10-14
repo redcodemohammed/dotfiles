@@ -25,8 +25,8 @@
 		"normal": { "family": "JetBrainsMono Nerd Font" }
 	},
 
-	// Sharp, flat, solid. 560px wide per the spec. Height is a starting
-	// value: 48 search + 8 rows of 40 + footer, tune on screen.
+	// Sharp, flat, solid. 640px wide (owner asked for a bit bigger than the
+	// spec's 560 on the laptop). Height: 48 search + 8 rows of 40 + footer.
 	"launcher_window": {
 		"material": "none",
 		"rounding": 0,
@@ -36,7 +36,7 @@
 			"shadow_size": 0
 		},
 		"size": {
-			"width": 560,
+			"width": 640,
 			"height": 416
 		}
 	}
