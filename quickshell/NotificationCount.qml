@@ -2,10 +2,9 @@ import QtQuick
 
 // Anything unread? Gray bell at zero. Amber filled bell plus count when unread.
 // Do Not Disturb swaps the glyph to a slashed bell; amber still means unread.
-// unread and dnd are fixed until the notification server lands (build step 8).
 Row {
-    property int unread: 0
-    property bool dnd: false
+    readonly property int unread: Notifs.unread
+    readonly property bool dnd: Notifs.dnd
     readonly property color tint: unread > 0 ? Theme.accent : Theme.fgMuted
 
     spacing: 4
