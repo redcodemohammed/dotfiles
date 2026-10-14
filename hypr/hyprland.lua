@@ -285,7 +285,20 @@ hl.bind(mainMod .. " + SHIFT + Print",   hl.dsp.exec_cmd(shot .. "-m output -m a
 hl.bind(mainMod .. " + CTRL + Print", hl.dsp.exec_cmd([[sh -c 'f=$(ls -t ~/Pictures/Screenshots/*.png 2>/dev/null | head -1); [ -n "$f" ] && satty -f "$f" -o "${f%.png}-annotated.png" --copy-command wl-copy']]))
 hl.bind(mainMod .. " + code:24", hl.dsp.window.close()) -- Q key, any layout
 hl.bind(mainMod .. " + SHIFT + Escape", hl.dsp.exec_cmd("command -v hyprshutdown >/dev/null 2>&1 && hyprshutdown || hyprctl dispatch 'hl.dsp.exit()'")) -- log out
-hl.bind(mainMod .. " + code:55", hl.dsp.window.float({ action = "toggle" })) -- V key, any layout
+-- V key (any layout): toggle floating. A window that just started floating gets 60% x 70%
+-- of its monitor, centred, so it never fills the screen and slides under the bar.
+hl.bind(mainMod .. " + code:55", function()
+    hl.dispatch(hl.dsp.window.float({ action = "toggle" }))
+    local w = hl.get_active_window()
+    if w ~= nil and w.floating and w.monitor ~= nil then
+        local m = w.monitor
+        hl.dispatch(hl.dsp.window.resize({
+            x = math.floor(m.width / m.scale * 0.6),
+            y = math.floor(m.height / m.scale * 0.7),
+        }))
+        hl.dispatch(hl.dsp.window.center())
+    end
+end)
 -- N: true fullscreen, covers the bar. M: maximized, bar and gaps stay.
 hl.bind(mainMod .. " + code:57", hl.dsp.window.fullscreen({ mode = "fullscreen", action = "toggle" }))
 hl.bind(mainMod .. " + code:58", hl.dsp.window.fullscreen({ mode = "maximized",  action = "toggle" }))
