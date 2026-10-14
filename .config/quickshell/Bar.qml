@@ -37,6 +37,9 @@ PanelWindow {
         Clock { // between the tray and the status icons; the bar centre belongs to the island
             anchors.verticalCenter: parent.verticalCenter
         }
+        KeyboardLayout { // EN or AR (owner's request, not in the spec's bar table)
+            anchors.verticalCenter: parent.verticalCenter
+        }
         Volume {}
         Network {
             anchors.verticalCenter: parent.verticalCenter

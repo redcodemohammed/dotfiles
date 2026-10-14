@@ -87,6 +87,9 @@ Done (section 4):
   only, clipboard, satty annotate saves `-annotated.png` with amber default). Not tried: a region
   across the laptop/G5 border (mixed scale). Keybinds: works (SUPER+V sized float, N, M,
   SUPER+Space and SUPER binds in Arabic). Step 10 done.
+- **Layout indicator** (owner's request, not in the spec). `KeyboardLayout.qml`: gray `EN`/`AR`
+  after the clock on all bars. Reads the main keyboard from `hyprctl -j devices` once, then follows
+  Hyprland's `activelayout` event (same as the lock). Works on both keyboards.
 
 Notes:
 - GTK is not stowed on purpose (see `.stow-local-ignore` and section 6).
@@ -101,8 +104,7 @@ Notes:
 - The LocalSend autostart unit fails at every login since before this project (`localsend-bin`
   misses `libayatana-indicator3.so.7`). Not ours.
 
-**Next:** keyboard layout indicator on the bar (owner's request, not in the spec), then
-**step 11** (section 6 real-machine list, one item per step).
+**Next: step 11** (section 6 real-machine list, one item per step).
 
 ## 1. What this repo is
 
@@ -321,3 +323,8 @@ Test (configured, untested on the VM):
 - `hypridle` `inhibit_sleep = 3` waits for any session lock (auto mode looks for hyprlock).
 - `pam_faillock` is in `system-auth`: never script repeated wrong-password tests.
 - `notify-send --wait -A default=Open` is a good way to test the inbox/island Reply action.
+- (Laptop) `console.log` is debug level: a probe's output may not show. Use `console.warn`.
+- (Laptop) `WheelHandler` received no wheel events on our layer-shell windows; `MouseArea.onWheel`
+  did in a test window (but not in a `Volume.qml` attempt, cause unknown).
+- (Laptop) Adding a new QML file plus a `Bar.qml` edit: the reload can miss the edit. Check on
+  screen; append a comment to `Bar.qml` to force a reload.
