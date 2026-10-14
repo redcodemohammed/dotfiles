@@ -45,7 +45,9 @@ Done (section 4):
   Caps Lock stays a normal key. `keyd/default.conf` stays in the repo for later; the keyd checks
   were removed from `setup/check.sh`. If keyd comes back, copy the config
   (`sudo install -Dm644 ...`) rather than link it: keyd runs `command()` actions as root.
-- **Step 6.** Monitor rules in `hyprland.lua` copied from the COSMIC layout: `eDP-1` 2560x1600@165.04
+- **Step 6.** Monitor rules in `hyprland.lua` copied from the COSMIC layout. Since 2026-10-15 the
+  laptop runs at scale 4/3 (1920x1200 logical; owner: 1.6 was big, 1 far too small), so `eDP-1` is
+  at 0x101 (same middle height), the G5 at 1920x0, the LF24T35 at 4480x161. Originally: `eDP-1` 2560x1600@165.04
   scale 1.6 at 0x201 (1.5 is not a clean divisor), `desc:Samsung Electric Company Odyssey G5`
   2560x1440@144 at 1600x0 (main, HDMI-A-1 now), `desc:Samsung Electric Company LF24T35`
   1920x1080@74.97 at 4160x161 (right, DP-2 now). Catch-all kept. `--verify-config` ok; the desc

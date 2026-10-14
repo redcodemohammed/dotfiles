@@ -26,19 +26,21 @@
 -- Positions are logical pixels (after scale). Externals match by description
 -- (make + model), so a port change doesn't matter.
 
--- Laptop (left). 2560x1600 / 1.6 = 1600x1000 logical (1.5 is not a clean divisor).
+-- Laptop (left), scale 4/3 (owner, 2026-10-15; was 1.6, 1 was too small): 2560x1600 / (4/3) =
+-- 1920x1200 logical. y keeps its middle level where it was at 1.6 (701), so the mouse crosses to
+-- the G5 at the same height.
 hl.monitor({
     output   = "eDP-1",
     mode     = "2560x1600@165.04",
-    position = "0x201",
-    scale    = 1.6,
+    position = "0x101",
+    scale    = 4 / 3,
 })
 
 -- Main (centre): Samsung Odyssey G5.
 hl.monitor({
     output   = "desc:Samsung Electric Company Odyssey G5",
     mode     = "2560x1440@144",
-    position = "1600x0",
+    position = "1920x0",
     scale    = 1,
 })
 
@@ -46,7 +48,7 @@ hl.monitor({
 hl.monitor({
     output   = "desc:Samsung Electric Company LF24T35",
     mode     = "1920x1080@74.97",
-    position = "4160x161",
+    position = "4480x161",
     scale    = 1,
 })
 
