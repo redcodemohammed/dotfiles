@@ -85,7 +85,8 @@ Done (section 4):
   with three screens (tested by the owner, failsafe left at 0); typed dots show on all three
   screens (section 6 item done). Screenshots: works (region, window 1274x1400, screen 2560x1440 one G5
   only, clipboard, satty annotate saves `-annotated.png` with amber default). Not tried: a region
-  across the laptop/G5 border (mixed scale).
+  across the laptop/G5 border (mixed scale). Keybinds: works (SUPER+V sized float, N, M,
+  SUPER+Space and SUPER binds in Arabic). Step 10 done.
 
 Notes:
 - GTK is not stowed on purpose (see `.stow-local-ignore` and section 6).
@@ -100,7 +101,8 @@ Notes:
 - The LocalSend autostart unit fails at every login since before this project (`localsend-bin`
   misses `libayatana-indicator3.so.7`). Not ours.
 
-**Next: step 10** (section 5 re-tests, one item at a time): keybinds next (SUPER+V, N, M, Space and Arabic).
+**Next:** keyboard layout indicator on the bar (owner's request, not in the spec), then
+**step 11** (section 6 real-machine list, one item per step).
 
 ## 1. What this repo is
 
