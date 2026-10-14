@@ -13,4 +13,11 @@ PanelWindow {
     }
     implicitHeight: 32
     color: Theme.bg
+
+    Workspaces {
+        screen: modelData
+        anchors.left: parent.left
+        anchors.leftMargin: 8
+        anchors.verticalCenter: parent.verticalCenter
+    }
 }
