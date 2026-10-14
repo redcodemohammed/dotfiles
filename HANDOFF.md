@@ -9,6 +9,35 @@ This repo was built and tested on an Arch VM (2026-10-14): one screen `Virtual-1
 no GPU acceleration, Hyprland 0.56.2, Quickshell 0.3.2. Everything below marked **done** was
 tested there by the owner. Everything marked **real machine** could not be tested on the VM.
 
+## Laptop progress (read first, update after each step)
+
+The laptop since 2026-10-14: Arch, **ext4** root (no btrfs snapshot possible), COSMIC desktop with
+cosmic-greeter. COSMIC stays installed and is the working desktop. Hyprland is not installed yet.
+Already installed: quickshell 0.3.2, yay-bin, JetBrainsMono Nerd Font.
+
+Done (section 4):
+- **Step 1.** `~/pkglist-laptop-before.txt` (318 packages). Instead of a snapshot:
+  `~/pre-hyprland-2026-10-14.tgz` holds the old `~/dotfiles` (untracked files included) and every
+  `~/.config` folder that was later moved or replaced.
+- **Step 2.** This repo was merged, with its history, into the owner's existing GNU stow repo at
+  `~/dotfiles` (branch `main`, origin `github.com/redcodemohammed/dotfiles`, nothing pushed yet):
+  `ca1a1fd` snapshot of local changes, `0a9be36` reshape for stow, `8c83df1` old alacritty, tmux,
+  nvim and hypr removed (new ones replace them), `43c1359` merge. The owner's other configs stay.
+  The old tmux plugins went with the old tmux config; add any back only if the owner asks.
+- **Step 4.** `stow -R .` done; `setup/check.sh` links all pass except `/etc/keyd` (step 5).
+  Real folders that were in the way are in `~/.config/<name>.pre-dotfiles-20261014-220228`:
+  hypr, cava, kitty, rofi, waybar (leftover KooL Hyprland dots; the owner's own repo versions are
+  linked now), quickshell (an old shell config) and vicinae (the owner's old settings).
+
+Notes:
+- GTK is not stowed on purpose (see `.stow-local-ignore` and section 6).
+- Vicinae runs in COSMIC as a systemd user service: `systemctl --user restart vicinae` after a
+  config change. Its window is 640 wide (section 2).
+- Keep the tarball, the `.pre-dotfiles-*` folders and `~/Projects/hyprland-handoff` until
+  Hyprland is stable.
+
+**Next: step 3 (packages).** Skip the yay bootstrap; yay-bin is installed.
+
 ## 1. What this repo is
 
 | Path | What |
