@@ -11,8 +11,9 @@ import Quickshell.Services.Pam
 ShellRoot {
     id: root
 
-    // TEST MODE: unlocks by itself after this many seconds. Set to 0 once proven.
-    readonly property int failsafeSeconds: 60
+    // Test mode: unlocks by itself after this many seconds. 0 = off (proven 2026-10-14).
+    // Set it back above 0 before experimenting with this file.
+    readonly property int failsafeSeconds: 0
 
     property string password: ""
     property bool checking: false
