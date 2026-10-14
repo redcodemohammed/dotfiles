@@ -20,11 +20,6 @@ ShellRoot {
 
     Variants {
         model: Quickshell.screens
-        Osd {}
-    }
-
-    Variants {
-        model: Quickshell.screens
         Island {}
     }
 }
