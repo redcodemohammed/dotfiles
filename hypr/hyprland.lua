@@ -287,6 +287,9 @@ hl.bind(mainMod .. " + CTRL + Print", hl.dsp.exec_cmd([[sh -c 'f=$(ls -t ~/Pictu
 hl.bind(mainMod .. " + code:24", hl.dsp.window.close()) -- Q key, any layout
 hl.bind(mainMod .. " + SHIFT + Escape", hl.dsp.exec_cmd("command -v hyprshutdown >/dev/null 2>&1 && hyprshutdown || hyprctl dispatch 'hl.dsp.exit()'")) -- log out
 hl.bind(mainMod .. " + code:55", hl.dsp.window.float({ action = "toggle" })) -- V key, any layout
+-- N: true fullscreen, covers the bar. M: maximized, bar and gaps stay.
+hl.bind(mainMod .. " + code:57", hl.dsp.window.fullscreen({ mode = "fullscreen", action = "toggle" }))
+hl.bind(mainMod .. " + code:58", hl.dsp.window.fullscreen({ mode = "maximized",  action = "toggle" }))
 
 -- Focus: SUPER + arrows or H J K L. Move window: add Shift. Resize: SUPER + Ctrl + arrows.
 -- Letters by keycode (h = 43, j = 44, k = 45, l = 46). Resize steps 40px and repeats when held.
