@@ -1,0 +1,8 @@
+# Sourced by uwsm for Hyprland sessions only (env-${compositor}); exported to the whole session,
+# systemd user services and D-Bus activated apps included.
+
+# Electron/Chromium apps pick their password store from the desktop name. "Hyprland" isn't on
+# their list, so they fall back to "no keyring". This older GNOME variable makes them use
+# gnome-keyring (libsecret). The value doesn't matter. Side effect: xdg-open treats the session as
+# GNOME and opens files through `gio open` (same default apps).
+export GNOME_DESKTOP_SESSION_ID=this-is-deprecated

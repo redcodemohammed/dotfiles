@@ -155,6 +155,12 @@ Notes:
   misses `libayatana-indicator3.so.7`). Not ours.
 
 **Next: step 11** (section 6 real-machine list, one item per step).
+Open from 2026-10-15:
+- Verify `env-hyprland` after a re-login (see the Electron note in section 8).
+- Claude desktop has no tray icon. Its item `org.freedesktop.StatusNotifierItem-<pid>-1` exists
+  (`/StatusNotifierItem` + `/com/canonical/dbusmenu`, IconPixmap `a(iiay)` 64x64), but it is not in
+  the watcher's `RegisteredStatusNotifierItems`; the bar logged "Ignoring invalid
+  StatusNotifierItem registration" and "Unable to create pixmap" for an earlier instance.
 
 ## 1. What this repo is
 
@@ -380,8 +386,11 @@ Test (configured, untested on the VM):
 - `pam_faillock` is in `system-auth`: never script repeated wrong-password tests.
 - `notify-send --wait -A default=Open` is a good way to test the inbox/island Reply action.
 - (Laptop) Electron apps don't recognise `XDG_CURRENT_DESKTOP=Hyprland` and claim there is no OS
-  keyring (gnome-keyring runs and is unlocked). VS Code: `"password-store": "gnome-libsecret"` in
-  `~/.vscode/argv.json` (done, not in the repo). Other Electron apps: `--password-store=gnome-libsecret`.
+  keyring (gnome-keyring runs and is unlocked). Global fix, not per-app flags (owner's call):
+  `.config/uwsm/env-hyprland` exports `GNOME_DESKTOP_SESSION_ID`, which Chromium checks after
+  `XDG_CURRENT_DESKTOP` and `DESKTOP_SESSION`. Tested on Claude desktop by hand (warning gone);
+  the uwsm file itself is unverified until the next login: check `GNOME_DESKTOP_SESSION_ID` in
+  the bar's environment, then VS Code and Claude desktop. VS Code's `argv.json` is back to stock.
 - (Laptop) `console.log` is debug level: a probe's output may not show. Use `console.warn`.
 - (Laptop) `WheelHandler` received no wheel events on our layer-shell windows; `MouseArea.onWheel`
   did in a test window (but not in a `Volume.qml` attempt, cause unknown).
