@@ -206,6 +206,9 @@ Never edit generated files by hand (they say so in their first line).
   every screen, `fit_mode = cover`, `splash = false`), started from `hyprland.lua`. The image is
   `~/Pictures/Wallpapers/177901-…-landscape.jpg`, outside the repo. Hyprland's solid `bg`
   (`misc.background_color`) stays underneath. The lock screen stays solid.
+- Gaps: 6px everywhere (owner, 2026-10-15), screen edges and bar-to-window included:
+  `gaps_in = 3` (per window edge), `gaps_out = 6`. The spec had 4 between and 0 at the edges.
+  Hidden workspaces re-tile only when shown, so `hyprctl clients` shows their old geometry.
 - Lock screen: Quickshell `WlSessionLock` + `PamContext` in its own instance, run by SUPER+Escape
   through `flock`. PAM file lives in `pam/` and includes `/etc/pam.d/system-auth` by **absolute**
   path (a relative include fails: PAM looks inside the custom dir). hyprlock stays installed as
