@@ -8,6 +8,7 @@ import Quickshell.Services.Notifications
 // entries is the inbox, newest first: a copy of each notification's text plus
 // its arrival time, and the live object while the sender keeps it open.
 // unread counts arrivals since the inbox was last opened.
+// The inbox is saved to the state dir (plain text, capped at 200) and restored on start.
 Singleton {
     id: root
 
@@ -15,6 +16,7 @@ Singleton {
     property bool dnd: false
     property bool inboxOpen: false
     property var entries: []
+    readonly property int historyCap: 200
 
     // Notifications currently shown as popups, newest first. Leaving this list
     // only hides the popup; the entry stays in the inbox.
@@ -54,6 +56,40 @@ Singleton {
         entries = []
     }
 
+    // Persistence. Live notification objects and image hints are not saved.
+    FileView {
+        id: store
+        path: Quickshell.statePath("notifications.json")
+        blockLoading: true
+        atomicWrites: true
+        printErrors: false // the file is missing on first run
+    }
+
+    Timer {
+        id: saveTimer
+        interval: 500
+        onTriggered: store.setText(JSON.stringify(root.entries.map(e => ({
+            id: e.id,
+            appName: e.appName,
+            appIcon: e.appIcon,
+            summary: e.summary,
+            body: e.body,
+            urgent: e.urgent,
+            time: e.time.toISOString(),
+        }))))
+    }
+
+    onEntriesChanged: saveTimer.restart()
+
+    Component.onCompleted: {
+        try {
+            const saved = JSON.parse(store.text() || "[]")
+            entries = saved.map(e => Object.assign(e, { image: "", time: new Date(e.time), notification: null }))
+        } catch (err) {
+            console.warn("notifications: could not read history:", err)
+        }
+    }
+
     NotificationServer {
         id: server
         keepOnReload: true
@@ -63,7 +99,19 @@ Singleton {
 
         onNotification: notification => {
             notification.tracked = true
+
+            // Carried over from before a reload: reattach to its saved entry, nothing new.
+            if (notification.lastGeneration) {
+                const known = root.entries.find(e => e.id === notification.id && !e.notification)
+                if (known) {
+                    known.notification = notification
+                    notification.closed.connect(() => { known.notification = null })
+                    return
+                }
+            }
+
             const entry = {
+                id: notification.id,
                 appName: notification.appName,
                 appIcon: notification.appIcon,
                 image: notification.image,
@@ -73,7 +121,7 @@ Singleton {
                 time: new Date(),
                 notification: notification,
             }
-            root.entries = [entry, ...root.entries]
+            root.entries = [entry, ...root.entries].slice(0, root.historyCap)
             if (!root.inboxOpen)
                 root.unread += 1
             notification.closed.connect(() => {
