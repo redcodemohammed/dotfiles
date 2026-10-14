@@ -3,6 +3,7 @@ import Quickshell
 
 // Top bar, one per screen. Flush with the screen edges, 32px tall.
 PanelWindow {
+    id: bar
     required property var modelData
     screen: modelData
 
@@ -33,6 +34,10 @@ PanelWindow {
         anchors.verticalCenter: parent.verticalCenter
         spacing: 8
 
+        Tray {
+            window: bar
+            anchors.verticalCenter: parent.verticalCenter
+        }
         Volume {}
         Network {
             anchors.verticalCenter: parent.verticalCenter
