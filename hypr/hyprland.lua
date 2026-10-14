@@ -107,8 +107,9 @@ hl.env("HYPRCURSOR_SIZE", "24")
 -- Refer to https://wiki.hypr.land/Configuring/Basics/Variables/
 hl.config({
     general = {
-        gaps_in  = 5,
-        gaps_out = 20,
+        -- 4px between any two things, 0 at screen edges (the bar's 4px comes from the top gap).
+        gaps_in  = 2, -- per window edge: two neighbours end up 4px apart
+        gaps_out = { top = 4, left = 0, right = 0, bottom = 0 },
 
         border_size = 2,
 
