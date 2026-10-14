@@ -103,6 +103,11 @@ Done (section 4):
   the device is `ready` only a moment after start): gray glyph plus number after the network
   item; charging glyph on AC, level glyphs on battery; critical (10% or less on battery) fill
   glyph and number red. On all bars until slim bars exist. Plug/unplug works; critical untested.
+- **Tray right-click menus.** They failed silently: `item.display()` uses Qt platform menus, which
+  need `//@ pragma UseQApplication` (now in `shell.qml`; pragmas need a real `qs` restart). Found by
+  watching D-Bus: `Activate` and dbusmenu `AboutToShow`/`GetLayout` went out, no menu appeared.
+  The menus use Qt's own style, not the design system; the owner is fine with that (a QML menu via
+  `QsMenuOpener` is the alternative).
 
 Notes:
 - GTK is not stowed on purpose (see `.stow-local-ignore` and section 6).
