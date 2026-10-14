@@ -34,14 +34,14 @@ PanelWindow {
             window: bar
             anchors.verticalCenter: parent.verticalCenter
         }
+        Clock { // between the tray and the status icons; the bar centre belongs to the island
+            anchors.verticalCenter: parent.verticalCenter
+        }
         Volume {}
         Network {
             anchors.verticalCenter: parent.verticalCenter
         }
         NotificationCount {}
-        Clock { // far right: the bar centre belongs to the island
-            anchors.verticalCenter: parent.verticalCenter
-        }
     }
 
     WindowTitle {
