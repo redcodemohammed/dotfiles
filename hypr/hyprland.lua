@@ -237,10 +237,10 @@ hl.config({
 
 hl.config({
     input = {
-        kb_layout  = "us",
+        kb_layout  = "us,ara", -- English and Arabic
         kb_variant = "",
         kb_model   = "",
-        kb_options = "",
+        kb_options = "grp:win_space_toggle", -- SUPER + Space switches layout
         kb_rules   = "",
 
         follow_mouse = 1,
