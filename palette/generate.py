@@ -167,7 +167,53 @@ def hypr_palette(palette):
     return f"-- {HEADER}\nreturn {{\n{colors}\n}}\n"
 
 
+def gtk_roles(palette):
+    # libadwaita color roles -> palette. Same mapping for GTK3 (adw-gtk3) and GTK4.
+    ui, n = palette["ui"], palette["ansi"]["normal"]
+    return {
+        "window_bg": ui["surface"], "window_fg": ui["fg"],
+        "view_bg": ui["bg"], "view_fg": ui["fg"],
+        "headerbar_bg": ui["surface"], "headerbar_fg": ui["fg"],
+        "headerbar_border": ui["border"], "headerbar_backdrop": ui["surface"],
+        "sidebar_bg": ui["bg"], "sidebar_fg": ui["fg"],
+        "sidebar_border": ui["border"], "sidebar_backdrop": ui["bg"],
+        "card_bg": ui["surface_selected"], "card_fg": ui["fg"],
+        "dialog_bg": ui["surface"], "dialog_fg": ui["fg"],
+        "popover_bg": ui["surface"], "popover_fg": ui["fg"],
+        "accent_bg": ui["accent"], "accent_fg": ui["on_accent"], "accent": ui["accent"],
+        "destructive_bg": ui["alert"], "destructive_fg": ui["fg"], "destructive": ui["alert"],
+        "error_bg": ui["alert"], "error_fg": ui["fg"], "error": ui["alert"],
+        # No amber warnings: amber means focus, never caution.
+        "warning_bg": ui["border"], "warning_fg": ui["fg"], "warning": ui["fg"],
+        "success_bg": n["green"], "success_fg": ui["bg"], "success": n["green"],
+    }
+
+
+GTK_SHAPE = """
+/* Sharp and flat: no rounding, no window shadows. */
+* { border-radius: 0; }
+decoration, window.csd { box-shadow: none; }
+"""
+
+
+def gtk3_css(palette):
+    colors = "\n".join(f"@define-color {role}_color {value};" for role, value in gtk_roles(palette).items())
+    return f"/* {HEADER} */\n/* GTK3 via adw-gtk3: overrides its named colors. */\n{colors}\n@define-color borders {palette['ui']['border']};\n{GTK_SHAPE}"
+
+
+def gtk4_css(palette):
+    variables = "\n".join(
+        f"    --{role.replace('_', '-')}-color: {value};" for role, value in gtk_roles(palette).items()
+    )
+    return (
+        f"/* {HEADER} */\n/* GTK4 / libadwaita 1.10: CSS variables. */\n:root {{\n{variables}\n"
+        f"    --border-color: {palette['ui']['border']};\n    --window-radius: 0;\n}}\n{GTK_SHAPE}"
+    )
+
+
 OUTPUTS = {
+    "gtk-3.0/gtk.css": gtk3_css,
+    "gtk-4.0/gtk.css": gtk4_css,
     "hypr/hypr_palette.lua": hypr_palette,
     "satty/config.toml": satty_config,
     "vicinae/themes/hypr.toml": vicinae_theme,
