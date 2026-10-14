@@ -4,7 +4,7 @@ import Quickshell.Hyprland
 import Quickshell.Wayland
 import Quickshell.Widgets
 
-// Notification inbox. Same look as popups: 360px wide, top-right, 4px below
+// Notification inbox. Same look as the island card: 360px wide, top-right, 4px below
 // the bar, flush with the right edge. Rows scroll when the list is long.
 // SUPER + I toggles, Escape closes. Opening clears the unread count.
 // J/K or arrows move, Enter runs the default action, X dismisses. Letters by keycode.

@@ -2,7 +2,7 @@ import QtQuick
 
 // Anything unread? Gray bell at zero. Amber filled bell plus count when unread.
 // Do Not Disturb swaps the glyph to a slashed bell; amber still means unread.
-// Click toggles Do Not Disturb: popups stop, the inbox still collects.
+// Click toggles Do Not Disturb: no island cards, the inbox still collects.
 Item {
     id: root
     readonly property int unread: Notifs.unread

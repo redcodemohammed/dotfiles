@@ -26,14 +26,6 @@ Singleton {
     ]
     readonly property var noStorePattern: new RegExp("\\b(" + noStoreApps.join("|") + ")\\b", "i")
 
-    // Notifications currently shown as popups, newest first. Leaving this list
-    // only hides the popup; the entry stays in the inbox.
-    property var popups: []
-
-    function hidePopup(notification) {
-        popups = popups.filter(n => n !== notification)
-    }
-
     function setInbox(open) {
         inboxOpen = open
         if (open)
@@ -134,13 +126,12 @@ Singleton {
             if (!root.inboxOpen)
                 root.unread += 1
             notification.closed.connect(() => {
-                root.hidePopup(notification)
                 entry.notification = null // sender closed it; the inbox keeps the copy
             })
-            if (!root.dnd && !root.inboxOpen) {
-                root.popups = [notification, ...root.popups]
-                IslandState.push("notify", { entry: entry }, entry.urgent) // urgent stays until dismissed
-            }
+            // Shown in the island (urgent stays until dismissed). Do Not Disturb and an open
+            // inbox skip it; the inbox still collects.
+            if (!root.dnd && !root.inboxOpen)
+                IslandState.push("notify", { entry: entry }, entry.urgent)
         }
     }
 
