@@ -18,6 +18,14 @@ Singleton {
     property var entries: []
     readonly property int historyCap: 200
 
+    // Privacy: these apps are shown and kept for the session, never written to disk.
+    // Matched as whole words, case-insensitive, against app name and desktop entry.
+    readonly property var noStoreApps: [
+        "signal", "telegram", "whatsapp", "element", "discord", "slack", // messaging
+        "keepassxc", "bitwarden", "1password",                             // password managers
+    ]
+    readonly property var noStorePattern: new RegExp("\\b(" + noStoreApps.join("|") + ")\\b", "i")
+
     // Notifications currently shown as popups, newest first. Leaving this list
     // only hides the popup; the entry stays in the inbox.
     property var popups: []
@@ -68,7 +76,7 @@ Singleton {
     Timer {
         id: saveTimer
         interval: 500
-        onTriggered: store.setText(JSON.stringify(root.entries.map(e => ({
+        onTriggered: store.setText(JSON.stringify(root.entries.filter(e => !e.noStore).map(e => ({
             id: e.id,
             appName: e.appName,
             appIcon: e.appIcon,
@@ -118,6 +126,7 @@ Singleton {
                 summary: notification.summary,
                 body: notification.body,
                 urgent: notification.urgency === NotificationUrgency.Critical,
+                noStore: root.noStorePattern.test(notification.appName + " " + notification.desktopEntry),
                 time: new Date(),
                 notification: notification,
             }
