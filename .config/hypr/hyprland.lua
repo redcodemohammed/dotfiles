@@ -346,6 +346,9 @@ end
 -- Native fallback: swap hs.dsp.* back to hl.dsp.* and drop the require.
 local hs = require("hyprsplit")
 hs.config({ num_workspaces = 5 })
+-- Fixed ID ranges per screen: main 1-5, laptop 6-10, right 11-15.
+-- hyprsplit compares name or description exactly (no prefix match like hl.monitor).
+hs.monitor_priority({ "HDMI-A-1", "eDP-1", "DP-2" })
 for i = 1, 5 do
     local key = "code:" .. (i + 9)
     hl.bind(mainMod .. " + " .. key,             hs.dsp.focus({ workspace = i }))

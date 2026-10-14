@@ -51,6 +51,10 @@ Done (section 4):
 - **Step 7.** `Island.qml` picks the main screen by model: `Odyssey G5`, else `eDP-1`, else the
   first screen (laptop + LF24T35 without the G5: laptop). Qt lists DP-2 first, so `screens[0]` was
   wrong. Tested in COSMIC with a short `qs -p` instance: the island shows on the G5 only.
+- **Step 8.** `hs.monitor_priority({ "HDMI-A-1", "eDP-1", "DP-2" })`: IDs main 1-5, laptop 6-10,
+  right 11-15 (hyprsplit matches name or description **exactly**, unlike `hl.monitor`'s `desc:`
+  prefix; port names chosen by the owner). `Workspaces.qml` shows each monitor's own workspaces
+  as slots 1-5 (`((id - 1) % 5) + 1`). Untested until step 9: `hyprctl workspaces`, SUPER+1-5 per screen.
 
 Notes:
 - GTK is not stowed on purpose (see `.stow-local-ignore` and section 6).
@@ -61,7 +65,7 @@ Notes:
 - The LocalSend autostart unit fails at every login since before this project (`localsend-bin`
   misses `libayatana-indicator3.so.7`). Not ours.
 
-**Next: step 8 (hyprsplit priority, workspace numbers).** Also, after the pending reboot, check `id -nG` has no `input` and
+**Next: step 9 (first Hyprland login).** Also, after the pending reboot, check `id -nG` has no `input` and
 `/dev/uinput` is `root:uinput` without a per-user ACL.
 
 ## 1. What this repo is
