@@ -1,0 +1,8 @@
+# For features deferred to the real machine. Verify names before installing (CLAUDE.md).
+brightnessctl      # brightness keys (already bound in hyprland.lua), island volume panel brightness row
+playerctl          # media keys (already bound in hyprland.lua), island media
+bluez              # Bluetooth bar item and island event
+bluez-utils
+power-profiles-daemon  # island battery: power profile picker
+obs-studio         # recording for real content (spec)
+# mpv mpv-mpris    # only to test island media without a real player

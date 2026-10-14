@@ -1,0 +1,39 @@
+# Official repos (pacman). Install:
+#   grep -v -e "^#" -e "^$" packages/repo.txt | sudo pacman -S --needed -
+# Core (were already on the VM before the build)
+hyprland
+uwsm
+xdg-desktop-portal-hyprland
+xdg-desktop-portal-gtk
+qt5-wayland
+qt6-wayland
+networkmanager
+polkit-gnome
+alacritty
+ttf-jetbrains-mono-nerd
+noto-fonts
+git
+base-devel
+unzip
+# Audio (pipewire itself is pulled in by these)
+pipewire-pulse
+wireplumber
+libpulse
+# Shell, lock, idle, night light
+quickshell
+hyprlock
+hypridle
+hyprsunset
+# Screenshots, recording
+hyprshot
+satty
+gpu-screen-recorder
+# Input
+keyd
+# Look
+papirus-icon-theme
+adw-gtk-theme
+# Tools used by the configs
+jq
+neovim
+tmux
