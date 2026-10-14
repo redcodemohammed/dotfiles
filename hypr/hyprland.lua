@@ -279,6 +279,8 @@ local mainMod = "SUPER" -- Sets "Windows" key as main modifier
 hl.bind(mainMod .. " + Return", hl.dsp.exec_cmd(terminal))
 hl.bind(mainMod .. " + code:61", hl.dsp.exec_cmd("vicinae toggle")) -- slash key, any layout
 hl.bind(mainMod .. " + code:31", hl.dsp.exec_cmd("qs ipc call inbox toggle")) -- I key: notification inbox
+-- Lock: Quickshell lock in its own instance. flock stops a second locker from starting.
+hl.bind(mainMod .. " + Escape", hl.dsp.exec_cmd([[sh -c 'flock -n "$XDG_RUNTIME_DIR/quickshell-lock.flock" qs -p ~/.config/quickshell-lock']]))
 
 -- Screenshots: saved to the folder and copied to the clipboard. Never all screens at once.
 local shot = "hyprshot -o ~/Pictures/Screenshots "
