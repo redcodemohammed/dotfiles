@@ -30,6 +30,30 @@ Singleton {
             unread = 0
     }
 
+    // Enter: run the sender's default action, if it is still listening.
+    function invoke(entry) {
+        const n = entry.notification
+        const action = n ? n.actions.find(a => a.identifier === "default") : null
+        if (!action)
+            return false
+        action.invoke()
+        return true
+    }
+
+    // X: drop from the inbox and close it at the sender.
+    function dismiss(entry) {
+        entries = entries.filter(e => e !== entry)
+        if (entry.notification)
+            entry.notification.dismiss()
+    }
+
+    function clearAll() {
+        for (const e of entries)
+            if (e.notification)
+                e.notification.dismiss()
+        entries = []
+    }
+
     NotificationServer {
         id: server
         keepOnReload: true
