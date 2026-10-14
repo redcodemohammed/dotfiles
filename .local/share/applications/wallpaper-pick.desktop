@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=Wallpaper
+GenericName=Wallpaper and colours
+Comment=Pick a wallpaper; the desktop's colours follow it
+Exec=wallpaper-pick
+Icon=preferences-desktop-wallpaper
+Terminal=false
+Categories=Settings;DesktopSettings;
+Keywords=wallpaper;background;theme;colours;colors;palette;

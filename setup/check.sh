@@ -12,7 +12,8 @@ done
 echo "== links (stow: the repo mirrors \$HOME, so ~/X must resolve to $D/X)"
 # gtk-3.0 and gtk-4.0 are left out while COSMIC owns gtk.css (see .stow-local-ignore).
 for p in .config/hypr .config/quickshell .config/quickshell-lock .config/alacritty .config/nvim \
-         .config/tmux .config/vicinae .config/satty .config/uwsm .local/share/vicinae/themes/hypr.toml .local/bin/island-build; do
+         .config/tmux .config/vicinae .config/satty .config/uwsm .local/share/vicinae/themes/hypr.toml .local/bin/island-build \
+         .local/bin/wallpaper-apply .local/bin/wallpaper-pick .local/share/applications/wallpaper-pick.desktop; do
     [ "$(readlink -f "$HOME/$p")" = "$D/$p" ] && pass "~/$p" || bad "~/$p should resolve to $D/$p (cd $D && stow -R .)"
 done
 

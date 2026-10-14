@@ -1,0 +1,52 @@
+#!/usr/bin/env bash
+# wallpaper-apply <image>     set the wallpaper and recolour the desktop from it
+# wallpaper-apply --default   back to the hand-made palette (the wallpaper stays)
+#
+# 1. hyprpaper shows the image on every screen now, and hyprpaper.conf keeps it for the next login.
+# 2. palette/from-wallpaper.py writes palette/palette.toml from the image, palette/generate.py
+#    writes every app's colours from it (Quickshell, Hyprland, Alacritty, tmux, Neovim, Vicinae,
+#    satty, GTK css, Spotifast, Strata, keyboard RGB).
+# 3. Running apps are told to reload. Quickshell (bar, island, lock), Spotifast and Hyprland's
+#    own files reload by themselves; the rest is nudged below. Satty and Strata pick it up when
+#    next opened. Owner's request, 2026-10-15.
+set -euo pipefail
+D="$HOME/dotfiles"
+
+# Started from somewhere without Hyprland's environment: find the running instance.
+if [ -z "${HYPRLAND_INSTANCE_SIGNATURE:-}" ]; then
+    HYPRLAND_INSTANCE_SIGNATURE=$(hyprctl -j instances 2>/dev/null | jq -r '.[0].instance // empty')
+    export HYPRLAND_INSTANCE_SIGNATURE
+fi
+
+if [ "${1:-}" = "--default" ]; then
+    python3 -I "$D/palette/from-wallpaper.py" --default
+    what="Default colours"
+elif [ -n "${1:-}" ] && [ -f "$1" ]; then
+    img=$(realpath "$1")
+    for monitor in $(hyprctl -j monitors | jq -r '.[].name'); do
+        hyprctl hyprpaper wallpaper "$monitor,$img,cover" >/dev/null
+    done
+    # hyprpaper.conf keeps it across logins (as ~/... when under $HOME).
+    path=${img/#$HOME/\~}
+    escaped=$(printf '%s' "$path" | sed 's/[&|\\]/\\&/g')
+    sed -i "s|^    path = .*|    path = $escaped|" "$D/.config/hypr/hyprpaper.conf"
+    python3 -I "$D/palette/from-wallpaper.py" "$img"
+    what="Colours from $(basename "$img")"
+else
+    echo "usage: wallpaper-apply <image> | --default" >&2
+    exit 2
+fi
+python3 -I "$D/palette/generate.py" >/dev/null
+
+# Running apps; each is best effort, so a closed app is no error.
+hyprctl reload >/dev/null 2>&1 || true                      # window borders (hypr_palette.lua)
+touch "$HOME/.config/alacritty/alacritty.toml" 2>/dev/null || true  # Alacritty re-reads colors.toml
+tmux source-file "$HOME/.config/tmux/colors.conf" >/dev/null 2>&1 || true
+for sock in "${XDG_RUNTIME_DIR:-/run/user/$UID}"/nvim.*.0; do # every running Neovim
+    [ -S "$sock" ] || continue
+    nvim --server "$sock" --remote-expr \
+        'execute("lua package.loaded.hypr_palette = nil; vim.cmd.colorscheme(\"hypr\")")' >/dev/null 2>&1 || true
+done
+vicinae theme set hypr >/dev/null 2>&1 || true
+systemctl --user try-restart openrgb-kb.service >/dev/null 2>&1 || true  # keyboard RGB (color.env)
+notify-send -a Wallpaper "Wallpaper" "$what" >/dev/null 2>&1 || true

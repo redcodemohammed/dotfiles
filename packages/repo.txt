@@ -36,5 +36,6 @@ papirus-icon-theme
 adw-gtk-theme
 # Tools used by the configs
 jq
+python-pillow
 neovim
 tmux

@@ -158,6 +158,21 @@ Done (section 4):
   the amber marker; a click sets `Pipewire.preferredDefaultAudioSink/Source`. The panel's height
   grows with the lists (`IslandState.volumeHeight`). Clicking the bar's volume block opens it
   (`BarBlock.clickable`, `IslandState.showVolume()`). Works.
+- **Wallpaper picker with matching colours** (owner, 2026-10-15, built unattended overnight):
+  "Wallpaper" in Vicinae's search (`wallpaper-pick.desktop`) lists `~/Pictures/Wallpapers` through
+  `vicinae dmenu` (full paths, for Quick Look previews), plus "Default colours". `wallpaper-apply`
+  sets hyprpaper on every screen and in `hyprpaper.conf`, runs `from-wallpaper.py` (Pillow, OKLCH):
+  accent = the image's most vivid hue at the default amber's lightness (L 0.78, chroma 0.10-0.17,
+  kept 22 degrees away from the alert red, amber kept for gray images); neutrals = the default
+  grays' exact lightness with a faint tint (chroma <= 0.012) of the image's main hue; alert and
+  ANSI colours as default except yellow/grays; WCAG floors (fg 7, fg_muted/accent 4.5, on_accent
+  4.5). Then `generate.py`, and reloads: `hyprctl reload` (borders), touch `alacritty.toml`, tmux
+  `source-file colors.conf`, every Neovim over `--server` (re-runs the colorscheme), `vicinae
+  theme set hypr`, `systemctl --user try-restart openrgb-kb` (keyboard), `notify-send`. Quickshell,
+  the lock (its `Theme.qml` links the bar's) and Spotifast reload on their own; Strata and satty
+  on next open; GTK css is generated but not stowed while COSMIC owns `gtk.css`. Tested from the
+  shell on the current wallpaper (accent #eda480, keyboard FFB08A) and `--default` (back to amber,
+  outputs identical to the commit). Not tested: the Vicinae list itself (needs a click).
 - **SUPER+E** runs `~/.local/scripts/vicinae-emulator.sh` (Android emulator picker; owner's request,
   not in the spec). Works. Note: `hyprctl binds` shows Lua keycode binds with an empty key.
 - **tmux in Alacritty** (owner's choice, changed from one shared session): `[terminal] shell` runs
@@ -189,6 +204,8 @@ Notes:
 **Next: step 11** (section 6 real-machine list, one item per step).
 Open from 2026-10-15:
 - Verify `env-hyprland` after a re-login (see the Electron note in section 8).
+- Try the "Wallpaper" picker in Vicinae: does `vicinae dmenu` show Quick Look previews for the
+  image paths? If the full paths look noisy, switch to names with `--format index`.
 - Claude desktop has no tray icon. Lead: the bar logs `Could not load icon "status_icon_0"`:
   Chromium names its icon and points IconThemePath at a temp folder; Quickshell looks the name up
   in the icon theme only. Its item `org.freedesktop.StatusNotifierItem-<pid>-1` exists
@@ -209,6 +226,8 @@ Open from 2026-10-15:
 | `.config/quickshell-lock/` | the lock screen, a separate Quickshell instance |
 | `pam/quickshell-lock` | the lock's PAM service (loaded from here, `/etc/pam.d` untouched) |
 | `palette/palette.toml` | **the one palette**; `palette/generate.py` writes every app's colors |
+| `palette/from-wallpaper.py`, `palette/palette-default.toml` | palette from a wallpaper; the hand-made palette to go back to |
+| `.local/bin/wallpaper-pick`, `wallpaper-apply`, `.local/share/applications/wallpaper-pick.desktop` | the "Wallpaper" picker in Vicinae and what it runs |
 | `spotifast/Hypr.json`, `strata/hypr.toml` | generated app themes; `generate.py` copies them into `~/.config` as real files (not stowed) |
 | `.config/{alacritty,nvim,tmux,vicinae,satty,gtk-3.0,gtk-4.0}/` | app configs (colors generated) |
 | `.local/share/vicinae/themes/hypr.toml` | Vicinae theme (generated) |
@@ -226,6 +245,10 @@ their other configs, such as fish, atuin and cava, live alongside). Everything u
 `cd ~/dotfiles && stow -n -v -R .` (dry run), then `stow -v -R .`.
 
 After editing `palette/palette.toml`, run `python3 palette/generate.py` and commit the outputs.
+Since 2026-10-15 the palette follows the wallpaper: `wallpaper-apply <image>` rewrites
+`palette.toml` (from `from-wallpaper.py`) and every output, so the repo shows them as modified
+until committed. The hand-made palette is `palette-default.toml`; `wallpaper-apply --default`
+brings it back (and reproduces the committed outputs exactly).
 Never edit generated files by hand (they say so in their first line).
 
 ## 2. Decisions that differ from the spec (all agreed with the owner)
