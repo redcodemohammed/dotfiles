@@ -37,6 +37,7 @@ PanelWindow {
         Network {
             anchors.verticalCenter: parent.verticalCenter
         }
+        NotificationCount {}
     }
 
     WindowTitle {

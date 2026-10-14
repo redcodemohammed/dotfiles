@@ -17,4 +17,7 @@ Singleton {
     readonly property string networkSlash: ""
     readonly property string wifiHigh: ""
     readonly property string wifiSlash: ""
+
+    readonly property string bellSimple: ""
+    readonly property string bellSlash: ""
 }
