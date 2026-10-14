@@ -23,10 +23,6 @@ PanelWindow {
         anchors.verticalCenter: parent.verticalCenter
     }
 
-    Clock {
-        anchors.centerIn: parent
-    }
-
     // Right zone: status items, 8px apart, 8px from the edge.
     Row {
         anchors.right: parent.right
@@ -43,6 +39,9 @@ PanelWindow {
             anchors.verticalCenter: parent.verticalCenter
         }
         NotificationCount {}
+        Clock { // far right: the bar centre belongs to the island
+            anchors.verticalCenter: parent.verticalCenter
+        }
     }
 
     WindowTitle {
