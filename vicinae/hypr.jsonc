@@ -20,6 +20,11 @@
 		"dark": { "name": "hypr" }
 	},
 
+	// Same font as the bar and terminal. Size left to Vicinae.
+	"font": {
+		"normal": { "family": "JetBrainsMono Nerd Font" }
+	},
+
 	// Sharp, flat, solid. 560px wide per the spec. Height is a starting
 	// value: 48 search + 8 rows of 40 + footer, tune on screen.
 	"launcher_window": {
