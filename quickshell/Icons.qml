@@ -20,4 +20,6 @@ Singleton {
 
     readonly property string bellSimple: ""
     readonly property string bellSlash: ""
+
+    readonly property string caretUp: "\ue13c" // island collapse chevron
 }
