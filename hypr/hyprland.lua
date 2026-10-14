@@ -288,11 +288,22 @@ hl.bind(mainMod .. " + code:24", hl.dsp.window.close()) -- Q key, any layout
 hl.bind(mainMod .. " + SHIFT + Escape", hl.dsp.exec_cmd("command -v hyprshutdown >/dev/null 2>&1 && hyprshutdown || hyprctl dispatch 'hl.dsp.exit()'")) -- log out
 hl.bind(mainMod .. " + code:55", hl.dsp.window.float({ action = "toggle" })) -- V key, any layout
 
--- Move focus with mainMod + arrow keys
-hl.bind(mainMod .. " + left",  hl.dsp.focus({ direction = "left" }))
-hl.bind(mainMod .. " + right", hl.dsp.focus({ direction = "right" }))
-hl.bind(mainMod .. " + up",    hl.dsp.focus({ direction = "up" }))
-hl.bind(mainMod .. " + down",  hl.dsp.focus({ direction = "down" }))
+-- Focus: SUPER + arrows or H J K L. Move window: add Shift. Resize: SUPER + Ctrl + arrows.
+-- Letters by keycode (h = 43, j = 44, k = 45, l = 46). Resize steps 40px and repeats when held.
+local directions = {
+    { dir = "left",  arrow = "left",  code = 43, dx = -40, dy = 0 },
+    { dir = "down",  arrow = "down",  code = 44, dx = 0,   dy = 40 },
+    { dir = "up",    arrow = "up",    code = 45, dx = 0,   dy = -40 },
+    { dir = "right", arrow = "right", code = 46, dx = 40,  dy = 0 },
+}
+for _, d in ipairs(directions) do
+    for _, key in ipairs({ d.arrow, "code:" .. d.code }) do
+        hl.bind(mainMod .. " + " .. key,             hl.dsp.focus({ direction = d.dir }))
+        hl.bind(mainMod .. " + SHIFT + " .. key,     hl.dsp.window.move({ direction = d.dir }))
+    end
+    hl.bind(mainMod .. " + CTRL + " .. d.arrow,
+        hl.dsp.window.resize({ x = d.dx, y = d.dy, relative = true }), { repeating = true })
+end
 
 -- Workspaces 1 to 5: SUPER + 1-5 switches, SUPER + Shift + 1-5 sends the window.
 -- Digit keys by keycode (1 = code:10 ... 5 = code:14), so any layout works.
