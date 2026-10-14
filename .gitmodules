@@ -1,0 +1,3 @@
+[submodule "hypr/hyprsplit"]
+	path = hypr/hyprsplit
+	url = https://github.com/shezdy/hyprsplit.git

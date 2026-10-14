@@ -308,12 +308,16 @@ for _, d in ipairs(directions) do
         hl.dsp.window.resize({ x = d.dx, y = d.dy, relative = true }), { repeating = true })
 end
 
--- Workspaces 1 to 5: SUPER + 1-5 switches, SUPER + Shift + 1-5 sends the window.
+-- Workspaces 1 to 5 per monitor via hyprsplit (Lua library, submodule pinned in hypr/hyprsplit).
+-- SUPER + 1-5 switches on the focused monitor, SUPER + Shift + 1-5 sends the window.
 -- Digit keys by keycode (1 = code:10 ... 5 = code:14), so any layout works.
+-- Native fallback: swap hs.dsp.* back to hl.dsp.* and drop the require.
+local hs = require("hyprsplit")
+hs.config({ num_workspaces = 5 })
 for i = 1, 5 do
     local key = "code:" .. (i + 9)
-    hl.bind(mainMod .. " + " .. key,             hl.dsp.focus({ workspace = i }))
-    hl.bind(mainMod .. " + SHIFT + " .. key,     hl.dsp.window.move({ workspace = i }))
+    hl.bind(mainMod .. " + " .. key,             hs.dsp.focus({ workspace = i }))
+    hl.bind(mainMod .. " + SHIFT + " .. key,     hs.dsp.window.move({ workspace = i }))
 end
 
 -- Scroll through existing workspaces with mainMod + scroll
