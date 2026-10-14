@@ -95,6 +95,10 @@ Done (section 4):
   `~/.config/spotifast/themes/Hypr.json`: Spotifast skips symlinked themes, so `spotifast/` is in
   `.stow-local-ignore`. Copies happen only when content differs. Pick "Hypr" in Settings >
   Appearance > Theme. Works.
+- **Strata theme** (owner's request). Custom themes are flat TOML files in
+  `~/.config/strata/themes/<name>.toml` (`name` plus 14 colors, learned from a theme Strata wrote
+  itself). `generate.py` writes `strata/hypr.toml` (syntax colors as in `nvim/colors/hypr.lua`) and
+  copies it there as a real file (symlinks unverified). Selected as "Hypr". Works.
 
 Notes:
 - GTK is not stowed on purpose (see `.stow-local-ignore` and section 6).
@@ -123,7 +127,7 @@ Notes:
 | `.config/quickshell-lock/` | the lock screen, a separate Quickshell instance |
 | `pam/quickshell-lock` | the lock's PAM service (loaded from here, `/etc/pam.d` untouched) |
 | `palette/palette.toml` | **the one palette**; `palette/generate.py` writes every app's colors |
-| `spotifast/Hypr.json` | generated Spotifast theme; `generate.py` copies it into `~/.config` (no stow: the app skips symlinks) |
+| `spotifast/Hypr.json`, `strata/hypr.toml` | generated app themes; `generate.py` copies them into `~/.config` as real files (not stowed) |
 | `.config/{alacritty,nvim,tmux,vicinae,satty,gtk-3.0,gtk-4.0}/` | app configs (colors generated) |
 | `.local/share/vicinae/themes/hypr.toml` | Vicinae theme (generated) |
 | `keyd/default.conf` | Caps Lock: tap Escape, hold Ctrl |

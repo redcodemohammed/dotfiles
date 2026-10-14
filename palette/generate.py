@@ -222,6 +222,22 @@ def spotifast_theme(palette):
     return json.dumps({"base": "dark", "colors": colors}, indent=2) + "\n"
 
 
+def strata_theme(palette):
+    # Strata custom theme, one flat TOML file per theme, listed as "Hypr".
+    # Syntax colors as in .config/nvim/colors/hypr.lua; dim_text is the comment color.
+    ui, n, b = palette["ui"], palette["ansi"]["normal"], palette["ansi"]["bright"]
+    keys = {
+        "name": "Hypr",
+        "background": ui["bg"], "surface": ui["surface"], "text": ui["fg"],
+        "accent": ui["accent"], "danger": ui["alert"],
+        "muted": ui["surface_selected"], "highlight": ui["surface_selected"], "border": ui["border"],
+        "dim_text": ui["fg_muted"],
+        "syntax_keyword": n["magenta"], "syntax_string": n["green"], "syntax_constant": n["cyan"],
+        "syntax_type": b["blue"], "syntax_preprocessor": n["magenta"],
+    }
+    return f"# {HEADER}\n" + "".join(f'{key} = "{value}"\n' for key, value in keys.items())
+
+
 def gtk3_css(palette):
     colors = "\n".join(f"@define-color {role}_color {value};" for role, value in gtk_roles(palette).items())
     return f"/* {HEADER} */\n/* GTK3 via adw-gtk3: overrides its named colors. */\n{colors}\n@define-color borders {palette['ui']['border']};\n{GTK_SHAPE}"
@@ -250,12 +266,15 @@ OUTPUTS = {
     ".config/nvim/lua/hypr_palette.lua": nvim_palette,
     ".config/openrgb-kb/color.env": keyboard_env,
     "spotifast/Hypr.json": spotifast_theme,  # not stowed: see COPIES
+    "strata/hypr.toml": strata_theme,  # not stowed: see COPIES
 }
 
 # Apps that skip symlinked files get a real copy in $HOME; the repo file stays the tracked source.
+# Spotifast documents it; Strata is unverified, copied to be safe.
 # Written only when the content differs, so setup/check.sh changes nothing when up to date.
 COPIES = {
     "spotifast/Hypr.json": "~/.config/spotifast/themes/Hypr.json",
+    "strata/hypr.toml": "~/.config/strata/themes/hypr.toml",
 }
 
 
