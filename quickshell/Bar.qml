@@ -26,6 +26,16 @@ PanelWindow {
         anchors.centerIn: parent
     }
 
+    // Right zone: status items, 8px apart, 8px from the edge.
+    Row {
+        anchors.right: parent.right
+        anchors.rightMargin: 8
+        anchors.verticalCenter: parent.verticalCenter
+        spacing: 8
+
+        Volume {}
+    }
+
     WindowTitle {
         screen: modelData
         anchors.left: workspaces.right
