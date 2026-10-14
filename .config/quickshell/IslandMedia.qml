@@ -1,5 +1,4 @@
 import QtQuick
-import Quickshell.Io
 import Quickshell.Services.Mpris
 import Quickshell.Services.Pipewire
 
@@ -11,10 +10,8 @@ import Quickshell.Services.Pipewire
 // Lyrics (owner's addition): a mode, toggled in the expanded notch, that stays on when it
 // collapses. On: the expanded notch shows a lyrics view of the same size instead of the player,
 // and the compact one shows the line being sung (microphone glyph) instead of title and artist.
-// They come from LRCLIB (lrclib.net, owner's choice): searched by title and artist, the result
-// closest to the track's length wins, synced over plain. Fetched only while the view is open,
-// once per track. Synced lyrics show five lines with the sung one bright; without synced lyrics
-// the compact notch keeps the title.
+// Synced lyrics show five lines with the sung one bright; without them the compact notch keeps
+// the title. Mode and lyrics live in Lyrics.qml (shared across screens; source LRCLIB).
 Item {
     id: root
     required property bool open
@@ -31,91 +28,10 @@ Item {
     // MPRIS players don't push their position: refresh it while playing and shown, once a second,
     // or four times a second while lyrics follow the song.
     Timer {
-        interval: root.lyricsOn ? 250 : 1000
+        interval: Lyrics.shown ? 250 : 1000
         repeat: true
         running: root.visible && root.player !== null && root.player.isPlaying
         onTriggered: root.player.positionChanged()
-    }
-
-    // Lyrics
-    property bool lyricsOn: false
-    readonly property bool lyricsCompact: lyricsOn && lyricsStatus === "synced" // compact shows the line
-    readonly property string lyricsNow: lyricsLine >= 0 ? (lyricsLines[lyricsLine].text || "♪") : "♪"
-    readonly property string trackKey: player ? player.trackTitle + "|" + player.trackArtist : ""
-    property string lyricsKey: ""     // the track the lyrics below belong to
-    property string requestKey: ""    // the track being looked up
-    property string lyricsStatus: ""  // loading, synced, plain, instrumental, none
-    property var lyricsLines: []      // synced: [{ t: seconds, text }]
-    property string lyricsPlain: ""
-    readonly property int lyricsLine: { // index of the line being sung, -1 before the first
-        if (lyricsStatus !== "synced" || !player)
-            return -1
-        let i = -1
-        for (let k = 0; k < lyricsLines.length && lyricsLines[k].t <= player.position + 0.3; k++)
-            i = k
-        return i
-    }
-    onLyricsOnChanged: if (lyricsOn) fetchLyrics()
-    onTrackKeyChanged: if (lyricsOn) fetchLyrics()
-
-    function fetchLyrics() {
-        if (!player || trackKey === "" || trackKey === lyricsKey || lyricsFetch.running)
-            return
-        requestKey = trackKey
-        lyricsStatus = "loading"
-        lyricsFetch.command = ["curl", "-sf", "-G", "--max-time", "8",
-            "-A", "hypr-dotfiles island (github.com/redcodemohammed/dotfiles)",
-            "--data-urlencode", "track_name=" + player.trackTitle,
-            "--data-urlencode", "artist_name=" + player.trackArtist,
-            "https://lrclib.net/api/search"]
-        lyricsFetch.running = true
-    }
-
-    function applyLyrics(json) {
-        if (requestKey !== trackKey)
-            return // the track changed while looking up; onExited looks up the new one
-        let results = []
-        try { results = JSON.parse(json) } catch (err) {}
-        const len = player && player.lengthSupported ? player.length : 0
-        if (len > 0) {
-            results = results.filter(r => Math.abs(r.duration - len) <= 3)
-            results.sort((a, b) => Math.abs(a.duration - len) - Math.abs(b.duration - len))
-        }
-        const synced = results.find(r => r.syncedLyrics)
-        const plain = results.find(r => r.plainLyrics)
-        lyricsLines = []
-        lyricsPlain = ""
-        if (synced) {
-            for (const line of synced.syncedLyrics.split("\n")) {
-                const m = line.match(/^\[(\d+):(\d+(?:\.\d+)?)\]\s?(.*)$/)
-                if (m)
-                    lyricsLines.push({ t: Number(m[1]) * 60 + Number(m[2]), text: m[3] })
-            }
-            lyricsLines = lyricsLines // notify bindings
-            lyricsStatus = "synced"
-        } else if (plain) {
-            lyricsPlain = plain.plainLyrics
-            lyricsStatus = "plain"
-        } else {
-            lyricsStatus = results.some(r => r.instrumental) ? "instrumental" : "none"
-        }
-        lyricsKey = requestKey
-    }
-
-    Process {
-        id: lyricsFetch
-        stdout: StdioCollector {
-            id: lyricsOut
-            onStreamFinished: root.applyLyrics(lyricsOut.text)
-        }
-        onExited: code => {
-            if (code !== 0 && root.requestKey === root.trackKey) {
-                root.lyricsStatus = "none" // offline, timeout or an HTTP error
-                root.lyricsKey = root.requestKey
-            }
-            if (root.lyricsOn && root.trackKey !== root.lyricsKey)
-                Qt.callLater(root.fetchLyrics)
-        }
     }
 
     component Button: Rectangle {
@@ -157,7 +73,7 @@ Item {
         Text {
             id: bars
             anchors.verticalCenter: parent.verticalCenter
-            text: root.lyricsCompact ? Icons.microphoneStage : Icons.equalizer
+            text: Lyrics.compact ? Icons.microphoneStage : Icons.equalizer
             font.family: Icons.regular
             font.pixelSize: 16
             color: Theme.fg
@@ -179,7 +95,7 @@ Item {
                 id: titleCompact
                 anchors.verticalCenter: parent.verticalCenter
                 width: Math.min(implicitWidth, parent.width)
-                text: root.lyricsCompact ? root.lyricsNow : root.player ? root.player.trackTitle : ""
+                text: Lyrics.compact ? Lyrics.now : root.player ? root.player.trackTitle : ""
                 elide: Text.ElideRight
                 font.family: "JetBrainsMono Nerd Font"
                 font.pixelSize: 13
@@ -189,7 +105,7 @@ Item {
                 anchors.verticalCenter: parent.verticalCenter
                 x: titleCompact.width + 8
                 width: parent.width - x
-                visible: !root.lyricsCompact && width > 24
+                visible: !Lyrics.compact && width > 24
                 text: root.player ? root.player.trackArtist : ""
                 elide: Text.ElideRight
                 font.family: "JetBrainsMono Nerd Font"
@@ -201,7 +117,7 @@ Item {
 
     // Expanded player view (the island draws the chevron in the header's right corner)
     Column {
-        visible: root.open && !root.lyricsOn
+        visible: root.open && !Lyrics.shown
         x: 12
         y: 12
         width: parent.width - 24
@@ -340,8 +256,8 @@ Item {
                 Button {
                     glyph: Icons.microphoneStage
                     toggle: true
-                    on: root.lyricsOn
-                    onPressed: root.lyricsOn = !root.lyricsOn
+                    on: Lyrics.shown
+                    onPressed: Lyrics.shown = !Lyrics.shown
                 }
             }
 
@@ -394,7 +310,7 @@ Item {
     // Expanded lyrics view: same size as the player view. Title, the lyrics toggle (back to the
     // player) beside the island's chevron, then five lines with the sung one bright.
     Item {
-        visible: root.open && root.lyricsOn
+        visible: root.open && Lyrics.shown
         x: 12
         y: 12
         width: parent.width - 24
@@ -426,23 +342,23 @@ Item {
                 id: lyricsBack
                 anchors.fill: parent
                 hoverEnabled: true
-                onClicked: root.lyricsOn = false
+                onClicked: Lyrics.shown = false
             }
         }
 
         Column { // synced: two lines before, the sung line, two after
             y: 32
             width: parent.width
-            visible: root.lyricsStatus === "synced"
+            visible: Lyrics.status === "synced"
             Repeater {
                 model: 5
                 Text {
                     required property int index
-                    readonly property int line: root.lyricsLine - 2 + index
+                    readonly property int line: Lyrics.line - 2 + index
                     width: parent.width
                     height: 20
                     verticalAlignment: Text.AlignVCenter
-                    text: line >= 0 && line < root.lyricsLines.length ? (root.lyricsLines[line].text || "♪") : ""
+                    text: line >= 0 && line < Lyrics.lines.length ? (Lyrics.lines[line].text || "♪") : ""
                     elide: Text.ElideRight
                     font.family: "JetBrainsMono Nerd Font"
                     font.pixelSize: 13
@@ -455,13 +371,13 @@ Item {
             y: 32
             width: parent.width
             height: parent.height - 32
-            visible: root.lyricsStatus === "plain"
+            visible: Lyrics.status === "plain"
             clip: true
             contentHeight: plainText.implicitHeight
             Text {
                 id: plainText
                 width: parent.width
-                text: root.lyricsPlain
+                text: Lyrics.plain
                 wrapMode: Text.WordWrap
                 lineHeight: 20
                 lineHeightMode: Text.FixedHeight
@@ -474,10 +390,10 @@ Item {
         Text { // loading, nothing found, instrumental
             y: 32 + 40
             width: parent.width
-            visible: ["loading", "none", "instrumental"].indexOf(root.lyricsStatus) >= 0
+            visible: ["loading", "none", "instrumental"].indexOf(Lyrics.status) >= 0
             horizontalAlignment: Text.AlignHCenter
-            text: root.lyricsStatus === "loading" ? "Looking up lyrics…"
-                : root.lyricsStatus === "instrumental" ? "Instrumental" : "No lyrics found"
+            text: Lyrics.status === "loading" ? "Looking up lyrics…"
+                : Lyrics.status === "instrumental" ? "Instrumental" : "No lyrics found"
             font.family: "JetBrainsMono Nerd Font"
             font.pixelSize: 13
             color: Theme.fgMuted

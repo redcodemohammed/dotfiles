@@ -53,6 +53,7 @@ Done (section 4):
 - **Step 7.** `Island.qml` picks the main screen by model: `Odyssey G5`, else `eDP-1`, else the
   first screen (laptop + LF24T35 without the G5: laptop). Qt lists DP-2 first, so `screens[0]` was
   wrong. Tested in COSMIC with a short `qs -p` instance: the island shows on the G5 only.
+  Superseded 2026-10-15: the island follows the focused screen (owner).
 - **Step 8.** `hs.monitor_priority({ "HDMI-A-1", "eDP-1", "DP-2" })`: IDs main 1-5, laptop 6-10,
   right 11-15 (hyprsplit matches name or description **exactly**, unlike `hl.monitor`'s `desc:`
   prefix; port names chosen by the owner). `Workspaces.qml` shows each monitor's own workspaces
@@ -139,14 +140,16 @@ Done (section 4):
   title and artist. Source: LRCLIB (`lrclib.net/api/search`, via `curl`, owner's choice): title and
   artist go to lrclib.net, once per track, only while the mode is on; the result closest to the
   track length (within 3 s) wins, synced over plain. Plain-only lyrics: drag to scroll; compact
-  keeps the title. Position refresh is 250 ms while lyrics are on.
-- **Island as a notch** (owner): joined to the screen's top edge in the bar colour, rounded bottom
-  corners (12), shoulders that flare into the edge (`IslandEar.qml`, Qt Quick Shapes, 24px; 10 was
-  invisible, 32 looked wrong), drawn after the notch so they cover its side border. No border
-  except red for alerts. Slides down on appear and up on hide (120ms linear), keeping its last
-  content while it slides out. Compact reaches the bar's bottom edge (y 0-38).
+  keeps the title. Position refresh is 250 ms while lyrics are on. Mode and lyrics live in the
+  `Lyrics.qml` singleton, shared by every screen's island (one lookup, the mode follows focus).
+- **Island as a notch** (owner): joined to the screen's top edge in the bar colour, compact reaching
+  the bar's bottom edge (y 0-38), expanded growing down. Square, with a subtle 2px `#333333` border
+  (red for alerts) whose top line sits off-screen. Rounded corners and concave "shoulders" were
+  tried and removed by the owner (they clashed with the square bar blocks). Slides down on appear
+  and up on hide (120ms linear), keeping its last content while it slides out. Shows on the
+  **focused screen** (`monitor.focused`), no longer pinned to the G5; moving focus slides it over.
 - **Bar widgets float**: the bar is transparent, each widget sits on a `BarBlock` (bar colour, 32px,
-  8px padding, 6px apart). Block visibility is bound to the widget's condition, not its `visible`
+  8px padding, 6px apart, the notch's subtle 2px border). Block visibility is bound to the widget's condition, not its `visible`
   (a child of a hidden block reads as hidden, so it would never come back).
 - **SUPER+E** runs `~/.local/scripts/vicinae-emulator.sh` (Android emulator picker; owner's request,
   not in the spec). Works. Note: `hyprctl binds` shows Lua keycode binds with an empty key.
@@ -431,6 +434,8 @@ Test (configured, untested on the VM):
   did in a test window (but not in a `Volume.qml` attempt, cause unknown).
 - (Laptop) An inline `component` declared inside `Island.qml` (root: `PanelWindow`) failed with
   "Ear is not a type"; inside Item-rooted files it works. Use a separate file there.
+- (Laptop) Hyprland's automatic reload on save applies most options (gaps did) but not monitor
+  rules: after editing `hl.monitor`, run `hyprctl reload`.
 - (Laptop) Renaming a QML property: rename its change handler too, which is capitalised
   (`lyricsOpen` -> `lyricsOn` also means `onLyricsOpenChanged` -> `onLyricsOnChanged`), or the
   reload fails with "Cannot assign to non-existent property".
