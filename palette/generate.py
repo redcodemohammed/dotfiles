@@ -62,7 +62,32 @@ def nvim_palette(palette):
     )
 
 
+def tmux_colors(palette):
+    ui, n, b = palette["ui"], palette["ansi"]["normal"], palette["ansi"]["bright"]
+    # tmux 3.6+ keeps its own theme palette (themegreen etc), separate from ANSI.
+    theme = {
+        "black": n["black"], "white": n["white"], "light-grey": ui["fg_muted"],
+        "dark-grey": ui["border"], "green": n["green"], "yellow": n["yellow"],
+        "red": n["red"], "blue": n["blue"], "cyan": n["cyan"], "magenta": n["magenta"],
+    }
+    styles = {
+        "status-style": f"fg={ui['fg_muted']},bg={ui['bg']}",
+        "window-status-style": f"fg={ui['fg_muted']},bg={ui['bg']}",
+        # Active window: amber fill, dark text, like the active workspace.
+        "window-status-current-style": f"fg={ui['on_accent']},bg={ui['accent']}",
+        "pane-border-style": f"fg={ui['border']}",
+        "pane-active-border-style": f"fg={ui['accent']}",
+        "message-style": f"fg={ui['fg']},bg={ui['surface']}",
+        "message-command-style": f"fg={ui['fg']},bg={ui['surface']}",
+        "mode-style": f"fg={ui['fg']},bg={ui['surface_selected']}",
+    }
+    lines = [f'set -s dark-theme-{name} "{value}"' for name, value in theme.items()]
+    lines += [f'set -g {name} "{value}"' for name, value in styles.items()]
+    return f"# {HEADER}\n\n" + "\n".join(lines) + "\n"
+
+
 OUTPUTS = {
+    "tmux/colors.conf": tmux_colors,
     "quickshell/Theme.qml": theme_qml,
     "alacritty/colors.toml": alacritty_colors,
     "nvim/lua/hypr_palette.lua": nvim_palette,
