@@ -315,7 +315,10 @@ Test (configured, untested on the VM):
 - Quickshell live-reloads on save. A reload that fails keeps the old config running.
   Several files saved within a second can make the reload miss later edits: append a comment to
   `.config/quickshell/Bar.qml` with `>>`, then remove it. Identical rewrites don't reload.
-- New fonts need a real `qs` restart (Qt reads fonts once). So does the `//@ pragma IconTheme`.
+- New fonts need a real `qs` restart (Qt reads fonts once). So does the `//@ pragma IconTheme`,
+  and so do icons of apps installed after `qs` started (Qt caches the icon folders): a tray icon
+  shows as a pink and black checkerboard with `Could not load icon "<name>"` in `qs log`.
+  Restart: `kill <bar pid>`, then `hyprctl dispatch 'hl.dsp.exec_cmd("qs")'`.
 - `qs log` without flags shows the newest instance (often a test one). With the lock running
   there are two `qs` processes: use `qs log --pid <bar pid>`.
 - `qs ipc call ...` only finds instances on the caller's display: set `WAYLAND_DISPLAY`
