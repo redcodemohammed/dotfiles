@@ -10,7 +10,7 @@ decorations = "None"
 
 [font]
 normal = { family = "JetBrainsMono Nerd Font", style = "Regular" }
-# Matched to the 13px bar text: 13px = 9.75pt at 96 DPI.
+# 13pt (owner, 2026-10-15): about 17px at 96 DPI, larger than the bar's 13px text (was 9.75pt = 13px).
 size = 13
 
 [cursor]
