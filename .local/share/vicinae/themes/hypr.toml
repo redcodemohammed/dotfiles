@@ -7,84 +7,84 @@ variant = "dark"
 inherits = "vicinae-dark"
 
 [colors.core]
-accent = "#f5a524"
-accent_foreground = "#0e1115"
-background = "#171a1e"
-foreground = "#e4e6e9"
-secondary_background = "#171a1e"
-border = "#303338"
+accent = "#e7a875"
+accent_foreground = "#14100b"
+background = "#1d1914"
+foreground = "#e9e6e2"
+secondary_background = "#1d1914"
+border = "#37322c"
 
 [colors.main_window]
-border = "#303338"
+border = "#37322c"
 
 [colors.settings_window]
-border = "#303338"
+border = "#37322c"
 
 [colors.accents]
 blue = "#6f9bc9"
 green = "#8caf78"
 magenta = "#b78db8"
-orange = "#f5a524"
+orange = "#e7a875"
 red = "#d46a6e"
-yellow = "#f5a524"
+yellow = "#e7a875"
 cyan = "#6db5b1"
 purple = "#b78db8"
 
 [colors.shortcut]
-border = "#303338"
+border = "#37322c"
 
 [colors.text]
-default = "#e4e6e9"
-muted = "#888a8d"
+default = "#e9e6e2"
+muted = "#8c8a86"
 danger = "#e5484d"
 success = "#8caf78"
-placeholder = "#888a8d"
+placeholder = "#8c8a86"
 
 [colors.text.selection]
-background = "#212429"
-foreground = "#e4e6e9"
+background = "#28231e"
+foreground = "#e9e6e2"
 
 [colors.text.links]
 default = "#6f9bc9"
 visited = "#b78db8"
 
 [colors.input]
-border = "#303338"
-border_focus = "#f5a524"
+border = "#37322c"
+border_focus = "#e7a875"
 border_error = "#e5484d"
 
 [colors.button.primary]
-background = "#212429"
-foreground = "#e4e6e9"
+background = "#28231e"
+foreground = "#e9e6e2"
 
 [colors.button.primary.hover]
-background = "#303338"
+background = "#37322c"
 
 [colors.button.primary.focus]
-outline = "#f5a524"
+outline = "#e7a875"
 
 [colors.list.item.hover]
-foreground = "#e4e6e9"
-secondary_foreground = "#e4e6e9"
+foreground = "#e9e6e2"
+secondary_foreground = "#e9e6e2"
 
 [colors.list.item.selection]
-background = "#212429"
-foreground = "#e4e6e9"
-secondary_background = "#212429"
-secondary_foreground = "#e4e6e9"
+background = "#28231e"
+foreground = "#e9e6e2"
+secondary_background = "#28231e"
+secondary_foreground = "#e9e6e2"
 
 [colors.grid.item]
-background = "#171a1e"
+background = "#1d1914"
 
 [colors.grid.item.hover]
-outline = "#303338"
+outline = "#37322c"
 
 [colors.grid.item.selection]
-outline = "#f5a524"
+outline = "#e7a875"
 
 [colors.scrollbars]
-background = "#303338"
+background = "#37322c"
 
 [colors.loading]
-bar = "#888a8d"
-spinner = "#888a8d"
+bar = "#8c8a86"
+spinner = "#8c8a86"
