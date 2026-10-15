@@ -114,7 +114,7 @@ Done (section 4):
 - **Step 11.3 brightness keys: work** on the laptop panel (backlight `nvidia_0`). No `video` group
   needed: `brightnessctl` 0.5 is linked to libsystemd and falls back to logind `SetBrightness`,
   which logind allows only from the foreground session (calls from a background session fail with
-  "Operation not permitted" / "Session is not in foreground"). Externals: DDC, not done.
+  "Operation not permitted" / "Session is not in foreground"). Externals (DDC): not wanted (owner, 2026-10-15).
 - **Island brightness.** The kernel sends a udev `change` event per backlight write, so
   `IslandState.qml` runs `udevadm monitor --subsystem-match=backlight` and re-reads the level with
   `brightnessctl -m` (no polling). New transient kind `brightness` (owner's choice): the compact
@@ -307,7 +307,8 @@ Open from 2026-10-15:
 - Wallpaper: an image now (owner, 2026-10-15, overriding the spec's "solid color is final"):
   hyprpaper 0.8 with `.config/hypr/hyprpaper.conf` (one `wallpaper {}` block, empty `monitor` =
   every screen, `fit_mode = cover`, `splash = false`), started from `hyprland.lua`. The image is
-  `~/Pictures/Wallpapers/1vw3sfub05841.png` (1920x1080), outside the repo; change it live with
+  `~/Pictures/Wallpapers/wallpaperflare.com_wallpaper (1).jpg` (2560x1600; amber accent #f5a524,
+  blue-tinted neutrals, from the picker 2026-10-15), outside the repo; change it live with
   `hyprctl hyprpaper wallpaper '<monitor>,<path>,cover'`. Hyprland's solid `bg`
   (`misc.background_color`) stays underneath. The lock screen stays solid.
 - Gaps: 6px everywhere (owner, 2026-10-15), screen edges and bar-to-window included:
@@ -425,7 +426,10 @@ Follow `CLAUDE.md` safety rules. Before each step: tell the owner what changes a
 Build:
 - OBS for real content (spec).
 - Brightness: OSD now lives in the island volume panel (Brightness row, `hasBrightness` in
-  `IslandState.qml`); brightness keys are already bound to `brightnessctl`. Externals may need DDC.
+  `IslandState.qml`); brightness keys are already bound to `brightnessctl`. External-monitor
+  brightness (DDC): not wanted (owner, 2026-10-15).
+- Per-app notification quiet rules for chat apps: not wanted (owner, 2026-10-15; overrides the
+  spec's "Per-app notification rules: yes").
 - Bar items: Bluetooth, battery (laptop only), media (only while playing), mic/camera indicator
   (red, only when live). Slim bars on non-main screens (spec table).
 - New island events the owner asked for: Wi-Fi connected, Bluetooth device connected. Not in the
