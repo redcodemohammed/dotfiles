@@ -110,6 +110,15 @@ Singleton {
             } catch (err) {}
         }
     }
+    // An incoming call (kcd telephony): { name, number, muted } while the phone rings. kcd can mute
+    // the ringer but not reject (the Android app can't).
+    property var call: null
+    function muteCall() {
+        Quickshell.execDetached(["kcd", "call", "mute", deviceId])
+        if (call)
+            call = Object.assign({}, call, { muted: true })
+    }
+
     function unpair() {
         Quickshell.execDetached(["kcd", "unpair", deviceId])
     }
@@ -190,11 +199,22 @@ Singleton {
         }
         case "device.connected":
             if (ours)
-                connected = true
+                connected = true // the battery comes with the phone's next report (kcd caches no reading)
             break
         case "device.disconnected":
-            if (ours)
+            if (ours) {
                 connected = false
+                call = null
+            }
+            break
+        case "telephony.ringing":
+            if (ours)
+                call = { name: p.contactName || p.phoneNumber || "Unknown caller", number: p.phoneNumber || "", muted: false }
+            break
+        case "telephony.canceled":
+        case "telephony.missed":
+            if (ours)
+                call = null
             break
         case "battery.update":
             if (ours) {
@@ -267,6 +287,12 @@ Singleton {
                 { id: "test-2", app: "Messages", title: "Zain", text: "Your verification code is 482913. Do not share it.",
                   replyId: "", time: root.hhmm(), unread: true },
             ].concat(root.notifications))
+        }
+        function testCall(): void {
+            root.call = { name: "Bahaa", number: "+964 770 123 4567", muted: false }
+        }
+        function endCall(): void {
+            root.call = null
         }
         function clearTest(): void {
             root.setNotifications(root.notifications.filter(n => !String(n.id).startsWith("test-")))

@@ -15,11 +15,12 @@ PopupWindow {
     id: panel
     required property var bar
     required property var block // the bar's phone block
+    property real below: 0 // the incoming-call card's height and gap, while it shows (Bar.qml)
 
     anchor.window: bar
     anchor.item: block
     anchor.rect.x: block.width - implicitWidth
-    anchor.rect.y: block.height + 4
+    anchor.rect.y: block.height + 4 + below
     implicitWidth: 420
     implicitHeight: body.height
     color: "transparent"

@@ -38,10 +38,16 @@ PanelWindow {
         id: networkPanel
         bar: bar
     }
+    PhoneCall { // while the phone rings: under the phone block, above the panel
+        id: phoneCall
+        bar: bar
+        block: phoneBlock
+    }
     PhonePanel { // drops from the phone block, its right edge on the block's
         id: phonePanel
         bar: bar
         block: phoneBlock
+        below: phoneCall.visible ? phoneCall.implicitHeight + 4 : 0
     }
     Connections { // qs ipc call phone open, on this screen
         target: Phone

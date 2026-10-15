@@ -346,6 +346,14 @@ Done (section 4):
   `systemctl --user try-restart kcd.service`. kcd matches per-app rules on the app's display
   name (code), not the package name its example says. Switched-off features hide their actions.
   Works.
+- **Phone bridge, step 5: incoming-call card** (`PhoneCall.qml`). kcd `telephony.ringing`
+  ({contactName, phoneNumber}) shows a 420 wide card under the phone block (right edge on the
+  block's), panel or not; `canceled`/`missed`/disconnect hide it. A layer-shell `PanelWindow`
+  (Top layer, no keyboard focus), not a popup. Mute ring = `kcd call mute` (card says Muted); Reject
+  left out (owner; the Android app can't). An open panel drops below it (`PhonePanel.below`).
+  Test hooks: `qs ipc call phone testCall` / `endCall`. kcd caches no battery after a restart and
+  `kcd battery` only reads the cache: the header's % returns with the phone's next report. The
+  phone bridge is complete. Works.
 - **Claude desktop tray icon: works** (checked 2026-10-15). Chromium offers its icon two ways:
   pixels only (`IconPixmap`, normal start) or, when it thinks it runs on GNOME
   (`GNOME_DESKTOP_SESSION_ID`, set session-wide by `env-hyprland`), a named icon in a temp folder

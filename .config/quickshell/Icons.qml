@@ -91,6 +91,7 @@ Singleton {
     readonly property string bellRinging: "\ue5e8"
     readonly property string clipboardText: "\ue198"
     readonly property string uploadSimple: "\ue4c0"
+    readonly property string phoneIncoming: "\ue3be" // the phone's incoming-call card
 
     // Wi-Fi signal level 1-4 from Quickshell's strength (0-1), for the bar block and the panel.
     function wifiLevel(strength) {
