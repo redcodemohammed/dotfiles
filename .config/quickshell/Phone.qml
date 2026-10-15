@@ -151,6 +151,36 @@ Singleton {
         addTransfer({ name: path.split("/").pop(), up: true, current: 0, total: 0, state: "sending", error: "" })
         Quickshell.execDetached(["kcd", "share", deviceId, path])
     }
+    // Browse phone files (owner's request): kcd mounts the phone's storage over SFTP with sshfs under
+    // $XDG_RUNTIME_DIR/kcd/mnt (writable, kcd's default) and prints the mount point, which opens in
+    // the default folder handler (Strata). Mounting again reuses the mount. The phone must allow the
+    // KDE Connect app file access. Prints "ok <path>" or "error <kcd's last line>".
+    property bool mounting: false
+    signal mountFailed(string message)
+    function browseFiles() {
+        if (mounter.running)
+            return
+        mounting = true
+        mounter.command = ["sh", "-c", '
+            out=$(kcd sftp mount "$1" 2>&1) || { printf "error %s\n" "$(printf "%s" "$out" | tail -n 1)"; exit 1; }
+            dir=$(printf "%s" "$out" | tail -n 1)
+            setsid xdg-open "$dir" >/dev/null 2>&1 &
+            echo "ok $dir"', "sh", deviceId]
+        mounter.running = true
+    }
+    Process {
+        id: mounter
+        stdout: StdioCollector {
+            id: mountOut
+            onStreamFinished: {
+                const r = mountOut.text.trim()
+                if (!r.startsWith("ok ")) // first, so the panel stays open to say why
+                    root.mountFailed(r.replace(/^error /, "") || "Couldn't mount the phone")
+                root.mounting = false
+            }
+        }
+    }
+
     // Transfers, newest first, the last five: { name, up, current, total, state, error }, state
     // sending / receiving / done / failed. Received files land in ~/Downloads/kcd (kcd's default).
     property var transfers: []

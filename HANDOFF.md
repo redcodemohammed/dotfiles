@@ -364,6 +364,12 @@ Done (section 4):
   phone" = `~/.local/bin/phone-screenshot` (grim of the focused screen into
   `~/Pictures/Screenshots/<date>_phone.png`, then `kcd share` to the paired phone; finds
   Hyprland's environment via `hyprctl instances` if kcd lacks it). Works.
+- **Browse phone files** (Actions tab; `sshfs` installed 2026-10-15, in `packages/repo.txt`). `kcd sftp mount <id>` (asks the phone for SFTP, mounts with sshfs under
+  `$XDG_RUNTIME_DIR/kcd/mnt`, writable by kcd's default, prints the mount point; repeat reuses it),
+  then `xdg-open` on it: the default folder handler is Strata (`io.github.lgse.Strata.desktop`). The
+  panel closes on success, shows kcd's message on failure. Android needs the KDE Connect app's file
+  access. kcd's docs confirm the Android app ignores lock requests (Lock phone was rightly left
+  out). Works.
 - **Claude desktop tray icon: works** (checked 2026-10-15). Chromium offers its icon two ways:
   pixels only (`IconPixmap`, normal start) or, when it thinks it runs on GNOME
   (`GNOME_DESKTOP_SESSION_ID`, set session-wide by `env-hyprland`), a named icon in a temp folder

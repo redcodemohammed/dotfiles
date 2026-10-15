@@ -48,6 +48,16 @@ PopupWindow {
     property string copied: "" // notification whose code was just copied
 
     property string toast: ""
+    Connections { // Browse phone files: close for the file manager when it opens, or say why not
+        target: Phone
+        function onMountingChanged() {
+            if (!Phone.mounting && panel.visible && panel.toast === "")
+                panel.visible = false
+        }
+        function onMountFailed(message) {
+            panel.say(message)
+        }
+    }
     function say(text) {
         toast = text
         toastTimer.restart()
@@ -300,6 +310,13 @@ PopupWindow {
                         Phone.sendClipboard()
                         panel.say("Clipboard sent to phone")
                     }
+                }
+                PanelButton {
+                    width: parent.width
+                    icon: Icons.folderOpen
+                    label: Phone.mounting ? "Opening phone files" : "Browse phone files"
+                    available: !Phone.mounting
+                    onPressed: Phone.browseFiles()
                 }
                 PanelButton {
                     visible: Phone.settings.share !== false
