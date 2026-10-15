@@ -429,8 +429,8 @@ Open from 2026-10-15:
 - Wallpaper: an image now (owner, 2026-10-15, overriding the spec's "solid color is final"):
   hyprpaper 0.8 with `.config/hypr/hyprpaper.conf` (one `wallpaper {}` block, empty `monitor` =
   every screen, `fit_mode = cover`, `splash = false`), started from `hyprland.lua`. The image is
-  `~/Pictures/Wallpapers/5m5kLI9.png` (1920x1040; tan accent #e7a875, warm neutrals, bg
-  #14100b, from the picker 2026-10-15), outside the repo; change it live with
+  `~/Pictures/Wallpapers/best-minimal-background-2560-x-1600-j67wpxwffhy6gbii.jpg` (3456x2160; blue accent #97b7f8, cool neutrals, bg #0f1112, from the
+  picker 2026-10-15), outside the repo; change it live with
   `hyprctl hyprpaper wallpaper '<monitor>,<path>,cover'`. Hyprland's solid `bg`
   (`misc.background_color`) stays underneath. The lock screen stays solid.
 - Gaps: 6px everywhere (owner, 2026-10-15), screen edges and bar-to-window included:
