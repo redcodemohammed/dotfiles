@@ -278,6 +278,19 @@ Done (section 4):
   is Lua; README silent on Lua; AUR 1.4.0); kanshi 1.9.0 (extra) would work through the output
   protocol but was not needed: the owner's setups are all three screens or the laptop alone, and
   Hyprland's `desc:` rules place each monitor. Works.
+- **Lid, step 2 of hotplug** (spec: lid closed, its workspaces land on the survivor; no suspend
+  with externals). `hyprland.lua` decides on every config load: lid closed
+  (`/proc/acpi/button/lid/LID0/state`, Lua `io`) and another screen present (`hl.get_monitors()`)
+  → `eDP-1` rule gets `disabled = true`. `switch:on/off:Lid Switch` binds (`locked = true`, 0.56
+  wiki) and `hl.on("monitor.added"/"monitor.removed")` just run `hyprctl reload` (a full reload
+  applies monitor rules; auto-reload on save does not). When `eDP-1` goes, its workspaces (6-10)
+  are moved to the G5 by description (owner: Hyprland had put them on the LF24); the G5 keeps its
+  shown workspace. hyprsplit's ranges are fixed by priority, so visiting workspaces would vanish
+  from the bar and SUPER+number: `Workspaces.qml` now shows only its own range in slots 1-5 and,
+  after them, a laptop (or monitor) glyph and the visitors' squares (clickable,
+  `Hyprland.dispatch("hl.dsp.focus({ workspace = N })")`, `WorkspaceSquare.qml`). Opening the lid:
+  hyprsplit's `ensure_good_workspaces` (on `monitor.added` and `config.reloaded`) moves them home.
+  `hyprctl repl/eval` run Lua inside Hyprland (handy for checks). Works.
 - **Claude desktop tray icon: works** (checked 2026-10-15). Chromium offers its icon two ways:
   pixels only (`IconPixmap`, normal start) or, when it thinks it runs on GNOME
   (`GNOME_DESKTOP_SESSION_ID`, set session-wide by `env-hyprland`), a named icon in a temp folder
@@ -462,9 +475,8 @@ Build:
   brightness (DDC): not wanted (owner, 2026-10-15).
 - Per-app notification quiet rules for chat apps: not wanted (owner, 2026-10-15; overrides the
   spec's "Per-app notification rules: yes").
-- Hotplug step 2: lid bind (`switch:on:Lid Switch` / `switch:off:Lid Switch`, `locked = true`, per
-  the 0.56 wiki) turning `eDP-1` off while other screens exist; step 3: tests (three screens,
-  laptop alone, lid closed). Bar items and slim bars done.
+- Hotplug step 3: tests of laptop alone (unplug both externals) and plugging back in. Bar items,
+  slim bars and the lid are done.
 - New island events the owner asked for: Wi-Fi connected, Bluetooth device connected. Not in the
   spec or design yet: settle layout (likely compact like battery 260x24), timer, glyphs, and
   whether disconnects show, before building.

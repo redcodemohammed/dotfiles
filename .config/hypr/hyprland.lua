@@ -26,14 +26,39 @@
 -- Positions are logical pixels (after scale). Externals match by description
 -- (make + model), so a port change doesn't matter.
 
+-- Lid (spec: "Lid closed: its workspaces land on the survivor"; lid close with externals must
+-- not suspend). With the lid shut and another screen attached, the laptop screen is disabled and
+-- Hyprland moves its windows and workspaces to the others. Decided on every config load, so the
+-- lid switch, a screen arriving or leaving, and a plain reload all agree (they reload the config,
+-- see "Lid" under the binds). Alone with the lid shut, logind suspends as before
+-- (HandleLidSwitchDocked=ignore only covers the docked case).
+local function lid_closed()
+    local f = io.open("/proc/acpi/button/lid/LID0/state")
+    if f == nil then
+        return false
+    end
+    local state = f:read("*a")
+    f:close()
+    return state:find("closed") ~= nil
+end
+local function other_screens()
+    for _, m in ipairs(hl.get_monitors()) do
+        if m.name ~= "eDP-1" then
+            return true
+        end
+    end
+    return false
+end
+
 -- Laptop (left), scale 4/3 (owner, 2026-10-15; was 1.6, 1 was too small): 2560x1600 / (4/3) =
 -- 1920x1200 logical. y keeps its middle level where it was at 1.6 (701), so the mouse crosses to
--- the G5 at the same height.
+-- the G5 at the same height. Off while the lid is shut and another screen is attached (above).
 hl.monitor({
     output   = "eDP-1",
     mode     = "2560x1600@165.04",
     position = "0x101",
     scale    = 4 / 3,
+    disabled = lid_closed() and other_screens(),
 })
 
 -- Main (centre): Samsung Odyssey G5.
@@ -299,6 +324,7 @@ hl.bind(mainMod .. " + code:61", hl.dsp.exec_cmd("vicinae toggle")) -- slash key
 hl.bind(mainMod .. " + code:31", hl.dsp.exec_cmd("qs ipc call inbox toggle")) -- I key: notification inbox
 hl.bind(mainMod .. " + code:26", hl.dsp.exec_cmd("~/.local/scripts/vicinae-emulator.sh")) -- E key: Android emulator picker (owner's request)
 hl.bind(mainMod .. " + code:27", hl.dsp.exec_cmd("~/.local/bin/screen-record toggle")) -- R key: record the focused screen (spec)
+hl.bind(mainMod .. " + code:41", hl.dsp.exec_cmd("~/.local/bin/strata")) -- F key: Strata file manager (owner's request)
 -- Lock: Quickshell lock in its own instance. flock stops a second locker from starting.
 hl.bind(mainMod .. " + Escape", hl.dsp.exec_cmd([[sh -c 'flock -n "$XDG_RUNTIME_DIR/quickshell-lock.flock" qs -p ~/.config/quickshell-lock']]))
 
@@ -323,6 +349,47 @@ hl.bind(mainMod .. " + code:55", function()
             y = math.floor(m.height / m.scale * 0.7),
         }))
         hl.dispatch(hl.dsp.window.center())
+    end
+end)
+-- Lid: closing or opening it reloads the config, which decides whether the laptop screen is on
+-- (see "Lid" under the monitors). locked: also while the lock screen is up. A screen plugged in
+-- while the lid is shut turns the laptop screen off; the last one unplugged brings it back.
+hl.bind("switch:on:Lid Switch", hl.dsp.exec_cmd("hyprctl reload"), { locked = true })
+hl.bind("switch:off:Lid Switch", hl.dsp.exec_cmd("hyprctl reload"), { locked = true })
+hl.on("monitor.added", function(m)
+    if m ~= nil and m.name ~= "eDP-1" and lid_closed() then
+        hl.exec_cmd("hyprctl reload")
+    end
+end)
+-- The laptop screen gone (lid shut): its workspaces (hyprsplit's 6-10) go to the main screen, the
+-- G5, not wherever Hyprland put them (owner, 2026-10-15). The G5 keeps showing what it showed; they
+-- appear on its bar after its own five. hyprsplit moves them home when the screen comes back.
+local function laptop_workspaces_to_main()
+    local main = nil
+    for _, m in ipairs(hl.get_monitors()) do
+        if m.description ~= nil and m.description:find("Odyssey G5", 1, true) then
+            main = m
+        end
+    end
+    if main == nil then
+        return
+    end
+    local shown = main.active_workspace
+    for _, ws in ipairs(hl.get_workspaces()) do
+        if ws.id >= 6 and ws.id <= 10 and ws.monitor ~= nil and ws.monitor.id ~= main.id then
+            hl.dispatch(hl.dsp.workspace.move({ workspace = ws, monitor = main }))
+        end
+    end
+    if shown ~= nil then
+        hl.dispatch(hl.dsp.focus({ workspace = shown.id }))
+    end
+end
+hl.on("monitor.removed", function(m)
+    if m ~= nil and m.name == "eDP-1" then
+        laptop_workspaces_to_main()
+    end
+    if lid_closed() and not other_screens() then
+        hl.exec_cmd("hyprctl reload")
     end
 end)
 -- N: true fullscreen, covers the bar. M: maximized, bar and gaps stay.
