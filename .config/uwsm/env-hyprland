@@ -6,3 +6,10 @@
 # gnome-keyring (libsecret). The value doesn't matter. Side effect: xdg-open treats the session as
 # GNOME and opens files through `gio open` (same default apps).
 export GNOME_DESKTOP_SESSION_ID=this-is-deprecated
+
+# Native GTK apps use the file-chooser portal (Strata, see xdg-desktop-portal/hyprland-portals.conf)
+# only when told to: GTK3 reads GTK_USE_PORTAL=1, GTK4 reads GDK_DEBUG=portals. Firefox/Zen also
+# count GTK_USE_PORTAL=1 for their "auto" portal setting. Side effect: these apps open links and
+# files through the portal too (OpenURI).
+export GTK_USE_PORTAL=1
+export GDK_DEBUG=portals
