@@ -1,8 +1,11 @@
 import QtQuick
 import Quickshell
+import Quickshell.Services.UPower
 
 // One screen of the lock. Solid background, centred clock, date 8px under it,
-// a 320x48 password field 24px below the date, layout label under the field.
+// a 320x48 password field 24px below the date, layout label under the field, then a small red
+// "Caps Lock on" when it is (its line is always reserved, so nothing moves). Battery small and
+// muted at the bottom, laptops only (red when critical).
 // Field border: muted idle, amber while typing, red when wrong. No avatar, no wallpaper.
 Item {
     id: content
@@ -69,6 +72,10 @@ Item {
                 }
                 onAccepted: content.shell.submit()
                 Keys.onEscapePressed: content.shell.password = ""
+                Keys.onReleased: event => {
+                    if (event.key === Qt.Key_CapsLock)
+                        content.shell.readKeyboards()
+                }
             }
         }
 
@@ -80,6 +87,43 @@ Item {
             font.family: "JetBrainsMono Nerd Font"
             font.pixelSize: 12
             color: content.shell.wrong ? Theme.alert : Theme.fgMuted
+        }
+
+        Item { width: 1; height: 4 }
+
+        Text { // reserved line, so the clock and field never move
+            anchors.horizontalCenter: parent.horizontalCenter
+            height: 16
+            text: content.shell.capsLock ? "Caps Lock on" : ""
+            font.family: "JetBrainsMono Nerd Font"
+            font.pixelSize: 12
+            color: Theme.alert
+        }
+    }
+
+    // Battery: laptops only, small and muted (red when critical), at the bottom.
+    Row {
+        readonly property var device: UPower.displayDevice
+        readonly property int level: Math.round(device.percentage * 100)
+        readonly property bool critical: UPower.onBattery && level <= 10
+        visible: device.ready && device.isLaptopBattery
+        anchors.bottom: parent.bottom
+        anchors.horizontalCenter: parent.horizontalCenter
+        anchors.bottomMargin: content.shell.failsafeSeconds > 0 ? 36 : 24
+        spacing: 4
+        Text {
+            anchors.verticalCenter: parent.verticalCenter
+            text: Icons.battery(parent.level, UPower.onBattery, parent.critical)
+            font.family: parent.critical ? Icons.fill : Icons.regular
+            font.pixelSize: 14
+            color: parent.critical ? Theme.alert : Theme.fgMuted
+        }
+        Text {
+            anchors.verticalCenter: parent.verticalCenter
+            text: parent.level
+            font.family: "JetBrainsMono Nerd Font"
+            font.pixelSize: 12
+            color: parent.critical ? Theme.alert : Theme.fgMuted
         }
     }
 

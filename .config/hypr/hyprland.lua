@@ -345,6 +345,12 @@ for _, d in ipairs(directions) do
         hl.dsp.window.resize({ x = d.dx, y = d.dy, relative = true }), { repeating = true })
 end
 
+-- Window to the screen on the left / right (spec: SUPER + Shift + comma / period), focus follows.
+-- Comma and period by keycode (59, 60), so any layout works; it lands on that screen's active
+-- workspace, which hyprsplit keeps in that screen's 1-5.
+hl.bind(mainMod .. " + SHIFT + code:59", hl.dsp.window.move({ monitor = "l", follow = true }))
+hl.bind(mainMod .. " + SHIFT + code:60", hl.dsp.window.move({ monitor = "r", follow = true }))
+
 -- Workspaces 1 to 5 per monitor via hyprsplit (Lua library, submodule pinned in hypr/hyprsplit).
 -- SUPER + 1-5 switches on the focused monitor, SUPER + Shift + 1-5 sends the window.
 -- Digit keys by keycode (1 = code:10 ... 5 = code:14), so any layout works.

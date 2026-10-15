@@ -19,6 +19,12 @@ ShellRoot {
     property bool checking: false
     property bool wrong: false
     property string layout: ""
+    property bool capsLock: false // any keyboard; read at start and when Caps Lock is released
+
+    function readKeyboards() {
+        if (!keyboards.running)
+            keyboards.running = true
+    }
     property int failsafeLeft: failsafeSeconds
 
     function submit() {
@@ -72,14 +78,18 @@ ShellRoot {
         }
     }
 
-    // Layout label: read once, then follow Hyprland's activelayout events.
+    // Layout label and Caps Lock: read at start (and on Caps Lock), then the layout follows
+    // Hyprland's activelayout events.
     Process {
+        id: keyboards
         running: true
         command: ["hyprctl", "-j", "devices"]
         stdout: StdioCollector {
             onStreamFinished: {
                 try {
-                    const main = JSON.parse(text).keyboards.find(k => k.main)
+                    const all = JSON.parse(text).keyboards
+                    root.capsLock = all.some(k => k.capsLock)
+                    const main = all.find(k => k.main)
                     if (main)
                         root.layout = main.active_keymap
                 } catch (err) {

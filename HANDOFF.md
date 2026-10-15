@@ -173,6 +173,12 @@ Done (section 4):
   on next open; GTK css is generated but not stowed while COSMIC owns `gtk.css`. Tested from the
   shell on the current wallpaper (accent #eda480, keyboard FFB08A) and `--default` (back to amber,
   outputs identical to the commit). Not tested: the Vicinae list itself (needs a click).
+- **Window to the left/right screen** (spec keybind): SUPER+Shift+comma / period (`code:59` / `60`),
+  `hl.dsp.window.move({ monitor = "l" | "r", follow = true })`. Works.
+- **Lock screen additions** (spec): a red "Caps Lock on" under the layout label (Caps Lock is a normal
+  key since keyd was skipped; read from `hyprctl -j devices` at start and when Caps Lock is
+  released; its line is always reserved so nothing moves), and a small muted battery at the bottom
+  of each screen on laptops (red when critical; `quickshell-lock/Icons.qml` links the bar's). Works.
 - **Claude desktop tray icon: works** (checked 2026-10-15). Chromium offers its icon two ways:
   pixels only (`IconPixmap`, normal start) or, when it thinks it runs on GNOME
   (`GNOME_DESKTOP_SESSION_ID`, set session-wide by `env-hyprland`), a named icon in a temp folder
@@ -271,6 +277,7 @@ build 6 s. Transient arriving while one is open: queue one. Paused media hides a
 | SUPER(+Shift)+H J K L or arrows | focus (move window) | 43 44 45 46 |
 | SUPER+Ctrl+arrows | resize 40px, repeats | |
 | SUPER(+Shift)+1-5 | workspace (send window), via hyprsplit | 10-14 |
+| SUPER+Shift+comma / period | window to the screen on the left / right | 59 / 60 |
 | SUPER+Escape | lock | |
 | SUPER+Shift+Escape | log out | |
 | Print / SUPER+Print / SUPER+Shift+Print | region / window / monitor shot | |
@@ -349,7 +356,6 @@ Build:
 - New island events the owner asked for: Wi-Fi connected, Bluetooth device connected. Not in the
   spec or design yet: settle layout (likely compact like battery 260x24), timer, glyphs, and
   whether disconnects show, before building.
-- SUPER+Shift+comma/period: window to previous/next monitor.
 - GTK under Hyprland: COSMIC owns `~/.config/gtk-{3,4}.0/gtk.css` (links to its `cosmic/dark.css`,
   rewritten at login), so our GTK folders are in `.stow-local-ignore`. When Hyprland is the daily
   desktop: turn off COSMIC's GTK theming, delete the two gtk lines there, move the real folders
