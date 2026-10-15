@@ -231,6 +231,13 @@ Done (section 4):
   `~/.local/bin/wifi-qr` (password from `nmcli -s -g`, which escapes ':' and '\' even for one field;
   piped to qrencode; SVG in `$XDG_RUNTIME_DIR`, deleted when hidden). The canvas also has a new
   "Phone bridge" board: not built.
+- **Network panel, step 4: Hotspot** (Settings; owner's choices: NetworkManager's own hotspot on
+  wlan0, replacing the Wi-Fi network and sharing the wired one; SSID = hostname, password
+  generated). Reuses the existing `Hotspot` profile (ap, shared, wpa-psk, autoconnect no), or makes
+  it with `nmcli device wifi hotspot` (NetworkManager generates the password). On/off state from
+  `WifiDevice.mode`; card: name, password (eye), clients (`iw dev wlan0 station dump`, every 3 s
+  while shown). Needs `dnsmasq` (installed 2026-10-15, in `packages/repo.txt`; its own service
+  stays disabled, NetworkManager runs a private instance). Works.
 - **Claude desktop tray icon: works** (checked 2026-10-15). Chromium offers its icon two ways:
   pixels only (`IconPixmap`, normal start) or, when it thinks it runs on GNOME
   (`GNOME_DESKTOP_SESSION_ID`, set session-wide by `env-hyprland`), a named icon in a temp folder
