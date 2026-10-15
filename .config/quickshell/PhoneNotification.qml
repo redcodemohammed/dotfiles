@@ -103,7 +103,7 @@ Rectangle {
 
             PanelInput {
                 id: replyField
-                visible: item.n.replyId !== ""
+                visible: item.n.replyId !== "" && Phone.settings.replyFromDesktop !== false
                 width: parent.width
                 placeholder: "Reply"
                 action: "Send"

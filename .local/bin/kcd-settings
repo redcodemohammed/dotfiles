@@ -1,0 +1,78 @@
+#!/usr/bin/env python3
+"""kcd-settings SETTINGS.json: the phone panel's Settings tab writes kcd's config.
+
+Edits ~/.config/kcd/kcd.toml (kcd writes its full default config on first start) from the panel's
+settings (JSON): the keys notification, clipboard, share and mousepad under [plugins] (the other
+plugins keep their values), notify_low and notify_full under [battery] (Battery alerts), and the
+[notifications] table of per-app rules (muted apps are "silent": no desktop popup, the event still
+comes and the panel drops it; an app_name line is kept). Keys are set in place, keeping kcd's
+layout; the result must parse (tomllib) before it replaces the file. Then kcd restarts so they
+apply; the phone reconnects within seconds. Owner's design "Phone bridge", 2026-10-15.
+"""
+import json
+import os
+import re
+import subprocess
+import sys
+import tomllib
+
+path = os.path.expanduser("~/.config/kcd/kcd.toml")
+with open(sys.argv[1]) as f:
+    s = json.load(f)
+with open(path) as f:
+    lines = f.read().splitlines()
+
+HEADER = re.compile(r"^\s*\[")
+
+
+def bounds(table):
+    """(header index, end index) of a [table], or (None, None)."""
+    start = next((i for i, l in enumerate(lines) if re.match(r"^\s*\[" + re.escape(table) + r"\]\s*$", l)), None)
+    if start is None:
+        return None, None
+    end = next((i for i in range(start + 1, len(lines)) if HEADER.match(lines[i])), len(lines))
+    return start, end
+
+
+def set_key(table, key, value):
+    start, end = bounds(table)
+    if start is None:
+        lines.extend(["", f"[{table}]"])
+        start, end = len(lines) - 1, len(lines)
+    for i in range(start + 1, end):
+        m = re.match(r"^(\s*)" + re.escape(key) + r"\s*=", lines[i])
+        if m:
+            lines[i] = f"{m.group(1)}{key} = {value}"
+            return
+    lines.insert(start + 1, f"  {key} = {value}")
+
+
+def b(v):
+    return "true" if v else "false"
+
+
+for name in ("notification", "clipboard", "share", "mousepad"):
+    set_key("plugins", name, b(s.get(name, True)))
+for key in ("notify_low", "notify_full"):
+    set_key("battery", key, b(s.get("batteryAlerts", True)))
+
+# [notifications]: rebuilt from the muted apps; an app_name line survives.
+start, end = bounds("notifications")
+kept = []
+if start is not None:
+    kept = [l for l in lines[start + 1:end] if re.match(r"^\s*app_name\s*=", l)]
+    del lines[start:end]
+while lines and not lines[-1].strip():
+    lines.pop()
+lines.extend(["", "[notifications]"] + kept)
+for app in sorted(s.get("mutedApps", [])):
+    lines.append(f'  {json.dumps(app)} = "silent"')  # JSON string escapes are valid TOML basic strings
+
+text = "\n".join(lines) + "\n"
+tomllib.loads(text)  # refuse to write a file kcd couldn't read
+tmp = path + ".tmp"
+with open(tmp, "w") as f:
+    f.write(text)
+os.chmod(tmp, 0o600)
+os.replace(tmp, path)
+subprocess.run(["systemctl", "--user", "try-restart", "kcd.service"], check=False)

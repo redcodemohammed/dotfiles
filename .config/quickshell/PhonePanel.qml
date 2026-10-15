@@ -7,7 +7,7 @@ import Quickshell.Io
 // an outside click or Escape. Header: the phone's name, "Connected · battery · network" (Low and a
 // red battery at 15% or less), Reconnect while it is away (kcd has no disconnect: Unpair in
 // Settings). Tabs: Inbox (unread count), Actions (ring, send clipboard, send file, transfers) and
-// Settings (next step). Away: "Phone not
+// Settings (PhoneSettings.qml); a feature switched off there hides its action. Away: "Phone not
 // connected". Inbox: the phone's notifications (Phone.qml), newest first; opening one marks it
 // read and shows Reply (when the app allows it), Copy code (a verification code) and Dismiss (on
 // the phone too). Clear all empties this list only. A line at the bottom confirms actions.
@@ -80,6 +80,8 @@ PopupWindow {
 
         Column {
             id: content
+            // A child's own `panel` property would shadow the id in `panel: panel`.
+            readonly property var owner: panel
             x: 14
             y: 14
             width: parent.width - 28
@@ -243,7 +245,7 @@ PopupWindow {
                     height: 80
                     Text {
                         anchors.centerIn: parent
-                        text: "No notifications"
+                        text: Phone.settings.notification === false ? "Mirroring is off (Settings)" : "No notifications"
                         font.family: "JetBrainsMono Nerd Font"
                         font.pixelSize: 13
                         color: Theme.fgMuted
@@ -289,6 +291,7 @@ PopupWindow {
                     }
                 }
                 PanelButton {
+                    visible: Phone.settings.clipboard !== false
                     width: parent.width
                     icon: Icons.clipboardText
                     label: "Send clipboard to phone"
@@ -298,6 +301,7 @@ PopupWindow {
                     }
                 }
                 PanelButton {
+                    visible: Phone.settings.share !== false
                     width: parent.width
                     icon: Icons.uploadSimple
                     label: "Send file"
@@ -383,15 +387,10 @@ PopupWindow {
                 }
             }
 
-            Text { // Settings comes in the next step
+            PhoneSettings {
                 visible: panel.tab === "settings"
                 width: parent.width
-                topPadding: 8
-                bottomPadding: 8
-                text: "Settings is the next step."
-                font.family: "JetBrainsMono Nerd Font"
-                font.pixelSize: 12
-                color: Theme.fgMuted
+                panel: content.owner
             }
 
             Text { // confirmations

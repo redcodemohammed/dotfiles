@@ -54,6 +54,66 @@ Singleton {
         id: advertiser
         command: ["timeout", "20", "kcd", "pair", "--advertise-only"]
     }
+    // Settings (the panel's Settings tab), kept in ~/.local/state/phone/settings.json. kcd's side
+    // (plugins, battery alerts, muted apps as "silent") is written by ~/.local/bin/kcd-settings 1.5 s
+    // after the last change, which restarts kcd. Reply from desktop is the panel's own. Muted apps
+    // are dropped from the Inbox; every app seen gets a switch (knownApps).
+    readonly property string settingsPath: Quickshell.env("HOME") + "/.local/state/phone/settings.json"
+    property var settings: ({ notification: true, clipboard: true, share: true, mousepad: true,
+                              batteryAlerts: true, replyFromDesktop: true, mutedApps: [], knownApps: [] })
+    property bool applying: false
+    function setSetting(key, value) {
+        const s = Object.assign({}, settings)
+        s[key] = value
+        settings = s
+        saveSettings(key !== "replyFromDesktop" && key !== "knownApps")
+    }
+    function toggleApp(app) {
+        const muted = settings.mutedApps.indexOf(app) >= 0
+        setSetting("mutedApps", muted ? settings.mutedApps.filter(a => a !== app) : settings.mutedApps.concat([app]))
+        if (!muted)
+            setNotifications(notifications.filter(n => n.app !== app))
+    }
+    function saveSettings(toKcd) {
+        settingsSaver.command = ["sh", "-c", 'mkdir -p "$(dirname "$1")" && printf "%s\\n" "$2" > "$1"', "sh",
+            settingsPath, JSON.stringify(settings)]
+        settingsSaver.running = true
+        if (toKcd)
+            applyTimer.restart()
+    }
+    Process { id: settingsSaver }
+    Timer {
+        id: applyTimer
+        interval: 1500
+        onTriggered: {
+            root.applying = true
+            applier.command = [Quickshell.env("HOME") + "/.local/bin/kcd-settings", root.settingsPath]
+            applier.running = true
+        }
+    }
+    Process {
+        id: applier
+        stderr: StdioCollector { id: applyErr }
+        onExited: code => {
+            root.applying = false
+            if (code !== 0)
+                Quickshell.execDetached(["notify-send", "-a", "Phone", "-u", "critical", "Phone settings not applied",
+                    applyErr.text.trim() || "kcd-settings failed"])
+        }
+    }
+    FileView {
+        path: root.settingsPath
+        printErrors: false
+        onLoaded: {
+            try {
+                root.settings = Object.assign({}, root.settings, JSON.parse(text()))
+            } catch (err) {}
+        }
+    }
+    function unpair() {
+        Quickshell.execDetached(["kcd", "unpair", deviceId])
+    }
+
     // Actions (the panel's Actions tab). kcd can't stop a ring (touch the phone) or send a link
     // (Send clipboard covers it); the phone's clipboard lands in yours without an event.
     function ring() {
@@ -143,7 +203,9 @@ Singleton {
             }
             break
         case "notification":
-            if (ours) {
+            if (ours && settings.knownApps.indexOf(p.appName || "") < 0 && (p.appName || "") !== "")
+                setSetting("knownApps", settings.knownApps.concat([p.appName]))
+            if (ours && settings.mutedApps.indexOf(p.appName || "") < 0) {
                 const n = { id: p.id, app: p.appName || "", title: p.title || "", text: p.text || "",
                             replyId: p.requestReplyId || "", time: hhmm(), unread: true }
                 setNotifications([n].concat(notifications.filter(x => x.id !== p.id)))

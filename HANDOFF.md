@@ -335,6 +335,17 @@ Done (section 4):
   with success/error; received files in `~/Downloads/kcd`, kcd's default). Left out: Lock phone
   (owner), Link to open on phone (kcd sends files only; Send clipboard covers it), Last clipboard
   from phone (kcd writes it into the desktop clipboard without an event), Stop ringing. Works.
+- **Phone bridge, step 4: Settings tab** (`PhoneSettings.qml`). Switches: Mirror notifications,
+  Reply from desktop (panel-only), Sync clipboard, File sharing (the design's "Receive files"; kcd's
+  share plugin does both directions), Battery alerts, Remote input (added: mousepad plugin); a
+  switch per app seen (muted apps dropped from the Inbox); connection line; Unpair (press twice
+  within 3 s). Settings in `~/.local/state/phone/settings.json`; `~/.local/bin/kcd-settings`
+  edits `~/.config/kcd/kcd.toml` in place 1.5 s after the last change (kcd writes its full
+  default config, so keys are set inside its `[plugins]`/`[battery]` tables and `[notifications]`
+  is rebuilt; the result must parse with `tomllib` before replacing the file), then
+  `systemctl --user try-restart kcd.service`. kcd matches per-app rules on the app's display
+  name (code), not the package name its example says. Switched-off features hide their actions.
+  Works.
 - **Claude desktop tray icon: works** (checked 2026-10-15). Chromium offers its icon two ways:
   pixels only (`IconPixmap`, normal start) or, when it thinks it runs on GNOME
   (`GNOME_DESKTOP_SESSION_ID`, set session-wide by `env-hyprland`), a named icon in a temp folder
