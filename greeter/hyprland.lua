@@ -1,0 +1,37 @@
+-- Hyprland for the login screen only (owner's choice, 2026-10-15). greetd runs it as the greeter
+-- user (/etc/greetd/quickshell-greeter.toml); it shows the Quickshell greeter and exits when the
+-- greeter quits, so greetd can start the chosen session. Installed to /etc/greetd by
+-- greeter/install.sh, with hypr_palette.lua beside it (the greeter user can't read ~).
+-- Monitors: the same as ~/.config/hypr/hyprland.lua (keep them in sync).
+
+local palette = require("hypr_palette")
+
+hl.monitor({ output = "eDP-1", mode = "2560x1600@165.04", position = "0x101", scale = 4 / 3 })
+hl.monitor({ output = "desc:Samsung Electric Company Odyssey G5", mode = "2560x1440@144", position = "1920x0", scale = 1 })
+hl.monitor({ output = "desc:Samsung Electric Company LF24T35", mode = "1920x1080@74.97", position = "4480x161", scale = 1 })
+hl.monitor({ output = "", mode = "preferred", position = "auto", scale = "auto" }) -- catch-all, never remove
+
+hl.env("XCURSOR_SIZE", "24")
+hl.env("HYPRCURSOR_SIZE", "24")
+
+hl.config({
+    misc = {
+        force_default_wallpaper = 0,
+        disable_hyprland_logo = true,
+        disable_splash_rendering = true,
+        background_color = palette.bg,
+    },
+    animations = {
+        enabled = false,
+    },
+    input = {
+        kb_layout = "us,ara", -- the same layouts as the session; SUPER + Space switches
+        kb_options = "grp:win_space_toggle",
+        follow_mouse = 1,
+    },
+})
+
+-- The greeter; when it quits (after starting a session, or a crash), leave so greetd moves on.
+hl.on("hyprland.start", function()
+    hl.exec_cmd([[qs -p /etc/greetd/quickshell-greeter; hyprctl dispatch 'hl.dsp.exit()']])
+end)

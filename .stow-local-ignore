@@ -33,6 +33,7 @@ _darcs
 ^/pam
 ^/keyd
 ^/strongswan
+^/greeter
 ^/spotifast
 ^/strata
 

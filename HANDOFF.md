@@ -381,6 +381,27 @@ Done (section 4):
   in Aquamarine's DRM backend destructor (`exit` → `__cxa_finalize` → `CDRMBackend` →
   `flushAsyncCommitEvents`); the portal backend and hyprsunset died with the compositor. A
   shutdown-only crash, harmless; watch for it if logouts ever misbehave.
+- **Login screen: Quickshell greeter on greetd** (owner's choice over cosmic-greeter, tuigreet,
+  ReGreet; 2026-10-15). `greeter/` (stow-ignored): `shell.qml` + `GreeterContent.qml` (the lock
+  screen's look: clock, date, user "mohammed", password field, layout / Wrong password, Caps Lock
+  line, battery; session picker `‹ name ›` from `/usr/share/wayland-sessions`, Up/Down or click,
+  Hyprland (uwsm) first, last one remembered in `/var/lib/quickshell-greeter/last-session`;
+  Restart / Shut down bottom right; `WlSessionLock` surfaces cover every screen like the lock).
+  Greetd API: `createSession(user)`, `respond()` to every `authMessage` (empty when no answer is
+  needed), `readyToLaunch` → `launch(["/bin/sh","-c","exec <Exec>"], ["XDG_SESSION_TYPE=wayland"],
+  true)` after unlocking the surfaces. It runs as the `greeter` user (can't read ~, home is 700) in
+  a greeter-only Hyprland (`greeter/hyprland.lua`: monitors copied from the main config, keep in
+  sync; palette; us,ara; no animations; runs `qs -p /etc/greetd/quickshell-greeter` and exits
+  Hyprland when it quits). `sudo greeter/install.sh` copies everything to `/etc/greetd`
+  (Theme.qml, Icons.qml and hypr_palette.lua as copies: re-run after a wallpaper change), creates
+  `/var/lib/quickshell-greeter` (HOME for the greeter), and the drop-in
+  `/etc/systemd/system/greetd.service.d/quickshell-greeter.conf`; it enables nothing. Test run
+  beside the live session: `sudo greetd --vt 7 -s /run/greetd-test.sock -c
+  /etc/greetd/quickshell-greeter-test.toml` (GREETER_TEST=1 launches `true`): works (owner).
+  Switch: `sudo systemctl disable cosmic-greeter.service && sudo systemctl enable greetd.service`
+  (no --now: stopping the running display manager ends the session), then reboot. Rollback from a
+  TTY (Ctrl+Alt+F2): `sudo systemctl disable greetd.service && sudo systemctl enable
+  cosmic-greeter.service && sudo reboot`. COSMIC stays installed and selectable (spec).
 - **Claude desktop tray icon: works** (checked 2026-10-15). Chromium offers its icon two ways:
   pixels only (`IconPixmap`, normal start) or, when it thinks it runs on GNOME
   (`GNOME_DESKTOP_SESSION_ID`, set session-wide by `env-hyprland`), a named icon in a temp folder

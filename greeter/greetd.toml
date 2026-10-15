@@ -1,0 +1,11 @@
+# greetd with the Quickshell greeter (owner's choice, 2026-10-15). Installed as
+# /etc/greetd/quickshell-greeter.toml by greeter/install.sh; greetd.service uses it through the
+# drop-in greetd-dropin.conf (cosmic-greeter.service stays installed as the fallback).
+# HOME: the greeter's own writable folder (it remembers the last session there).
+
+[terminal]
+vt = 1
+
+[default_session]
+command = "env HOME=/var/lib/quickshell-greeter start-hyprland -- --config /etc/greetd/hyprland-greeter.lua"
+user = "greeter"

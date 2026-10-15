@@ -1,0 +1,12 @@
+# Test run of the Quickshell greeter on terminal 7, beside the running greeter (owner, 2026-10-15):
+#   sudo greetd --vt 7 -s /run/greetd-test.sock -c /etc/greetd/quickshell-greeter-test.toml
+# then Ctrl+Alt+F7. GREETER_TEST=1: after a correct password it launches `true` instead of a
+# desktop, so the whole path is proven without a second session. Ctrl+Alt+F1 goes back;
+# Ctrl+C in the terminal that ran greetd stops the test.
+
+[terminal]
+vt = 7
+
+[default_session]
+command = "env HOME=/var/lib/quickshell-greeter GREETER_TEST=1 start-hyprland -- --config /etc/greetd/hyprland-greeter.lua"
+user = "greeter"
