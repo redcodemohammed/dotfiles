@@ -172,7 +172,7 @@ Done (section 4):
   the lock (its `Theme.qml` links the bar's) and Spotifast reload on their own; Strata and satty
   on next open; GTK css is generated but not stowed while COSMIC owns `gtk.css`. Tested from the
   shell on the current wallpaper (accent #eda480, keyboard FFB08A) and `--default` (back to amber,
-  outputs identical to the commit). Not tested: the Vicinae list itself (needs a click).
+  outputs identical to the commit). The Vicinae list and its previews: work (owner, 2026-10-15).
 - **Window to the left/right screen** (spec keybind): SUPER+Shift+comma / period (`code:59` / `60`),
   `hl.dsp.window.move({ monitor = "l" | "r", follow = true })`. Works.
 - **Lock screen additions** (spec): a red "Caps Lock on" under the layout label (Caps Lock is a normal
@@ -337,12 +337,11 @@ Notes:
 
 **Next: step 11** (section 6 real-machine list, one item per step).
 Open from 2026-10-15:
-- Verify `env-hyprland` after a re-login (see the Electron note in section 8).
+- `env-hyprland` after a re-login: verified by the owner (keyring works, 2026-10-15).
 - After a re-login: file dialogs in a GTK3 app (Mousepad), GTK4 (`zenity --file-selection`), Zen
   and Chrome should open Strata. If GTK apps start asking "Open with" for links or files, that is
   the portal's OpenURI side effect of the two GTK variables in `env-hyprland`.
-- Try the "Wallpaper" picker in Vicinae: does `vicinae dmenu` show Quick Look previews for the
-  image paths? If the full paths look noisy, switch to names with `--format index`.
+- Wallpaper picker in Vicinae: Quick Look previews work (owner, 2026-10-15).
 - Hyprland config is Lua (`hl.config`, `hl.bind`, `hl.dsp.*`). `hyprctl dispatch` takes Lua:
   `hyprctl dispatch 'hl.dsp.exec_cmd("qs")'`.
 - hyprsplit: the C++ plugin is deprecated and its hyprpm pins stop at Hyprland 0.54.3. Use the
@@ -490,18 +489,19 @@ Build:
   sure `~/.local/bin` is on fish's PATH (`fish_add_path ~/.local/bin`).
 
 Test (configured, untested on the VM):
-- hypridle: 5 min lock (this fired correctly once on the VM), 6 min screens off/on, 30 min
-  suspend on battery only, lock before sleep and lid close. Lid close with externals attached
-  must not suspend: logind `HandleLidSwitchDocked` (check its value; do not edit other logind
-  settings without asking).
+- hypridle: tested by the owner on the laptop (2026-10-15): works. Lid close with externals
+  attached doesn't suspend (`HandleLidSwitchDocked=ignore`), see the lid entry in progress.
 - hyprsunset (21:00-06:30, 4500K): the VM GPU had no CTM. Preview with
   `hyprctl hyprsunset temperature 4500`, judge amber vs grays by eye (screenshots don't show it),
   then `hyprctl hyprsunset reset`.
 - Lock screen on three monitors: typed input shared across surfaces.
-- Island and bar on multiple screens; hotplug (three screens, two, laptop alone, lid closed);
-  `hs.dsp.grab_rogue_windows()` after unplugging.
-- Glyph sizes on all screens (laptop scale), laptop panel type (OLED changes idle choices),
-  Arabic titles in bar, island, launcher, lock field.
+- Island and bar on multiple screens: work. Lid closed: works. Laptop alone and plugging back
+  in: deferred (see section 6). (`hs.dsp.grab_rogue_windows()` not needed: visitors show in the bar.)
+- Glyph sizes on all screens (laptop scale; they look right in the 15:21 screenshot), laptop panel
+  type (OLED changes idle choices). Arabic titles: work (owner, 2026-10-15).
+- Mixed-scale region screenshot (laptop 4/3 + G5 1, owner's shot 2026-10-15): correct. grim renders
+  the whole region at the highest scale (4/3), so the G5 part is upscaled by a third (slightly
+  soft); screens join without gap or overlap; the area outside any screen is transparent.
 
 ## 7. Recovery
 
@@ -549,8 +549,7 @@ Test (configured, untested on the VM):
   keyring (gnome-keyring runs and is unlocked). Global fix, not per-app flags (owner's call):
   `.config/uwsm/env-hyprland` exports `GNOME_DESKTOP_SESSION_ID`, which Chromium checks after
   `XDG_CURRENT_DESKTOP` and `DESKTOP_SESSION`. Tested on Claude desktop by hand (warning gone);
-  the uwsm file itself is unverified until the next login: check `GNOME_DESKTOP_SESSION_ID` in
-  the bar's environment, then VS Code and Claude desktop. VS Code's `argv.json` is back to stock.
+  the uwsm file works after a re-login (owner, 2026-10-15). VS Code's `argv.json` is back to stock.
 - (Laptop) `console.log` is debug level: a probe's output may not show. Use `console.warn`.
 - (Laptop) `WheelHandler` received no wheel events on our layer-shell windows; `MouseArea.onWheel`
   did in a test window (but not in a `Volume.qml` attempt, cause unknown).
