@@ -354,6 +354,10 @@ Done (section 4):
   Test hooks: `qs ipc call phone testCall` / `endCall`. kcd caches no battery after a restart and
   `kcd battery` only reads the cache: the header's % returns with the phone's next report. The
   phone bridge is complete. Works.
+- **Owner's preference (2026-10-15): no phone notifications on the desktop.** Mirror notifications
+  is off in the phone panel's Settings (`~/.local/state/phone/settings.json`, so kcd.toml has
+  `notification = false` under `[plugins]`): nothing reaches the island, the inbox or the panel's
+  Inbox. Both files live outside the repo; keep it off on a new setup.
 - **Claude desktop tray icon: works** (checked 2026-10-15). Chromium offers its icon two ways:
   pixels only (`IconPixmap`, normal start) or, when it thinks it runs on GNOME
   (`GNOME_DESKTOP_SESSION_ID`, set session-wide by `env-hyprland`), a named icon in a temp folder
