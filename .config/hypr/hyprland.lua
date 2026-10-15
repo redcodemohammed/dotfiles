@@ -294,7 +294,7 @@ hl.config({
         sensitivity = 0, -- -1.0 - 1.0, 0 means no modification.
 
         touchpad = {
-            natural_scroll = false,
+            natural_scroll = true, -- content follows the fingers, like a phone (owner, 2026-10-15)
         },
     },
 })
