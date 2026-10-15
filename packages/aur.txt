@@ -3,3 +3,4 @@
 vicinae-bin
 ttf-phosphor-icons
 vazirmatn-fonts
+kcd

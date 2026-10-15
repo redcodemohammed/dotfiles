@@ -300,6 +300,25 @@ Done (section 4):
   shows only "connected") and is skipped while Wi-Fi is off, the hotspot runs, or within 15 s of
   the panel changing the connection (`NetState.userChange()`); Bluetooth events skipped while the
   adapter isn't Enabled. Test hooks: `qs ipc call island test wifi|wifilost|bt|btoff`. Works.
+- **Phone bridge, step 1: bar block** (owner's design "Phone bridge", canvas board `Phone.dc.html`).
+  Backend: **kcd** (AUR `kcd` 1.22.2, Go, MIT; in `packages/aur.txt`), a headless KDE Connect v8
+  daemon, owner's choice over KDE Connect (44 packages) and our own Python bridge. Before install:
+  its source was read: trust comes only from the post-TLS identity (cert CN = device ID, pinned
+  fingerprint for paired devices), the pre-TLS identity decides nothing (CVE-2025-66270 pattern
+  absent), unpaired devices only get identity/pair packets, pair requests wait for confirmation.
+  `systemctl --user enable --now kcd.socket` (socket-activated; the bar's watch starts it). Paired
+  with the owner's POCO M6 Pro by device ID (`kcd pair <id>`, not listen mode). Pairing first
+  failed: the "Wired connection 2" profile had a leftover static route `192.168.0.0/24 via
+  192.168.0.1` on the USB Ethernet (metric 100) that sent Wi-Fi LAN traffic out the dock; removed
+  with the owner's OK (`nmcli connection modify ... -ipv4.routes ...`, reapply). `Phone.qml`
+  (singleton) runs `kcd watch --json` (NDJSON `{type, deviceId, payload}`, `state.snapshot`
+  first): name, connected, battery, notifications (id, app, title, text, replyId, time, unread;
+  kept in `$XDG_RUNTIME_DIR/phone-notifications.json`). `PhoneStatus.qml`: the design's phone
+  outline (Shapes), grey slash while disconnected, accent square for unread; block after the
+  keyboard layout, full bar only, while paired. A phone leaving Wi-Fi shows after up to ~1 min
+  (kcd keepalive 15 s x 3); a disconnect while still on Wi-Fi is redialled within 0.2 s. kcd also
+  has reply, dismiss, call mute, findmyphone, share (progress events), clipboard. Its remote-input
+  plugin is active (uinput): a paired phone can move the mouse and type. Works.
 - **Claude desktop tray icon: works** (checked 2026-10-15). Chromium offers its icon two ways:
   pixels only (`IconPixmap`, normal start) or, when it thinks it runs on GNOME
   (`GNOME_DESKTOP_SESSION_ID`, set session-wide by `env-hyprland`), a named icon in a temp folder

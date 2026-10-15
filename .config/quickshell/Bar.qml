@@ -87,6 +87,10 @@ PanelWindow {
                 id: keyboardLayout
             }
         }
+        BarBlock { // the phone bridge (owner's design): while a phone is paired
+            visible: bar.full && Phone.paired
+            PhoneStatus {}
+        }
         BarBlock { // screen recording: muted when idle, red while recording; click: the island panel
             visible: bar.full
             clickable: true
