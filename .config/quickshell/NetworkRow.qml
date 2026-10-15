@@ -5,10 +5,12 @@ import Quickshell.Networking
 // signal bars, name, a lock when secured, and a tag (Connected, Saved, else the band). Clicked, it
 // opens on the surface colour with a border: security, band, signal and bit rate; a password field
 // for a new secured network (Enter connects); "Wrong password" (red) or "Connecting"; then Connect
-// (accent), Disconnect and Forget. The password lives in the panel, so a re-sort keeps it.
+// (accent), Disconnect and Forget. The password lives in the panel, so a re-sort keeps it. The
+// keyboard's row (search focused, arrows) has an accent border.
 Rectangle {
     id: row
     required property var modelData
+    required property int index
     required property var panel
     readonly property var net: modelData
     readonly property bool expanded: panel.sel === net.name
@@ -16,6 +18,8 @@ Rectangle {
     readonly property bool enterprise: [WifiSecurityType.Wpa2Eap, WifiSecurityType.WpaEap, WifiSecurityType.Wpa3SuiteB192,
         WifiSecurityType.Leap, WifiSecurityType.DynamicWep].indexOf(net.security) >= 0
     readonly property bool needsPw: secured && !enterprise && !net.known && !net.connected
+    readonly property bool canConnect: !net.connected && !(enterprise && !net.known)
+    readonly property bool highlighted: panel.searchFocused && panel.hi === index && !expanded
     readonly property bool connecting: (panel.attempt !== null && panel.attempt.name === net.name) || net.state === ConnectionState.Connecting
     readonly property bool failed: panel.err === net.name
     readonly property int level: Icons.wifiLevel(net.signalStrength)
@@ -70,7 +74,7 @@ Rectangle {
     height: body.height + 4
     color: expanded ? Theme.surface : "transparent"
     border.width: 2
-    border.color: expanded ? Theme.border : "transparent"
+    border.color: expanded ? Theme.border : highlighted ? Theme.accent : "transparent"
 
     Column {
         id: body
@@ -230,8 +234,7 @@ Rectangle {
                 visible: !row.connecting
                 width: parent.width
                 spacing: 4
-                readonly property var shown: [!row.net.connected && !(row.enterprise && !row.net.known),
-                    row.net.connected, row.net.known]
+                readonly property var shown: [row.canConnect, row.net.connected, row.net.known]
                 readonly property int count: shown.filter(s => s).length
                 readonly property real buttonWidth: (width - (count - 1) * 4) / Math.max(count, 1)
 

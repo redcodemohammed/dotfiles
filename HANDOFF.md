@@ -218,6 +218,19 @@ Done (section 4):
   Airplane mode = `rfkill block|unblock all` (Wi-Fi and Bluetooth; the login's uaccess ACL on
   `/dev/rfkill`, no sudo; off turns Wi-Fi back on), and one line per wired port (Connected / Not
   connected / No cable). Works.
+- **Network panel, step 3: the design's update** (pulled 2026-10-15; owner said "go").
+  `NetState.qml` (singleton): internet from NetworkManager's connectivity check
+  (ping.archlinux.org; ok / portal / none / down; a portal is re-checked every 5 s), and traffic of
+  the default-route device: speed (sampled each second only while the Networks tab shows) and bytes
+  used since that device connected (counters noted on connect, kept in
+  `$XDG_RUNTIME_DIR/network-usage.json` across shell reloads). Bar: a "!" top right, red for no
+  internet, light for a sign-in page. Panel: a status box under the tabs (No internet: Retry; Sign-in
+  required: Open login page = xdg-open the check page), the speed line, keyboard (search focused on
+  open, Up/Down accent highlight, Enter opens or connects, Esc closes, hint line). Settings: Internet
+  row (OK + ping to 1.1.1.1), click a row to copy (wl-copy, "Copied"), Share network (QR) via
+  `~/.local/bin/wifi-qr` (password from `nmcli -s -g`, which escapes ':' and '\' even for one field;
+  piped to qrencode; SVG in `$XDG_RUNTIME_DIR`, deleted when hidden). The canvas also has a new
+  "Phone bridge" board: not built.
 - **Claude desktop tray icon: works** (checked 2026-10-15). Chromium offers its icon two ways:
   pixels only (`IconPixmap`, normal start) or, when it thinks it runs on GNOME
   (`GNOME_DESKTOP_SESSION_ID`, set session-wide by `env-hyprland`), a named icon in a temp folder

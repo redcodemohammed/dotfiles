@@ -7,7 +7,9 @@ import Quickshell.Networking
 // 2026-10-15; the spec's bar item was icon only). It drops from the bar's network block, 400 wide,
 // 4px under the bar and flush with its right edge, grabs the keyboard and closes on a click outside
 // or Escape. Header: Wi-Fi, rescan, on/off. Tabs: Networks (search, list, hidden network),
-// Settings (NetworkSettings.qml) and VPN (next step). The Wi-Fi list, connecting (with a password),
+// Settings (NetworkSettings.qml) and VPN (next step). Under the tabs: a box when the internet
+// fails (Retry, or Open login page for a sign-in page) and, on Networks, the speed line. Keyboard:
+// search is focused on open, Up/Down move through the list, Enter opens (or connects), Esc closes. The Wi-Fi list, connecting (with a password),
 // disconnect, forget and Wi-Fi on/off use Quickshell.Networking, live from NetworkManager; band and
 // bit rate, which it does not give, hidden networks and profile settings use nmcli; Airplane mode
 // is rfkill (all radios; the owner's login has an ACL on /dev/rfkill, no sudo).
@@ -35,6 +37,9 @@ PopupWindow {
         if (visible) {
             scan(false)
             readRfkill()
+            hi = 0
+            if (tab === "nets")
+                Qt.callLater(search.focusInput)
             return
         }
         closedAt = Date.now()
@@ -51,6 +56,36 @@ PopupWindow {
     readonly property bool wifiOn: Networking.wifiEnabled
     property string tab: "nets"
     property string query: ""
+    onQueryChanged: hi = 0
+
+    // Keyboard: the highlighted row while the search field has focus.
+    property int hi: 0
+    readonly property bool searchFocused: search.focused
+    function move(step) {
+        hi = Math.max(0, Math.min(networks.length - 1, hi + step))
+        const row = netRepeater.itemAt(hi)
+        if (row === null)
+            return
+        if (row.y < list.contentY)
+            list.contentY = row.y
+        else if (row.y + row.height > list.contentY + list.height)
+            list.contentY = row.y + row.height - list.height
+    }
+    function enter() {
+        const row = netRepeater.itemAt(hi)
+        if (row === null)
+            return
+        if (row.expanded && row.canConnect && !row.needsPw)
+            row.connect()
+        else
+            pick(row.net.name)
+    }
+    Binding { // the speed line samples only while someone looks at it
+        when: panel.visible && panel.tab === "nets"
+        target: NetState
+        property: "watching"
+        value: true
+    }
 
     // Connected first, then by signal level, then by name (levels, not raw strength, so rows
     // don't jump about under the pointer).
@@ -327,6 +362,79 @@ PopupWindow {
                 }
             }
 
+            Rectangle { // the internet fails: no internet (red) or a sign-in page
+                id: statusBox
+                readonly property bool bad: NetState.internet === "none"
+                visible: bad || NetState.internet === "portal"
+                width: parent.width
+                height: 52
+                color: "transparent"
+                border.width: 2
+                border.color: bad ? Theme.alert : Theme.border
+                Text {
+                    x: 10
+                    anchors.verticalCenter: parent.verticalCenter
+                    text: Icons.warningCircle
+                    font.family: Icons.regular
+                    font.pixelSize: 16
+                    color: statusBox.bad ? Theme.alert : Theme.fg
+                }
+                Text {
+                    x: 34
+                    anchors.verticalCenter: parent.verticalCenter
+                    width: statusButton.x - x - 8
+                    text: NetState.checking ? "Checking connection" : statusBox.bad ? "No internet" : "Sign-in required"
+                    elide: Text.ElideRight
+                    font.family: "JetBrainsMono Nerd Font"
+                    font.pixelSize: 13
+                    color: Theme.fg
+                }
+                PanelButton {
+                    id: statusButton
+                    anchors.right: parent.right
+                    anchors.rightMargin: 10
+                    anchors.verticalCenter: parent.verticalCenter
+                    height: 32
+                    label: statusBox.bad ? "Retry" : "Open login page"
+                    onPressed: {
+                        if (!statusBox.bad) {
+                            // NetworkManager's check page: a sign-in portal intercepts it and shows its login.
+                            Quickshell.execDetached(["xdg-open", "http://ping.archlinux.org/nm-check.txt"])
+                            panel.visible = false
+                        }
+                        NetState.check()
+                    }
+                }
+            }
+
+            Item { // speed and data used, for the device carrying the internet
+                visible: panel.tab === "nets" && NetState.internet === "ok" && NetState.device !== ""
+                width: parent.width
+                height: 16
+                Row {
+                    spacing: 12
+                    Text {
+                        text: "↓ " + NetState.rate(NetState.down)
+                        font.family: "JetBrainsMono Nerd Font"
+                        font.pixelSize: 12
+                        color: Theme.fgMuted
+                    }
+                    Text {
+                        text: "↑ " + NetState.rate(NetState.up)
+                        font.family: "JetBrainsMono Nerd Font"
+                        font.pixelSize: 12
+                        color: Theme.fgMuted
+                    }
+                }
+                Text {
+                    anchors.right: parent.right
+                    text: NetState.amount(NetState.used) + " used"
+                    font.family: "JetBrainsMono Nerd Font"
+                    font.pixelSize: 12
+                    color: Theme.fgMuted
+                }
+            }
+
             Item { // Wi-Fi off, or airplane mode
                 visible: (!panel.wifiOn || panel.airplane) && panel.tab === "nets"
                 width: parent.width
@@ -366,6 +474,9 @@ PopupWindow {
                     placeholder: "Search networks"
                     clearable: true
                     onEdited: panel.query = text
+                    onUpPressed: panel.move(-1)
+                    onDownPressed: panel.move(1)
+                    onAccepted: panel.enter()
                 }
 
                 Text {
@@ -390,6 +501,7 @@ PopupWindow {
                 }
 
                 Flickable {
+                    id: list
                     visible: panel.networks.length > 0
                     width: parent.width
                     height: Math.min(rows.implicitHeight, 352)
@@ -403,6 +515,7 @@ PopupWindow {
                         width: parent.width
                         spacing: 4
                         Repeater {
+                            id: netRepeater
                             model: ScriptModel {
                                 values: panel.networks
                             }
@@ -457,6 +570,13 @@ PopupWindow {
                         available: !panel.joining && hiddenName.text.trim() !== ""
                         onPressed: panel.joinHidden(hiddenName.text.trim(), hiddenPw.text)
                     }
+                }
+
+                Text {
+                    text: "↑↓ move · Enter select · Esc close"
+                    font.family: "JetBrainsMono Nerd Font"
+                    font.pixelSize: 12
+                    color: Theme.fgMuted
                 }
             }
 

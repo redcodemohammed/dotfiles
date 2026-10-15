@@ -1,4 +1,5 @@
 import QtQuick
+import Quickshell
 import Quickshell.Io
 import Quickshell.Networking
 
@@ -7,7 +8,10 @@ import Quickshell.Networking
 // Metered (that network's profile), the DNS choice Auto / 1.1.1.1 / 8.8.8.8 (with their IPv6
 // twins; the router's DNS is then ignored), and Forget this network. For the machine: Airplane
 // mode (all radios, rfkill) and the wired devices. Profiles are read and changed with nmcli; a
-// change is re-applied to the live connection (nmcli device reapply), no reconnect.
+// change is re-applied to the live connection (nmcli device reapply), no reconnect. The card adds
+// Internet (NetState; "OK" with a ping to 1.1.1.1), and a click on a row copies its value
+// (wl-copy). Share network (QR): ~/.local/bin/wifi-qr writes it to $XDG_RUNTIME_DIR, removed when
+// hidden.
 Column {
     id: root
     required property var panel
@@ -32,8 +36,17 @@ Column {
         { label: "8.8.8.8", v4: "8.8.8.8 8.8.4.4", v6: "2001:4860:4860::8888 2001:4860:4860::8844" },
     ]
 
-    onLiveChanged: if (live) refresh()
-    onNetChanged: if (live) refresh()
+    onLiveChanged: {
+        if (live)
+            refresh()
+        else
+            hideQr()
+    }
+    onNetChanged: {
+        hideQr()
+        if (live)
+            refresh()
+    }
 
     function refresh() {
         if (device === "" || reader.running)
@@ -44,6 +57,8 @@ Column {
             [ -n "$uuid" ] && nmcli -t -f connection.autoconnect,connection.metered,ipv4.dns,ipv4.ignore-auto-dns,ipv6.method connection show uuid "$uuid"',
             "sh", device]
         reader.running = true
+        if (NetState.internet === "ok" && !pinger.running)
+            pinger.running = true
     }
     // nmcli connection modify on the connection in use, then reapply it to the device.
     function modify(args, reapply) {
@@ -104,6 +119,63 @@ Column {
         onExited: root.refresh()
     }
 
+    property string latency: ""
+    Process {
+        id: pinger
+        command: ["ping", "-c", "1", "-W", "2", "-n", "1.1.1.1"]
+        stdout: StdioCollector {
+            id: pingOut
+            onStreamFinished: {
+                const m = pingOut.text.match(/time=([0-9.]+)/)
+                root.latency = m ? Math.round(Number(m[1])) + " ms" : ""
+            }
+        }
+    }
+    readonly property string internetText: NetState.internet === "ok" ? "OK" + (latency ? " · " + latency : "")
+        : NetState.internet === "portal" ? "Sign-in required" : "No internet"
+
+    // Click a card row to copy its value.
+    property string copied: ""
+    function copy(key, value) {
+        copier.command = ["wl-copy", "--", value]
+        copier.running = true
+        copied = key
+        copiedTimer.restart()
+    }
+    Process { id: copier }
+    Timer {
+        id: copiedTimer
+        interval: 1200
+        onTriggered: root.copied = ""
+    }
+
+    // Share network (QR): saved WPA/WPA3 or open networks.
+    readonly property bool canShare: net !== null && uuid !== ""
+        && ["Open", "Open (encrypted)", "WPA", "WPA2", "WPA3"].indexOf(panel.securityLabel(net)) >= 0
+    readonly property string qrPath: Quickshell.env("XDG_RUNTIME_DIR") + "/network-qr.svg"
+    property bool qrOpen: false
+    property string qrSource: ""
+    function showQr() {
+        qrOpen = true
+        qrMaker.command = [Quickshell.env("HOME") + "/.local/bin/wifi-qr", uuid, net.name, qrPath,
+            String(Theme.bg).slice(1), String(Theme.fg).slice(1)]
+        qrMaker.running = true
+    }
+    function hideQr() {
+        if (!qrOpen && qrSource === "")
+            return
+        qrOpen = false
+        qrSource = ""
+        Quickshell.execDetached(["rm", "-f", qrPath])
+    }
+    Process {
+        id: qrMaker
+        onExited: code => {
+            if (code === 0 && root.qrOpen)
+                root.qrSource = "file://" + root.qrPath
+        }
+    }
+
     spacing: 8
 
     Column { // the connection in use
@@ -140,28 +212,44 @@ Column {
                         ["Signal", Math.round(root.net.signalStrength * 100) + "%"],
                         ["Band", root.scan ? root.panel.band(root.scan.freq) + " · " + root.scan.rate : "…"],
                         ["Security", root.panel.securityLabel(root.net)],
+                        ["Internet", root.internetText],
                         ["IP address", root.ip || "…"],
                         ["Gateway", root.gateway || "…"],
                         ["DNS", root.dns || "…"],
                     ] : [["Status", "Not connected"]]
-                    Row {
+                    Item { // click copies the value
+                        id: infoRow
                         required property var modelData
                         width: card.width
-                        spacing: 8
+                        height: 16
                         Text {
                             width: 96
-                            text: parent.modelData[0]
+                            text: infoRow.modelData[0]
                             font.family: "JetBrainsMono Nerd Font"
                             font.pixelSize: 12
                             color: Theme.fgMuted
                         }
                         Text {
-                            width: parent.width - 104
-                            text: parent.modelData[1]
+                            x: 104
+                            width: copiedHint.x - x - 8
+                            text: infoRow.modelData[1]
                             elide: Text.ElideRight
                             font.family: "JetBrainsMono Nerd Font"
                             font.pixelSize: 12
                             color: Theme.fg
+                        }
+                        Text {
+                            id: copiedHint
+                            anchors.right: parent.right
+                            text: root.copied === infoRow.modelData[0] ? "Copied" : ""
+                            font.family: "JetBrainsMono Nerd Font"
+                            font.pixelSize: 12
+                            color: Theme.fgMuted
+                        }
+                        MouseArea {
+                            anchors.fill: parent
+                            enabled: infoRow.modelData[1] !== "…"
+                            onClicked: root.copy(infoRow.modelData[0], infoRow.modelData[1])
                         }
                     }
                 }
@@ -249,6 +337,47 @@ Column {
                         enabled: root.uuid !== ""
                         onClicked: root.setDns(dnsButton.index)
                     }
+                }
+            }
+        }
+    }
+
+    Column { // share the network in use
+        visible: root.canShare
+        width: parent.width
+        spacing: 4
+        PanelButton {
+            width: parent.width
+            icon: Icons.qrCode
+            label: root.qrOpen ? "Hide QR code" : "Share network (QR)"
+            onPressed: root.qrOpen ? root.hideQr() : root.showQr()
+        }
+        Rectangle {
+            visible: root.qrOpen
+            width: parent.width
+            height: qrColumn.implicitHeight + 28
+            color: "transparent"
+            border.width: 2
+            border.color: Theme.border
+            Column {
+                id: qrColumn
+                anchors.horizontalCenter: parent.horizontalCenter
+                y: 14
+                spacing: 8
+                Image {
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    width: 176
+                    height: 176
+                    sourceSize: Qt.size(176, 176)
+                    source: root.qrSource
+                    cache: false
+                }
+                Text {
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    text: "Scan to join " + (root.net ? root.net.name : "")
+                    font.family: "JetBrainsMono Nerd Font"
+                    font.pixelSize: 12
+                    color: Theme.fgMuted
                 }
             }
         }

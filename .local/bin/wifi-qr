@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+# wifi-qr UUID SSID OUT.svg DARK LIGHT
+# Writes a QR code (SVG) that joins the saved Wi-Fi network UUID: the network panel's "Share
+# network (QR)" (owner's design "Network manager", 2026-10-15). The password comes from
+# NetworkManager (nmcli -s) and reaches qrencode through a pipe, never on a command line.
+# DARK and LIGHT are RRGGBB.
+set -euo pipefail
+uuid=$1 ssid=$2 out=$3 dark=$4 light=$5
+
+get() { nmcli -s -g "$1" connection show uuid "$uuid" 2>/dev/null | sed 's/\\\(.\)/\1/g'; } # -g escapes ':' and '\'
+esc() { printf '%s' "$1" | sed 's/[\\;,:"]/\\&/g'; } # the WIFI: format escapes \ ; , : "
+
+key=$(get 802-11-wireless-security.key-mgmt)
+case "$key" in
+    "" | owe) type=nopass psk= ;;
+    wpa-psk) type=WPA psk=$(get 802-11-wireless-security.psk) ;;
+    sae) type=SAE psk=$(get 802-11-wireless-security.psk) ;;
+    *) echo "wifi-qr: can't share a network with key-mgmt $key" >&2; exit 1 ;;
+esac
+
+printf 'WIFI:T:%s;S:%s;P:%s;;' "$type" "$(esc "$ssid")" "$(esc "$psk")" |
+    qrencode -t SVG -m 2 --foreground="$dark" --background="$light" -o "$out"

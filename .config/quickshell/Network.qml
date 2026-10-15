@@ -6,8 +6,9 @@ import Quickshell.Networking
 // design (2026-10-15) with its own SVG paths. Wi-Fi connected: three arcs and a dot, lit grey by
 // signal level, the rest in the border colour. Wi-Fi on but nothing connected: unlit arcs and a
 // red slash (network down). Wi-Fi off: a grey slash. A wired connection without Wi-Fi shows the
-// network glyph instead; no Wi-Fi card and no wire: a red network slash. The block opens the
-// network panel (Bar.qml). Networking loads lazily, so it reads as down for a moment at start.
+// network glyph instead; no Wi-Fi card and no wire: a red network slash. Connected but the
+// internet fails: a "!" top right, red for no internet, light for a sign-in page (NetState). The
+// block opens the network panel (Bar.qml). Networking loads lazily: down for a moment at start.
 Item {
     id: root
     readonly property var devices: Networking.devices.values
@@ -59,6 +60,17 @@ Item {
             strokeColor: root.down ? Theme.alert : !Networking.wifiEnabled ? Theme.fgMuted : "transparent"
             fillColor: "transparent"
             PathSvg { path: "M2.5 2.5l11 11" }
+        }
+    }
+    Shape { // "!" top right: no internet (red) or a sign-in page (light)
+        visible: NetState.internet === "none" || NetState.internet === "portal"
+        anchors.fill: parent
+        preferredRendererType: Shape.CurveRenderer
+        ShapePath {
+            strokeWidth: 1.5
+            strokeColor: NetState.internet === "none" ? Theme.alert : Theme.fg
+            fillColor: "transparent"
+            PathSvg { path: "M13 1.5v3.5M13 6.5v.6" }
         }
     }
     Rectangle { // the dot under the arcs
