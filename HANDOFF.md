@@ -195,6 +195,22 @@ Done (section 4):
   mm:ss, stop; expanded 340x172 screen/audio/size lines, Pause/Resume, Stop and save), red border.
   Files: `Recording.qml` (singleton), `IslandRecord.qml`, `IslandButton.qml`. A harmless
   `failed to write frame index` line can show at stop; files decode cleanly. Works.
+- **Network panel, step 1 of 3** (owner's design "Network manager" in the Hyprland Island canvas,
+  claude.ai/artifact/AqnmRsK6WT21D6CvnAF4Xt, board `Network.dc.html`; the spec's network item was
+  icon only, the owner's design decides). The bar's network block draws the design's Wi-Fi arcs
+  (QtQuick.Shapes, its SVG paths): lit grey by signal level, red slash when Wi-Fi is on but nothing
+  connected, grey slash when Wi-Fi is off, the network glyph on a wire without Wi-Fi. Click: a
+  `PopupWindow` (`grabFocus`: keyboard, closes on an outside click or Escape) 400 wide, 4px under the
+  bar, flush right. Header Wi-Fi, rescan, on/off; tabs Networks / VPN / Settings. Networks: search,
+  list (connected first, then signal level, then name), rows open to details, password, Connect,
+  Disconnect, Forget; a failed new network's profile is forgotten; Join hidden network (nmcli,
+  password via `passwd-file /dev/stdin`, profile removed on failure). Wi-Fi list and actions via
+  `Quickshell.Networking`; band and bit rate via `nmcli device wifi list` (NetworkManager has no
+  dBm: signal shows as %). Files: `Network.qml`, `NetworkPanel.qml`, `NetworkRow.qml`,
+  `PanelButton.qml`, `PanelSwitch.qml`, `PanelInput.qml`. Owner's choices for the next steps:
+  nmcli for Settings and VPN, kill switch left out for now, "Connect on open Wi-Fi" uses the last
+  VPN used, Airplane mode = `rfkill block all`. QML gotcha: in a delegate, `panel: panel` binds the
+  object's own `panel` property, not the id; pass it through another property. Works.
 - **Claude desktop tray icon: works** (checked 2026-10-15). Chromium offers its icon two ways:
   pixels only (`IconPixmap`, normal start) or, when it thinks it runs on GNOME
   (`GNOME_DESKTOP_SESSION_ID`, set session-wide by `env-hyprland`), a named icon in a temp folder

@@ -23,6 +23,11 @@ PanelWindow {
     implicitHeight: 32
     color: "transparent"
 
+    NetworkPanel { // drops from the network block, flush with the bar's right edge
+        id: networkPanel
+        bar: bar
+    }
+
     BarBlock {
         id: workspacesBlock
         anchors.left: parent.left
@@ -82,7 +87,9 @@ PanelWindow {
                 id: volume
             }
         }
-        BarBlock {
+        BarBlock { // click: the network panel
+            clickable: true
+            onClicked: networkPanel.toggle()
             Network {}
         }
         BarBlock { // laptop only: hidden without a laptop battery

@@ -64,4 +64,18 @@ Singleton {
     }
 
     readonly property string sun: "\ue472" // island brightness
+
+    // Network panel
+    readonly property string arrowClockwise: "\ue036" // rescan
+    readonly property string magnifyingGlass: "\ue30c" // search
+    readonly property string lock: "\ue2fa" // secured network
+    readonly property string eye: "\ue220" // show password
+    readonly property string eyeSlash: "\ue224" // hide password
+    readonly property string warningCircle: "\ue4e2" // connection failed
+    readonly property string plus: "\ue3d4" // join hidden network
+
+    // Wi-Fi signal level 1-4 from Quickshell's strength (0-1), for the bar block and the panel.
+    function wifiLevel(strength) {
+        return strength >= 0.75 ? 4 : strength >= 0.5 ? 3 : strength >= 0.3 ? 2 : 1
+    }
 }
