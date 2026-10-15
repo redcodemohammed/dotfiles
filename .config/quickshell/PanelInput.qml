@@ -3,7 +3,8 @@ import QtQuick
 // A 40px text field in the network panel (owner's design): 2px border, accent while focused, red
 // with `error`. Optional leading `icon` (search), a clear button (`clearable`), and for a
 // `password` an eye button that shows or hides it. edited() on typing, accepted() on Enter,
-// upPressed() / downPressed() for the arrow keys (the network list's keyboard moves).
+// upPressed() / downPressed() for the arrow keys (the network list's keyboard moves). `action`: a
+// small accent button inside the field with that label (the phone panel's Send); it emits accepted().
 Rectangle {
     id: field
     property string placeholder
@@ -12,6 +13,7 @@ Rectangle {
     property bool clearable: false
     property bool error: false
     property bool reveal: false
+    property string action: ""
     property alias text: input.text
     readonly property bool focused: input.activeFocus
     signal edited()
@@ -40,7 +42,7 @@ Rectangle {
         id: input
         x: lead.visible ? 38 : 14
         anchors.verticalCenter: parent.verticalCenter
-        width: parent.width - x - (trail.visible ? 42 : 14)
+        width: parent.width - x - (trail.visible ? 42 : actionButton.visible ? actionButton.width + 18 : 14)
         clip: true
         echoMode: field.password && !field.reveal ? TextInput.Password : TextInput.Normal
         font.family: "JetBrainsMono Nerd Font"
@@ -59,6 +61,29 @@ Rectangle {
             text: field.placeholder
             font: input.font
             color: Theme.fgMuted
+        }
+    }
+
+    Rectangle {
+        id: actionButton
+        visible: field.action !== ""
+        anchors.right: parent.right
+        anchors.rightMargin: 10
+        anchors.verticalCenter: parent.verticalCenter
+        width: actionText.implicitWidth + 16
+        height: 24
+        color: Theme.accent
+        Text {
+            id: actionText
+            anchors.centerIn: parent
+            text: field.action
+            font.family: "JetBrainsMono Nerd Font"
+            font.pixelSize: 12
+            color: Theme.textOnAccent
+        }
+        MouseArea {
+            anchors.fill: parent
+            onClicked: field.accepted()
         }
     }
 

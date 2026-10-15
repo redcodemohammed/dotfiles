@@ -2,6 +2,7 @@ pragma Singleton
 import QtQuick
 import Quickshell
 import Quickshell.Io
+import Quickshell.Hyprland
 
 // The phone bridge (owner's design "Phone bridge", 2026-10-15). kcd, a headless KDE Connect daemon
 // (AUR kcd 1.22, user socket kcd.socket; pairing code checked before install), is paired with the
@@ -29,9 +30,36 @@ Singleton {
         notifications = list
         store.setText(JSON.stringify(list))
     }
-    function markAllRead() {
-        if (unread > 0)
-            setNotifications(notifications.map(n => Object.assign({}, n, { unread: false })))
+    function markRead(id) {
+        setNotifications(notifications.map(n => n.id === id ? Object.assign({}, n, { unread: false }) : n))
+    }
+    function clearAll() { // this list only; the phone keeps its notifications
+        setNotifications([])
+    }
+    function dismiss(id) { // on the phone too
+        setNotifications(notifications.filter(n => n.id !== id))
+        Quickshell.execDetached(["kcd", "dismiss", deviceId, id])
+    }
+    function reply(replyId, text) {
+        Quickshell.execDetached(["kcd", "reply", deviceId, replyId, text])
+    }
+    // kcd has no disconnect (a paired phone always comes back); Reconnect announces the laptop for
+    // 20 s so the phone dials in at once instead of waiting for kcd's back-off. Advertise-only mode
+    // never accepts a pairing.
+    function reconnect() {
+        if (!advertiser.running)
+            advertiser.running = true
+    }
+    Process {
+        id: advertiser
+        command: ["timeout", "20", "kcd", "pair", "--advertise-only"]
+    }
+    // A verification code in a notification: a 4-8 digit number next to a code-ish word.
+    function codeIn(text) {
+        if (!/code|otp|verif|passcode|pin|رمز|كود/i.test(text))
+            return ""
+        const m = text.match(/(?:^|\D)(\d{4,8})(?!\d)/)
+        return m ? m[1] : ""
     }
 
     function handle(line) {
@@ -103,6 +131,29 @@ Singleton {
         onTriggered: {
             watch.running = false
             watch.running = true
+        }
+    }
+
+    // qs ipc call phone open: the panel on the focused screen's bar (Bar.qml listens).
+    // qs ipc call phone test: two sample notifications (test hook; ids start with "test-").
+    signal panelRequested(string screen)
+    IpcHandler {
+        target: "phone"
+        function open(): void {
+            const m = Hyprland.focusedMonitor
+            if (m)
+                root.panelRequested(m.name)
+        }
+        function test(): void {
+            root.setNotifications([
+                { id: "test-1", app: "Telegram", title: "Sara", text: "Can you send the logo files when you get a minute?",
+                  replyId: "test-reply", time: root.hhmm(), unread: true },
+                { id: "test-2", app: "Messages", title: "Zain", text: "Your verification code is 482913. Do not share it.",
+                  replyId: "", time: root.hhmm(), unread: true },
+            ].concat(root.notifications))
+        }
+        function clearTest(): void {
+            root.setNotifications(root.notifications.filter(n => !String(n.id).startsWith("test-")))
         }
     }
 

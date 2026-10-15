@@ -38,6 +38,18 @@ PanelWindow {
         id: networkPanel
         bar: bar
     }
+    PhonePanel { // drops from the phone block, its right edge on the block's
+        id: phonePanel
+        bar: bar
+        block: phoneBlock
+    }
+    Connections { // qs ipc call phone open, on this screen
+        target: Phone
+        function onPanelRequested(screen) {
+            if (screen === bar.modelData.name && bar.full && Phone.paired)
+                phonePanel.toggle()
+        }
+    }
     Connections { // the island's Wi-Fi pill, clicked on this screen
         target: NetState
         function onPanelRequested(screen) {
@@ -87,8 +99,11 @@ PanelWindow {
                 id: keyboardLayout
             }
         }
-        BarBlock { // the phone bridge (owner's design): while a phone is paired
+        BarBlock { // the phone bridge (owner's design): while a phone is paired; click: its panel
+            id: phoneBlock
             visible: bar.full && Phone.paired
+            clickable: true
+            onClicked: phonePanel.toggle()
             PhoneStatus {}
         }
         BarBlock { // screen recording: muted when idle, red while recording; click: the island panel

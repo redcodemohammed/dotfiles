@@ -319,6 +319,16 @@ Done (section 4):
   (kcd keepalive 15 s x 3); a disconnect while still on Wi-Fi is redialled within 0.2 s. kcd also
   has reply, dismiss, call mute, findmyphone, share (progress events), clipboard. Its remote-input
   plugin is active (uinput): a paired phone can move the mouse and type. Works.
+- **Phone bridge, step 2: panel, header and Inbox** (`PhonePanel.qml`, `PhoneNotification.qml`,
+  `PhoneGlyph.qml`). A `PopupWindow` anchored to the bar's phone block (`anchor.item`), 420 wide,
+  right edge on the block's. Header: name, "Connected · battery · Wi-Fi name" (Low + red battery
+  at 15% or less); kcd has no disconnect, so only **Reconnect** while away = `timeout 20 kcd pair
+  --advertise-only` (announces, never accepts a pairing). Tabs Inbox (unread count) / Actions /
+  Settings. Inbox: newest first, opening marks read; Reply (`kcd reply <dev> <replyId> <text>`,
+  only with a reply id), Copy code (4-8 digits next to code/OTP/verif/pin/رمز/كود, wl-copy),
+  Dismiss (`kcd dismiss`, on the phone too); Clear all empties this list only. `PanelInput` got
+  `action` (a small accent button inside the field). IPC: `qs ipc call phone open` (panel on the
+  focused screen), `phone test` / `phone clearTest` (sample notifications). Works.
 - **Claude desktop tray icon: works** (checked 2026-10-15). Chromium offers its icon two ways:
   pixels only (`IconPixmap`, normal start) or, when it thinks it runs on GNOME
   (`GNOME_DESKTOP_SESSION_ID`, set session-wide by `env-hyprland`), a named icon in a temp folder
