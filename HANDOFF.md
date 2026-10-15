@@ -173,6 +173,13 @@ Done (section 4):
   on next open; GTK css is generated but not stowed while COSMIC owns `gtk.css`. Tested from the
   shell on the current wallpaper (accent #eda480, keyboard FFB08A) and `--default` (back to amber,
   outputs identical to the commit). Not tested: the Vicinae list itself (needs a click).
+- **Claude desktop tray icon: works** (checked 2026-10-15). Chromium offers its icon two ways:
+  pixels only (`IconPixmap`, normal start) or, when it thinks it runs on GNOME
+  (`GNOME_DESKTOP_SESSION_ID`, set session-wide by `env-hyprland`), a named icon in a temp folder
+  (`IconName status_icon_0` + `IconThemePath /tmp/org.chromium.Chromium.*`, no pixels). Both show
+  in the bar. The one failure (`Could not load icon "status_icon_0"`) did not come back on
+  restarts; most likely the bar asked before Chromium had written the file. If it recurs: restart
+  the app, or teach `Tray.qml` to retry.
 - **SUPER+E** runs `~/.local/scripts/vicinae-emulator.sh` (Android emulator picker; owner's request,
   not in the spec). Works. Note: `hyprctl binds` shows Lua keycode binds with an empty key.
 - **tmux in Alacritty** (owner's choice, changed from one shared session): `[terminal] shell` runs
@@ -206,53 +213,6 @@ Open from 2026-10-15:
 - Verify `env-hyprland` after a re-login (see the Electron note in section 8).
 - Try the "Wallpaper" picker in Vicinae: does `vicinae dmenu` show Quick Look previews for the
   image paths? If the full paths look noisy, switch to names with `--format index`.
-- Claude desktop has no tray icon. Lead: the bar logs `Could not load icon "status_icon_0"`:
-  Chromium names its icon and points IconThemePath at a temp folder; Quickshell looks the name up
-  in the icon theme only. Its item `org.freedesktop.StatusNotifierItem-<pid>-1` exists
-  (`/StatusNotifierItem` + `/com/canonical/dbusmenu`, IconPixmap `a(iiay)` 64x64), but it is not in
-  the watcher's `RegisteredStatusNotifierItems`; the bar logged "Ignoring invalid
-  StatusNotifierItem registration" and "Unable to create pixmap" for an earlier instance.
-
-## 1. What this repo is
-
-| Path | What |
-| --- | --- |
-| `.config/hypr/hyprland.lua` | Hyprland config (0.56 uses **Lua**, not hyprland.conf) |
-| `.config/hypr/hyprsplit/` | git submodule, hyprsplit **Lua library** pinned at 6b00b67 |
-| `.config/tmux/plugins/*`, `.tmux/plugins/tpm`, `.config/nvim/pack/plugins/start/*` | tmux plugins, TPM and the Neovim navigator: pinned git submodules |
-| `.config/hypr/hypridle.conf`, `hyprlock.conf`, `hyprsunset.conf` | idle chain, fallback locker, night light |
-| `.config/hypr/hypr_palette.lua` | generated colors for the Hyprland config |
-| `.config/quickshell/` | bar, island, notification server and inbox |
-| `.config/quickshell-lock/` | the lock screen, a separate Quickshell instance |
-| `pam/quickshell-lock` | the lock's PAM service (loaded from here, `/etc/pam.d` untouched) |
-| `palette/palette.toml` | **the one palette**; `palette/generate.py` writes every app's colors |
-| `palette/from-wallpaper.py`, `palette/palette-default.toml` | palette from a wallpaper; the hand-made palette to go back to |
-| `.local/bin/wallpaper-pick`, `wallpaper-apply`, `.local/share/applications/wallpaper-pick.desktop` | the "Wallpaper" picker in Vicinae and what it runs |
-| `spotifast/Hypr.json`, `strata/hypr.toml` | generated app themes; `generate.py` copies them into `~/.config` as real files (not stowed) |
-| `.config/{alacritty,nvim,tmux,vicinae,satty,gtk-3.0,gtk-4.0}/` | app configs (colors generated) |
-| `.local/share/vicinae/themes/hypr.toml` | Vicinae theme (generated) |
-| `keyd/default.conf` | Caps Lock: tap Escape, hold Ctrl |
-| `.local/bin/island-build` | build hook: `island-build cargo build` reports to the island |
-| `packages/` | what to install (`repo.txt`, `aur.txt`), VM versions, later packages |
-| `.stow-local-ignore` | what stow must not link: the project folders, and GTK while COSMIC owns it |
-| `setup/check.sh` | read-only health check (57 checks pass on the VM) |
-| `spec/`, `design-system/` | the owner's specs (copied from hyprland-kit) |
-| `pkglist-before.txt` | the **VM's** baseline package list, not the laptop's |
-
-The repo is a GNU stow package (merged into the owner's existing stow dotfiles on 2026-10-14;
-their other configs, such as fish, atuin and cava, live alongside). Everything under `.config/` and
-`.local/` mirrors `$HOME`; the project folders at the root are never linked. Link with
-`cd ~/dotfiles && stow -n -v -R .` (dry run), then `stow -v -R .`.
-
-After editing `palette/palette.toml`, run `python3 palette/generate.py` and commit the outputs.
-Since 2026-10-15 the palette follows the wallpaper: `wallpaper-apply <image>` rewrites
-`palette.toml` (from `from-wallpaper.py`) and every output, so the repo shows them as modified
-until committed. The hand-made palette is `palette-default.toml`; `wallpaper-apply --default`
-brings it back (and reproduces the committed outputs exactly).
-Never edit generated files by hand (they say so in their first line).
-
-## 2. Decisions that differ from the spec (all agreed with the owner)
-
 - Hyprland config is Lua (`hl.config`, `hl.bind`, `hl.dsp.*`). `hyprctl dispatch` takes Lua:
   `hyprctl dispatch 'hl.dsp.exec_cmd("qs")'`.
 - hyprsplit: the C++ plugin is deprecated and its hyprpm pins stop at Hyprland 0.54.3. Use the
