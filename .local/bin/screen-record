@@ -1,0 +1,98 @@
+#!/usr/bin/env bash
+# screen-record start | stop | toggle | pause      (SUPER+R toggles; the bar and island use the rest)
+#
+# Records the focused screen with gpu-screen-recorder, MP4 with AAC audio, into ~/Videos/Recordings.
+# Settings come from ~/.local/state/recording/settings.json (set from the island):
+#   {"mic": true, "system": true, "separate": false, "fps": 60, "quality": "very_high"}
+# Mic and desktop sound mix into one track, or two with "separate". Missing or invalid values fall
+# back to these defaults.
+# While recording, $XDG_RUNTIME_DIR/recording/state.json tells the bar and the island what runs;
+# it is removed when gpu-screen-recorder exits (saved, stopped or failed), and the shell is
+# pinged over IPC after every change. Pause and resume are gpu-screen-recorder's SIGUSR2,
+# stop-and-save its SIGINT. Owner's request, 2026-10-15.
+set -euo pipefail
+set +m # no job control: the recorder stays in our process group, so setsid runs it in place and $! is its pid
+run="${XDG_RUNTIME_DIR:-/run/user/$UID}/recording"
+state="$run/state.json"
+settings="$HOME/.local/state/recording/settings.json"
+dir="$(xdg-user-dir VIDEOS 2>/dev/null || echo "$HOME/Videos")/Recordings"
+
+if [ -z "${HYPRLAND_INSTANCE_SIGNATURE:-}" ]; then # started without Hyprland's environment
+    HYPRLAND_INSTANCE_SIGNATURE=$(hyprctl -j instances 2>/dev/null | jq -r '.[0].instance // empty')
+    export HYPRLAND_INSTANCE_SIGNATURE
+fi
+
+ping_shell() { qs ipc call recording refresh >/dev/null 2>&1 || true; }
+running() { [ -f "$state" ] && kill -0 "$(jq -r .pid "$state")" 2>/dev/null; }
+now_ms() { date +%s%3N; }
+
+start() {
+    running && return 0
+    mkdir -p "$run" "$dir"
+    local mic=true system=true separate=false fps=60 quality=very_high audio=() monitor width height file pid
+    if [ -f "$settings" ]; then
+        read -r mic system separate fps quality < <(jq -r '[(.mic != false), (.system != false),
+            (.separate == true), (.fps // 60), (.quality // "very_high")] | @tsv' "$settings" 2>/dev/null) || true
+    fi
+    [ "$mic" = false ] || mic=true # a broken settings file leaves these blank
+    [ "$system" = false ] || system=true
+    [ "$separate" = true ] || separate=false
+    case "$fps" in 30|60|120|144) ;; *) fps=60 ;; esac
+    case "$quality" in medium|high|very_high|ultra) ;; *) quality=very_high ;; esac
+    if [ "$mic" = true ] && [ "$system" = true ]; then
+        if [ "$separate" = true ]; then audio=(-a default_output -a default_input)
+        else audio=(-a "default_output|default_input"); fi
+    elif [ "$system" = true ]; then audio=(-a default_output)
+    elif [ "$mic" = true ]; then audio=(-a default_input)
+    fi
+    read -r monitor width height < <(hyprctl -j monitors | jq -r '.[] | select(.focused) | "\(.name) \(.width) \(.height)"')
+    file="$dir/$(date +%F_%H-%M-%S).mp4"
+
+    setsid gpu-screen-recorder -w "$monitor" -f "$fps" -q "$quality" -c mp4 -ac aac "${audio[@]}" \
+        -o "$file" >"$run/gsr.log" 2>&1 &
+    pid=$!
+    jq -n --argjson pid "$pid" --arg file "$file" --arg monitor "$monitor" \
+        --argjson width "$width" --argjson height "$height" --argjson mic "$mic" --argjson system "$system" \
+        --argjson separate "$separate" --argjson fps "$fps" --arg quality "$quality" --argjson started "$(now_ms)" \
+        '{pid: $pid, file: $file, monitor: $monitor, width: $width, height: $height, fps: $fps,
+          quality: $quality, mic: $mic, system: $system, separate: $separate,
+          started: $started, paused: false, pausedAt: 0, pausedTotal: 0}' \
+        >"$state.tmp" && mv "$state.tmp" "$state"
+    ping_shell
+
+    # When it exits (stopped, failed or crashed): drop the state and say what happened.
+    (
+        tail --pid="$pid" -f /dev/null
+        rm -f "$state"
+        ping_shell
+        if [ -s "$file" ]; then
+            notify-send -a Recording "Recording saved" "$(basename "$file") in $dir"
+        else
+            rm -f "$file"
+            notify-send -a Recording -u critical "Recording failed" "$(tail -n 3 "$run/gsr.log")"
+        fi
+    ) >/dev/null 2>&1 &
+    disown
+}
+
+stop() {
+    running || return 0
+    kill -INT "$(jq -r .pid "$state")"
+}
+
+pause() {
+    running || return 0
+    kill -USR2 "$(jq -r .pid "$state")"
+    jq --argjson now "$(now_ms)" \
+        'if .paused then .paused = false | .pausedTotal += ($now - .pausedAt)
+         else .paused = true | .pausedAt = $now end' "$state" >"$state.tmp" && mv "$state.tmp" "$state"
+    ping_shell
+}
+
+case "${1:-toggle}" in
+    start) start ;;
+    stop) stop ;;
+    pause) pause ;;
+    toggle) if running; then stop; else start; fi ;;
+    *) echo "usage: screen-record start|stop|toggle|pause" >&2; exit 2 ;;
+esac

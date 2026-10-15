@@ -21,6 +21,7 @@ Singleton {
         volume:  [260, 24, 320, volumeHeight], // expanded grows with the device lists (owner)
         brightness: [260, 24, 320, volumeHeight], // compact: sun and level; expanded: the volume panel
         record:  [240, 24, 340, 172],
+        recsetup: [0, 0, 340, 324], // recording setup (audio, fps, quality, Start): opens expanded
         battery: [260, 24, 340, 148],
         build:   [320, 24, 440, 192],
     })
@@ -28,7 +29,8 @@ Singleton {
 
     property var active: null // current transient: { kind, data, persistent }
     property var queued: null
-    property bool recording: false
+    property bool recordingTest: false // test hook only
+    readonly property bool recording: recordingTest || Recording.active // screen-record is running
     property bool mediaTest: false // test hook only: qs ipc call island test media
     readonly property bool media: mediaTest || mediaPlayer !== null
     property bool expanded: false
@@ -66,6 +68,27 @@ Singleton {
         const rows = 2 + (hasBrightness ? 1 : 0)
         const list = n => 8 + 22 + 28 * n
         return 12 + rows * 24 + (rows - 1) * 8 + list(audioSinks.length) + list(audioSources.length) + 12
+    }
+
+    // The bar's record block. Recording: open its panel. Not recording: the setup panel (audio
+    // choice, Start), which goes away once the recording starts.
+    function showRecording() {
+        queued = null
+        if (Recording.active) {
+            if (active)
+                next() // back to the recording state underneath
+            expand()
+        } else {
+            show({ kind: "recsetup", data: {}, persistent: true })
+            expand()
+        }
+    }
+    Connections {
+        target: Recording
+        function onActiveChanged() {
+            if (Recording.active && root.active && root.active.kind === "recsetup")
+                root.next()
+        }
     }
 
     // The bar's volume block: open the expanded volume panel now, in place of whatever shows.
@@ -255,7 +278,7 @@ Singleton {
         target: "island"
         function test(kind: string): void {
             if (kind === "media") root.mediaTest = !root.mediaTest
-            else if (kind === "record") root.recording = !root.recording
+            else if (kind === "record") root.recordingTest = !root.recordingTest
             else if (kind === "buildfail") root.push("build", { failed: true }, true)
             else root.push(kind, {}, false)
         }
@@ -279,7 +302,7 @@ Singleton {
             root.queued = null
             root.next()
             root.mediaTest = false
-            root.recording = false
+            root.recordingTest = false
         }
     }
 }

@@ -50,7 +50,7 @@ PanelWindow {
     WlrLayershell.layer: WlrLayer.Overlay
     color: "transparent"
     implicitWidth: 640 // widest state (media)
-    implicitHeight: barTop + edge + Math.max(256, IslandState.volumeHeight) // tallest state
+    implicitHeight: barTop + edge + Math.max(324, IslandState.volumeHeight) // tallest: recording setup or volume
     mask: Region { item: pill }
 
 
@@ -118,6 +118,13 @@ PanelWindow {
                 open: root.shownOpen
             }
 
+            IslandRecord {
+                anchors.fill: parent
+                visible: root.shownKind === "record" || root.shownKind === "recsetup"
+                open: root.shownOpen
+                setup: root.shownKind === "recsetup"
+            }
+
             IslandMedia {
                 anchors.fill: parent
                 visible: root.shownKind === "media"
@@ -133,7 +140,7 @@ PanelWindow {
 
             // Placeholder content for states not built yet (recording).
             Text {
-                visible: ["volume", "brightness", "battery", "media", "notify", "build"].indexOf(root.shownKind) < 0
+                visible: ["volume", "brightness", "battery", "media", "record", "recsetup", "notify", "build"].indexOf(root.shownKind) < 0
                 x: root.shownOpen ? 12 : 8
                 y: root.shownOpen ? 12 : (parent.height - height) / 2
                 text: root.shownKind + (root.shownOpen ? " · expanded" : "")

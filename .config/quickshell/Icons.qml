@@ -44,6 +44,10 @@ Singleton {
     readonly property string repeatOnce: ""
     readonly property string microphoneStage: "" // lyrics
 
+    // Recording
+    readonly property string record: ""
+    readonly property string stop: ""
+
     // Power profiles (island battery pill)
     readonly property string leaf: "" // Saver
     readonly property string scales: "" // Balanced

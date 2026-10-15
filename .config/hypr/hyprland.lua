@@ -298,6 +298,7 @@ hl.bind(mainMod .. " + Return", hl.dsp.exec_cmd(terminal))
 hl.bind(mainMod .. " + code:61", hl.dsp.exec_cmd("vicinae toggle")) -- slash key, any layout
 hl.bind(mainMod .. " + code:31", hl.dsp.exec_cmd("qs ipc call inbox toggle")) -- I key: notification inbox
 hl.bind(mainMod .. " + code:26", hl.dsp.exec_cmd("~/.local/scripts/vicinae-emulator.sh")) -- E key: Android emulator picker (owner's request)
+hl.bind(mainMod .. " + code:27", hl.dsp.exec_cmd("~/.local/bin/screen-record toggle")) -- R key: record the focused screen (spec)
 -- Lock: Quickshell lock in its own instance. flock stops a second locker from starting.
 hl.bind(mainMod .. " + Escape", hl.dsp.exec_cmd([[sh -c 'flock -n "$XDG_RUNTIME_DIR/quickshell-lock.flock" qs -p ~/.config/quickshell-lock']]))
 

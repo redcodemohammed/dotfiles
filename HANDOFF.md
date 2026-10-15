@@ -179,6 +179,22 @@ Done (section 4):
   key since keyd was skipped; read from `hyprctl -j devices` at start and when Caps Lock is
   released; its line is always reserved so nothing moves), and a small muted battery at the bottom
   of each screen on laptops (red when critical; `quickshell-lock/Icons.qml` links the bar's). Works.
+- **Screen recording** (spec; owner added settings). `~/.local/bin/screen-record start|stop|toggle|pause`
+  runs gpu-screen-recorder 6.1.4 on the focused monitor (`-w <name>`), MP4 + AAC, into
+  `~/Videos/Recordings/<date>_<time>.mp4`. SUPER+R (`code:27`) toggles. While it runs,
+  `$XDG_RUNTIME_DIR/recording/state.json` holds pid, screen, settings and pause times; a watcher
+  removes it when the recorder exits and notifies "Recording saved" (or "Recording failed" with
+  the log tail). Pause/resume = SIGUSR2, stop and save = SIGINT. The script pings the bar with
+  `qs ipc call recording refresh`. `set +m` keeps `$!` = the recorder's pid (with job control
+  `setsid` forks and the pid is lost). Settings, saved in `~/.local/state/recording/settings.json`
+  and used by SUPER+R too: Mic, Desktop sound (mixed into one track `-a "default_output|default_input"`,
+  or Two tracks = two `-a`), frame rate 30/60/120/144, quality medium/high/very_high/ultra (`-q`).
+  Bar: a record block before volume (muted ○, red filled ● while recording); click opens the island:
+  setup panel (`recsetup`, 340x324: audio, fps, quality, Start recording) when idle, the recording
+  panel when running. Island `record` state per the design (compact 240x24 dot, Recording/Paused,
+  mm:ss, stop; expanded 340x172 screen/audio/size lines, Pause/Resume, Stop and save), red border.
+  Files: `Recording.qml` (singleton), `IslandRecord.qml`, `IslandButton.qml`. A harmless
+  `failed to write frame index` line can show at stop; files decode cleanly. Works.
 - **Claude desktop tray icon: works** (checked 2026-10-15). Chromium offers its icon two ways:
   pixels only (`IconPixmap`, normal start) or, when it thinks it runs on GNOME
   (`GNOME_DESKTOP_SESSION_ID`, set session-wide by `env-hyprland`), a named icon in a temp folder
@@ -343,16 +359,11 @@ Follow `CLAUDE.md` safety rules. Before each step: tell the owner what changes a
 ## 6. Real machine: still to build or test
 
 Build:
-- Recording: SUPER+R toggle with gpu-screen-recorder (could not run on the VM: no GPU OpenGL).
-  `-w focused` is NOT the focused monitor (it needs `-s WxH`); find the right mode.
-  Bar red glyph while recording, island recording state (240x24 / 340x172, red border).
 - OBS for real content (spec).
 - Brightness: OSD now lives in the island volume panel (Brightness row, `hasBrightness` in
   `IslandState.qml`); brightness keys are already bound to `brightnessctl`. Externals may need DDC.
 - Bar items: Bluetooth, battery (laptop only), media (only while playing), mic/camera indicator
   (red, only when live). Slim bars on non-main screens (spec table).
-- Island: media (MPRIS; compact 280x24, expanded 440x256 per the design), recording, battery
-  (critical stays, red border).
 - New island events the owner asked for: Wi-Fi connected, Bluetooth device connected. Not in the
   spec or design yet: settle layout (likely compact like battery 260x24), timer, glyphs, and
   whether disconnects show, before building.

@@ -64,6 +64,16 @@ PanelWindow {
                 id: keyboardLayout
             }
         }
+        BarBlock { // screen recording: muted when idle, red while recording; click: the island panel
+            clickable: true
+            onClicked: IslandState.showRecording()
+            Text {
+                text: Icons.record
+                font.family: Recording.active ? Icons.fill : Icons.regular
+                font.pixelSize: 16
+                color: Recording.active ? Theme.alert : Theme.fgMuted
+            }
+        }
         BarBlock { // click: the volume island with the device lists
             visible: volume.sink !== null
             clickable: true
