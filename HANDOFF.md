@@ -374,7 +374,7 @@ Done (section 4):
   OBS 32.2 "Screen Capture (PipeWire)" → xdg-desktop-portal 1.22.1 → xdg-desktop-portal-hyprland
   1.4.1 (picker `hyprland-share-picker`: screen / window / region, optional restore token). The
   portals must be started under Hyprland (`XDG_CURRENT_DESKTOP=Hyprland`; COSMIC's backend stays
-  idle) and `~/.config/xdg-desktop-portal/hyprland-portals.conf` (the owner's, uncommitted) sends
+  idle) and `.config/xdg-desktop-portal/hyprland-portals.conf` (the owner's, stowed) sends
   everything to hyprland then gtk, file dialogs to Strata. Hyprland's `enforce_permissions` is off.
   ScreenCast offers source types 7, cursor modes 3, version 6. Works (owner, 2026-10-15).
   Side finding: on 2026-10-15 11:47 (logout for the vpn group) Hyprland segfaulted while exiting,
