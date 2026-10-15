@@ -5,7 +5,9 @@ Edits ~/.config/kcd/kcd.toml (kcd writes its full default config on first start)
 settings (JSON): the keys notification, clipboard, share and mousepad under [plugins] (the other
 plugins keep their values), notify_low and notify_full under [battery] (Battery alerts), and the
 [notifications] table of per-app rules (muted apps are "silent": no desktop popup, the event still
-comes and the panel drops it; an app_name line is kept). Keys are set in place, keeping kcd's
+comes and the panel drops it; an app_name line is kept), and the [commands] the phone may run on
+this laptop (KDE Connect app → Run command; owner's choice: lock, suspend, screenshot to phone).
+Keys are set in place, keeping kcd's
 layout; the result must parse (tomllib) before it replaces the file. Then kcd restarts so they
 apply; the phone reconnects within seconds. Owner's design "Phone bridge", 2026-10-15.
 """
@@ -67,6 +69,19 @@ while lines and not lines[-1].strip():
 lines.extend(["", "[notifications]"] + kept)
 for app in sorted(s.get("mutedApps", [])):
     lines.append(f'  {json.dumps(app)} = "silent"')  # JSON string escapes are valid TOML basic strings
+
+# [commands]: exactly these, rebuilt each time (the keys are the labels the phone shows).
+COMMANDS = {
+    "Lock laptop": "loginctl lock-session",  # hypridle runs the Quickshell lock
+    "Suspend": "systemctl suspend",  # hypridle locks before sleep
+    "Screenshot to phone": os.path.expanduser("~/.local/bin/phone-screenshot"),
+}
+start, end = bounds("commands")
+if start is not None:
+    del lines[start:end]
+while lines and not lines[-1].strip():
+    lines.pop()
+lines.extend(["", "[commands]"] + [f"  {json.dumps(k)} = {json.dumps(v)}" for k, v in COMMANDS.items()])
 
 text = "\n".join(lines) + "\n"
 tomllib.loads(text)  # refuse to write a file kcd couldn't read

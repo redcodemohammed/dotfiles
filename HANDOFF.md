@@ -358,6 +358,12 @@ Done (section 4):
   is off in the phone panel's Settings (`~/.local/state/phone/settings.json`, so kcd.toml has
   `notification = false` under `[plugins]`): nothing reaches the island, the inbox or the panel's
   Inbox. Both files live outside the repo; keep it off on a new setup.
+- **Phone → laptop commands** (owner's choice; KDE Connect app → Run command). `kcd-settings`
+  rebuilds kcd's `[commands]` with exactly: "Lock laptop" = `loginctl lock-session` (hypridle runs
+  the Quickshell lock), "Suspend" = `systemctl suspend` (hypridle locks first), "Screenshot to
+  phone" = `~/.local/bin/phone-screenshot` (grim of the focused screen into
+  `~/Pictures/Screenshots/<date>_phone.png`, then `kcd share` to the paired phone; finds
+  Hyprland's environment via `hyprctl instances` if kcd lacks it). Works.
 - **Claude desktop tray icon: works** (checked 2026-10-15). Chromium offers its icon two ways:
   pixels only (`IconPixmap`, normal start) or, when it thinks it runs on GNOME
   (`GNOME_DESKTOP_SESSION_ID`, set session-wide by `env-hyprland`), a named icon in a temp folder

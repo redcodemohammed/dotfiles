@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+# phone-screenshot: the phone's "Screenshot to phone" (KDE Connect app → Run command; kcd's
+# [commands], written by kcd-settings). Captures the focused screen, keeps it with the other
+# screenshots (~/Pictures/Screenshots/<date>_phone.png) and sends it to the paired phone.
+# Owner's request, 2026-10-15.
+set -euo pipefail
+if [ -z "${HYPRLAND_INSTANCE_SIGNATURE:-}" ] || [ -z "${WAYLAND_DISPLAY:-}" ]; then # kcd started outside Hyprland
+    inst=$(hyprctl -j instances 2>/dev/null)
+    export HYPRLAND_INSTANCE_SIGNATURE="${HYPRLAND_INSTANCE_SIGNATURE:-$(jq -r '.[0].instance // empty' <<<"$inst")}"
+    export WAYLAND_DISPLAY="${WAYLAND_DISPLAY:-$(jq -r '.[0].wl_socket // empty' <<<"$inst")}"
+fi
+dir="$(xdg-user-dir PICTURES 2>/dev/null || echo "$HOME/Pictures")/Screenshots"
+mkdir -p "$dir"
+monitor=$(hyprctl -j monitors | jq -r '.[] | select(.focused) | .name')
+file="$dir/$(date +%F-%H%M%S)_phone.png"
+grim -o "$monitor" "$file"
+device=$(kcd devices --json | jq -r '[.[] | select(.state == "PAIRED" and .connected)][0].id // empty')
+[ -n "$device" ] && kcd share "$device" "$file"
