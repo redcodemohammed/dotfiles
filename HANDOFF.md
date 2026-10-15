@@ -397,11 +397,23 @@ Done (section 4):
   `/var/lib/quickshell-greeter` (HOME for the greeter), and the drop-in
   `/etc/systemd/system/greetd.service.d/quickshell-greeter.conf`; it enables nothing. Test run
   beside the live session: `sudo greetd --vt 7 -s /run/greetd-test.sock -c
-  /etc/greetd/quickshell-greeter-test.toml` (GREETER_TEST=1 launches `true`): works (owner).
-  Switch: `sudo systemctl disable cosmic-greeter.service && sudo systemctl enable greetd.service`
-  (no --now: stopping the running display manager ends the session), then reboot. Rollback from a
-  TTY (Ctrl+Alt+F2): `sudo systemctl disable greetd.service && sudo systemctl enable
-  cosmic-greeter.service && sudo reboot`. COSMIC stays installed and selectable (spec).
+  /etc/greetd/quickshell-greeter-test.toml` (GREETER_TEST=1 runs `echo` through the same launch
+  path; check `journalctl -t greeter-session` for "greeter test: the session command ran").
+  **In use since 2026-10-15 23:22** (greetd enabled, cosmic-greeter disabled; a real login into
+  Hyprland (uwsm) works). Switch: `sudo systemctl disable cosmic-greeter.service && sudo
+  systemctl enable greetd.service`, then reboot; never `systemctl start greetd` next to a running
+  session (both on VT1: logind refuses the login, `VirtualTerminalAlreadyTaken`). Rollback from a
+  TTY (Ctrl+Alt+F2): `~/greeter-rollback.sh` (temporary, outside the repo) or `sudo systemctl
+  disable greetd.service && sudo systemctl enable cosmic-greeter.service && sudo reboot`. COSMIC
+  stays installed and selectable (spec).
+  Bugs found on the way (the first real logins bounced back to the greeter): greetd joins the
+  launch command list with spaces into ONE line for `sh -c "<profile>; exec <line>"`, so a list
+  like `["/bin/sh","-c","exec uwsm ..."]` became `exec /bin/sh -c exec uwsm ...` (an empty exec,
+  the session ended at once, uwsm never ran). The launch is now one string,
+  `systemd-cat -t greeter-session <Exec>` (the session's output lands in the journal). The first
+  test run hid this because `true` "succeeds" either way; test mode also saved the session it
+  ended on as the last one (now it doesn't). The greeter's Hyprland segfaults when it exits
+  (Aquamarine DRM teardown, as on logout): harmless, greetd moves on.
 - **Claude desktop tray icon: works** (checked 2026-10-15). Chromium offers its icon two ways:
   pixels only (`IconPixmap`, normal start) or, when it thinks it runs on GNOME
   (`GNOME_DESKTOP_SESSION_ID`, set session-wide by `env-hyprland`), a named icon in a temp folder

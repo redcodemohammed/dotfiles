@@ -73,10 +73,17 @@ ShellRoot {
             Greetd.cancelSession()
         }
         function onReadyToLaunch() {
-            lastSaver.setText(root.session.file)
-            const command = root.test ? ["true"] : ["/bin/sh", "-c", "exec " + root.session.exec]
+            if (!root.test) // a test run must not change the session the real login picks
+                lastSaver.setText(root.session.file)
+            // greetd joins the command list with spaces into one line for `sh -c "...; exec <line>"`,
+            // so the whole command is one string (a list like ["/bin/sh", "-c", "..."] became
+            // `sh -c exec ...`: it ran nothing and the login bounced back). The session's output
+            // goes to the journal: journalctl -t greeter-session. Test mode runs a harmless line
+            // through the same path, so a passing test proves the command really runs.
+            const line = root.test ? "echo greeter test: the session command ran: " + root.session.file // plain words: it goes through sh
+                : root.session.exec
             lock.locked = false // no "lockscreen died" flash in the greeter's Hyprland
-            Greetd.launch(command, ["XDG_SESSION_TYPE=wayland"], true)
+            Greetd.launch(["systemd-cat -t greeter-session " + line], ["XDG_SESSION_TYPE=wayland"], true)
         }
     }
 
