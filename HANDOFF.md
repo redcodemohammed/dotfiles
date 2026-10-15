@@ -475,8 +475,10 @@ Build:
   brightness (DDC): not wanted (owner, 2026-10-15).
 - Per-app notification quiet rules for chat apps: not wanted (owner, 2026-10-15; overrides the
   spec's "Per-app notification rules: yes").
-- Hotplug step 3: tests of laptop alone (unplug both externals) and plugging back in. Bar items,
-  slim bars and the lid are done.
+- Hotplug step 3, deferred by the owner (2026-10-15): test laptop alone (unplug both externals:
+  laptop bar turns full, the externals' windows land on it behind a monitor glyph) and plugging
+  back in (G5 full again, workspaces home, visitors gone; island follows focus; network panel from
+  the laptop bar). Bar items, slim bars and the lid are done and tested.
 - New island events the owner asked for: Wi-Fi connected, Bluetooth device connected. Not in the
   spec or design yet: settle layout (likely compact like battery 260x24), timer, glyphs, and
   whether disconnects show, before building.
