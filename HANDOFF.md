@@ -414,6 +414,19 @@ Done (section 4):
   test run hid this because `true` "succeeds" either way; test mode also saved the session it
   ended on as the last one (now it doesn't). The greeter's Hyprland segfaults when it exits
   (Aquamarine DRM teardown, as on logout): harmless, greetd moves on.
+- **GRUB menu theme** (owner's choice, 2026-10-15; the spec doesn't cover boot). `grub/`
+  (stow-ignored): `make-theme.py` builds it from `palette/palette.toml` (the lock screen's look:
+  solid bg, centred square box with a 2px border on surface, the selected entry filled with the
+  accent, JetBrains Mono via `grub-mkfont` at 20 and 16 px for the 2560x1600 panel, "Booting in
+  %d s" countdown, key hint; styled-box PNGs per the GRUB manual's "Styled Boxes"); `sudo
+  grub/install.sh` writes it to `/boot/grub/themes/hypr`, sets `GRUB_THEME` and
+  `GRUB_DISABLE_BOOTNEXT=true` (GRUB 2.16's `31_efi_bootnext` added 7 "EFI BootNext" entries; the
+  owner keeps the 4: Arch, Advanced, Windows, UEFI settings) and runs `grub-mkconfig`. Re-run it
+  after a wallpaper change. First run keeps `/etc/default/grub.pre-hypr-theme` and
+  `/boot/grub/grub.cfg.pre-hypr-theme`; undo: copy the first back, `grub-mkconfig -o
+  /boot/grub/grub.cfg` (Catppuccin stays installed). Bug fixed on the way: the key setter also
+  matched commented `#GRUB_THEME=` lines and activated them; it now changes only active lines.
+  Timeout 5 s kept. Works (owner).
 - **Claude desktop tray icon: works** (checked 2026-10-15). Chromium offers its icon two ways:
   pixels only (`IconPixmap`, normal start) or, when it thinks it runs on GNOME
   (`GNOME_DESKTOP_SESSION_ID`, set session-wide by `env-hyprland`), a named icon in a temp folder
