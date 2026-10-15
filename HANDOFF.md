@@ -211,6 +211,13 @@ Done (section 4):
   nmcli for Settings and VPN, kill switch left out for now, "Connect on open Wi-Fi" uses the last
   VPN used, Airplane mode = `rfkill block all`. QML gotcha: in a delegate, `panel: panel` binds the
   object's own `panel` property, not the id; pass it through another property. Works.
+- **Network panel, step 2: Settings tab** (`NetworkSettings.qml`). For the Wi-Fi network in use: a
+  card (signal %, band and rate, security, IP, gateway, DNS), Auto-connect and Metered (its
+  profile, `nmcli connection modify` + `nmcli device reapply`, no reconnect), DNS Auto / 1.1.1.1 /
+  8.8.8.8 (v4 and v6 servers, router DNS ignored; Auto restores it), Forget this network. Machine:
+  Airplane mode = `rfkill block|unblock all` (Wi-Fi and Bluetooth; the login's uaccess ACL on
+  `/dev/rfkill`, no sudo; off turns Wi-Fi back on), and one line per wired port (Connected / Not
+  connected / No cable). Works.
 - **Claude desktop tray icon: works** (checked 2026-10-15). Chromium offers its icon two ways:
   pixels only (`IconPixmap`, normal start) or, when it thinks it runs on GNOME
   (`GNOME_DESKTOP_SESSION_ID`, set session-wide by `env-hyprland`), a named icon in a temp folder

@@ -6,10 +6,11 @@ import Quickshell.Networking
 // Network manager panel (owner's design "Network manager" in the Hyprland Island canvas,
 // 2026-10-15; the spec's bar item was icon only). It drops from the bar's network block, 400 wide,
 // 4px under the bar and flush with its right edge, grabs the keyboard and closes on a click outside
-// or Escape. Header: Wi-Fi, rescan, on/off. Tabs: Networks (search, list, hidden network), VPN and
-// Settings (next steps). The Wi-Fi list, connecting (with a password), disconnect, forget and
-// Wi-Fi on/off use Quickshell.Networking, live from NetworkManager; band and bit rate, which it
-// does not give, and hidden networks use nmcli.
+// or Escape. Header: Wi-Fi, rescan, on/off. Tabs: Networks (search, list, hidden network),
+// Settings (NetworkSettings.qml) and VPN (next step). The Wi-Fi list, connecting (with a password),
+// disconnect, forget and Wi-Fi on/off use Quickshell.Networking, live from NetworkManager; band and
+// bit rate, which it does not give, hidden networks and profile settings use nmcli; Airplane mode
+// is rfkill (all radios; the owner's login has an ACL on /dev/rfkill, no sudo).
 PopupWindow {
     id: panel
     required property var bar
@@ -33,6 +34,7 @@ PopupWindow {
     onVisibleChanged: {
         if (visible) {
             scan(false)
+            readRfkill()
             return
         }
         closedAt = Date.now()
@@ -61,6 +63,59 @@ PopupWindow {
             .sort((a, b) => (b.connected - a.connected)
                 || (Icons.wifiLevel(b.signalStrength) - Icons.wifiLevel(a.signalStrength))
                 || a.name.localeCompare(b.name))
+    }
+
+    function securityLabel(net) {
+        switch (net.security) {
+        case WifiSecurityType.Open: return "Open"
+        case WifiSecurityType.Owe: return "Open (encrypted)"
+        case WifiSecurityType.WpaPsk: return "WPA"
+        case WifiSecurityType.Wpa2Psk: return "WPA2"
+        case WifiSecurityType.Sae: return "WPA3"
+        case WifiSecurityType.StaticWep: return "WEP"
+        case WifiSecurityType.Wpa2Eap:
+        case WifiSecurityType.WpaEap:
+        case WifiSecurityType.Wpa3SuiteB192:
+        case WifiSecurityType.Leap:
+        case WifiSecurityType.DynamicWep: return "Enterprise"
+        default: return "Secured"
+        }
+    }
+    function band(freq) {
+        return freq >= 5925 ? "6 GHz" : freq >= 4900 ? "5 GHz" : "2.4 GHz"
+    }
+
+    // Airplane mode: every radio soft-blocked. Read when the panel opens and after a change.
+    property bool airplane: false
+    function readRfkill() {
+        if (!rfkillReader.running)
+            rfkillReader.running = true
+    }
+    function setAirplane(on) {
+        airplane = on
+        rfkillWriter.command = ["rfkill", on ? "block" : "unblock", "all"]
+        rfkillWriter.running = true
+    }
+    Process {
+        id: rfkillReader
+        command: ["rfkill", "-J"]
+        stdout: StdioCollector {
+            id: rfkillOut
+            onStreamFinished: {
+                try {
+                    const devs = Object.values(JSON.parse(rfkillOut.text))[0] ?? []
+                    panel.airplane = devs.length > 0 && devs.every(d => d.soft === "blocked")
+                } catch (e) {}
+            }
+        }
+    }
+    Process {
+        id: rfkillWriter
+        onExited: {
+            if (!panel.airplane)
+                Networking.wifiEnabled = true // airplane off brings Wi-Fi back, as in the design
+            panel.readRfkill()
+        }
     }
 
     // The open row, its password, and the attempt under way or the last one that failed.
@@ -194,6 +249,8 @@ PopupWindow {
 
         Column {
             id: content
+            // A child's own `panel` property would shadow the id in `panel: panel`.
+            readonly property var owner: panel
             x: 14
             y: 14
             width: parent.width - 28
@@ -230,8 +287,13 @@ PopupWindow {
                         }
                     }
                     PanelSwitch {
-                        on: panel.wifiOn
-                        onToggled: Networking.wifiEnabled = !Networking.wifiEnabled
+                        on: panel.wifiOn && !panel.airplane
+                        onToggled: {
+                            if (panel.airplane)
+                                panel.setAirplane(false)
+                            else
+                                Networking.wifiEnabled = !Networking.wifiEnabled
+                        }
                     }
                 }
             }
@@ -265,8 +327,8 @@ PopupWindow {
                 }
             }
 
-            Item { // Wi-Fi off
-                visible: !panel.wifiOn && panel.tab === "nets"
+            Item { // Wi-Fi off, or airplane mode
+                visible: (!panel.wifiOn || panel.airplane) && panel.tab === "nets"
                 width: parent.width
                 height: 120
                 Column {
@@ -274,21 +336,26 @@ PopupWindow {
                     spacing: 8
                     Text {
                         anchors.horizontalCenter: parent.horizontalCenter
-                        text: "Wi-Fi is off"
+                        text: panel.airplane ? "Airplane mode is on" : "Wi-Fi is off"
                         font.family: "JetBrainsMono Nerd Font"
                         font.pixelSize: 13
                         color: Theme.fgMuted
                     }
                     PanelButton {
                         anchors.horizontalCenter: parent.horizontalCenter
-                        label: "Turn on Wi-Fi"
-                        onPressed: Networking.wifiEnabled = true
+                        label: panel.airplane ? "Turn off airplane mode" : "Turn on Wi-Fi"
+                        onPressed: {
+                            if (panel.airplane)
+                                panel.setAirplane(false)
+                            else
+                                Networking.wifiEnabled = true
+                        }
                     }
                 }
             }
 
             Column { // Networks
-                visible: panel.wifiOn && panel.tab === "nets"
+                visible: panel.wifiOn && !panel.airplane && panel.tab === "nets"
                 width: parent.width
                 spacing: 8
 
@@ -393,12 +460,18 @@ PopupWindow {
                 }
             }
 
-            Text { // the other tabs come in the next steps
-                visible: panel.tab !== "nets"
+            NetworkSettings {
+                visible: panel.tab === "settings"
+                width: parent.width
+                panel: content.owner
+            }
+
+            Text { // VPN comes in the next step
+                visible: panel.tab === "vpn"
                 width: parent.width
                 topPadding: 8
                 bottomPadding: 8
-                text: (panel.tab === "vpn" ? "VPN" : "Settings") + " is the next step."
+                text: "VPN is the next step."
                 font.family: "JetBrainsMono Nerd Font"
                 font.pixelSize: 12
                 color: Theme.fgMuted

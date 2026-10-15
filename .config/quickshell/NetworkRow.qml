@@ -21,20 +21,6 @@ Rectangle {
     readonly property int level: Icons.wifiLevel(net.signalStrength)
     readonly property var scan: panel.info[net.name] ?? null
 
-    function securityLabel() {
-        switch (net.security) {
-        case WifiSecurityType.Open: return "Open"
-        case WifiSecurityType.Owe: return "Open (encrypted)"
-        case WifiSecurityType.WpaPsk: return "WPA"
-        case WifiSecurityType.Wpa2Psk: return "WPA2"
-        case WifiSecurityType.Sae: return "WPA3"
-        case WifiSecurityType.StaticWep: return "WEP"
-        default: return enterprise ? "Enterprise" : "Secured"
-        }
-    }
-    function band(freq) {
-        return freq >= 5925 ? "6 GHz" : freq >= 4900 ? "5 GHz" : "2.4 GHz"
-    }
     function connect() {
         if (needsPw) {
             if (panel.pw.length < 8) {
@@ -143,7 +129,7 @@ Rectangle {
                 width: Math.max(64, implicitWidth) // "Connected" is a little wider than the design's 64
                 horizontalAlignment: Text.AlignRight
                 text: row.net.connected ? "Connected" : row.net.known ? "Saved"
-                    : row.scan ? row.band(row.scan.freq).replace(" GHz", "G") : ""
+                    : row.scan ? row.panel.band(row.scan.freq).replace(" GHz", "G") : ""
                 font.family: "JetBrainsMono Nerd Font"
                 font.pixelSize: 13
                 color: Theme.fgMuted
@@ -163,7 +149,7 @@ Rectangle {
 
             Text {
                 width: parent.width
-                text: [row.securityLabel(), row.scan ? row.band(row.scan.freq) : "",
+                text: [row.panel.securityLabel(row.net), row.scan ? row.panel.band(row.scan.freq) : "",
                     Math.round(row.net.signalStrength * 100) + "%", row.scan ? row.scan.rate : ""]
                     .filter(s => s !== "").join(" · ")
                 elide: Text.ElideRight
