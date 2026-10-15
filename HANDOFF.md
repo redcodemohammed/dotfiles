@@ -238,6 +238,17 @@ Done (section 4):
   `WifiDevice.mode`; card: name, password (eye), clients (`iw dev wlan0 station dump`, every 3 s
   while shown). Needs `dnsmasq` (installed 2026-10-15, in `packages/repo.txt`; its own service
   stays disabled, NetworkManager runs a private instance). Works.
+- **Network panel, step 5: VPN tab** (`NetworkVpn.qml`; kill switch left out, owner's choice).
+  NetworkManager VPN profiles (WireGuard, OpenVPN, Fortinet, strongSwan plugin) via nmcli: shield
+  row (filled while on), protocol or Connected; open: protocol, server (WireGuard
+  `wireguard.peers` endpoint, else `vpn.data` remote/gateway/address), ping; Connect (one VPN at a
+  time) / Disconnect; errors in red. Import profile: zenity picker, `nmcli connection import`
+  (WireGuard if the file has `[Interface]`, else OpenVPN), autoconnect set to no, notification.
+  `NetState`: active VPN re-read on every `nmcli monitor` line (300 ms debounce); bar glyph gets a
+  light square while a VPN is on; Connect on open Wi-Fi (open or OWE) brings up the last VPN used
+  (`~/.local/state/network/vpn.json`). No secret agent: VPNs that ask for a password at connect
+  fail with NetworkManager's error. QML gotcha: a method named like a JS global (`unescape`) fails
+  the whole load with "Illegal method name". Works.
 - **Claude desktop tray icon: works** (checked 2026-10-15). Chromium offers its icon two ways:
   pixels only (`IconPixmap`, normal start) or, when it thinks it runs on GNOME
   (`GNOME_DESKTOP_SESSION_ID`, set session-wide by `env-hyprland`), a named icon in a temp folder

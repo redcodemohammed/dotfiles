@@ -7,7 +7,7 @@ import Quickshell.Networking
 // 2026-10-15; the spec's bar item was icon only). It drops from the bar's network block, 400 wide,
 // 4px under the bar and flush with its right edge, grabs the keyboard and closes on a click outside
 // or Escape. Header: Wi-Fi, rescan, on/off. Tabs: Networks (search, list, hidden network),
-// Settings (NetworkSettings.qml) and VPN (next step). Under the tabs: a box when the internet
+// Settings (NetworkSettings.qml) and VPN (NetworkVpn.qml). Under the tabs: a box when the internet
 // fails (Retry, or Open login page for a sign-in page) and, on Networks, the speed line. Keyboard:
 // search is focused on open, Up/Down move through the list, Enter opens (or connects), Esc closes. The Wi-Fi list, connecting (with a password),
 // disconnect, forget and Wi-Fi on/off use Quickshell.Networking, live from NetworkManager; band and
@@ -191,18 +191,8 @@ PopupWindow {
             "--rescan", force ? "yes" : "auto"]
         scanner.running = true
     }
-    function fields(line) { // nmcli -t: fields split by ':', a literal ':' is '\:'
-        const out = [""]
-        for (let i = 0; i < line.length; i++) {
-            const c = line[i]
-            if (c === "\\" && i + 1 < line.length)
-                out[out.length - 1] += line[++i]
-            else if (c === ":")
-                out.push("")
-            else
-                out[out.length - 1] += c
-        }
-        return out
+    function fields(line) {
+        return NetState.fields(line)
     }
     Process {
         id: scanner
@@ -586,15 +576,10 @@ PopupWindow {
                 panel: content.owner
             }
 
-            Text { // VPN comes in the next step
+            NetworkVpn {
                 visible: panel.tab === "vpn"
                 width: parent.width
-                topPadding: 8
-                bottomPadding: 8
-                text: "VPN is the next step."
-                font.family: "JetBrainsMono Nerd Font"
-                font.pixelSize: 12
-                color: Theme.fgMuted
+                panel: content.owner
             }
         }
     }

@@ -7,7 +7,8 @@ import Quickshell.Networking
 // signal level, the rest in the border colour. Wi-Fi on but nothing connected: unlit arcs and a
 // red slash (network down). Wi-Fi off: a grey slash. A wired connection without Wi-Fi shows the
 // network glyph instead; no Wi-Fi card and no wire: a red network slash. Connected but the
-// internet fails: a "!" top right, red for no internet, light for a sign-in page (NetState). The
+// internet fails: a "!" top right, red for no internet, light for a sign-in page (NetState). A VPN
+// on: a small light square bottom right. The
 // block opens the network panel (Bar.qml). Networking loads lazily: down for a moment at start.
 Item {
     id: root
@@ -81,5 +82,13 @@ Item {
         height: 2.2
         radius: 1.1
         color: root.level >= 2 ? root.lit : root.unlit
+    }
+    Rectangle { // VPN on
+        visible: NetState.vpnOn
+        x: 10.5
+        y: 10.5
+        width: 5.5
+        height: 5.5
+        color: Theme.fg
     }
 }

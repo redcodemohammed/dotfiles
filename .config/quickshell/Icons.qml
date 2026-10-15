@@ -74,6 +74,7 @@ Singleton {
     readonly property string warningCircle: "\ue4e2" // connection failed
     readonly property string plus: "\ue3d4" // join hidden network
     readonly property string qrCode: "\ue3e6" // share network
+    readonly property string shield: "\ue40a" // VPN profile (Fill while on)
 
     // Wi-Fi signal level 1-4 from Quickshell's strength (0-1), for the bar block and the panel.
     function wifiLevel(strength) {

@@ -13,8 +13,30 @@ import Quickshell.Networking
 // sampled each second only while `watching` (the panel's Networks tab), and bytes used since that
 // device's connection came up (owner's choice). Each device's counters are noted when it connects
 // and kept in $XDG_RUNTIME_DIR/network-usage.json, so a shell reload keeps counting.
+// VPN: the active VPN (NetworkManager VPN plugins or WireGuard), re-read on every change
+// `nmcli monitor` reports; connect (one at a time) and disconnect for the panel. Connect on open
+// Wi-Fi (owner's choice): when an open (or OWE) Wi-Fi network connects, bring up the last VPN
+// used. Both kept in ~/.local/state/network/vpn.json.
 Singleton {
     id: root
+
+    // nmcli -t output: fields split by ':', a literal ':' or '\' escaped with '\'.
+    function fields(line) {
+        const out = [""]
+        for (let i = 0; i < line.length; i++) {
+            const c = line[i]
+            if (c === "\\" && i + 1 < line.length)
+                out[out.length - 1] += line[++i]
+            else if (c === ":")
+                out.push("")
+            else
+                out[out.length - 1] += c
+        }
+        return out
+    }
+    function unescaped(s) { // nmcli -g and one -t field
+        return (s ?? "").replace(/\\(.)/g, "$1")
+    }
 
     readonly property bool linkUp: Networking.devices.values.some(d => d.connected)
     readonly property string internet: !linkUp ? "down"
@@ -96,6 +118,138 @@ Singleton {
             onRead: data => root.sample(data)
         }
         onRunningChanged: if (!running) root.last = null
+    }
+
+    // VPN
+    property string vpnUuid: "" // the active VPN, if any
+    property string vpnName: ""
+    property string vpnState: "" // activating, activated, deactivating
+    readonly property bool vpnOn: vpnState === "activated"
+    property bool vpnLoaded: false
+    property string vpnBusy: "" // the VPN being connected from here
+    property string vpnFailed: ""
+    property string vpnFailText: ""
+    function refreshVpn() {
+        if (!vpnReader.running)
+            vpnReader.running = true
+    }
+    function vpnUp(uuid) {
+        vpnFailed = ""
+        vpnBusy = uuid
+        vpnSwitcher.target = uuid
+        vpnSwitcher.command = ["sh", "-c", '
+            [ -n "$2" ] && [ "$2" != "$1" ] && nmcli connection down uuid "$2" >/dev/null 2>&1
+            out=$(nmcli --wait 30 connection up uuid "$1" 2>&1) || { printf "%s\n" "$out" | tail -n 1; exit 1; }
+            echo ok', "sh", uuid, vpnUuid]
+        vpnSwitcher.running = true
+    }
+    function vpnDown(uuid) {
+        Quickshell.execDetached(["nmcli", "connection", "down", "uuid", uuid])
+    }
+    Process {
+        id: vpnSwitcher
+        property string target
+        stdout: StdioCollector {
+            id: vpnSwitchOut
+            onStreamFinished: {
+                const r = vpnSwitchOut.text.trim()
+                root.vpnBusy = ""
+                if (r === "ok") {
+                    root.vpnLast = vpnSwitcher.target
+                    root.saveVpnSettings()
+                } else {
+                    root.vpnFailed = vpnSwitcher.target
+                    root.vpnFailText = r.replace(/^Error: /, "") || "Couldn't connect"
+                }
+                root.refreshVpn()
+            }
+        }
+    }
+    Process {
+        id: vpnReader
+        command: ["nmcli", "-t", "-f", "UUID,TYPE,STATE,NAME", "connection", "show", "--active"]
+        stdout: StdioCollector {
+            id: vpnOut
+            onStreamFinished: {
+                let found = null
+                for (const line of vpnOut.text.split("\n")) {
+                    const f = root.fields(line)
+                    if (f.length >= 4 && (f[1] === "vpn" || f[1] === "wireguard")) {
+                        found = f
+                        break
+                    }
+                }
+                root.vpnUuid = found ? found[0] : ""
+                root.vpnState = found ? found[2] : ""
+                root.vpnName = found ? found.slice(3).join(":") : ""
+                if (!root.vpnLoaded) {
+                    root.vpnLoaded = true
+                    root.autoVpn()
+                }
+            }
+        }
+    }
+    Process { // a line on every NetworkManager change
+        id: monitor
+        running: true
+        command: ["nmcli", "monitor"]
+        stdout: SplitParser {
+            onRead: _ => vpnDebounce.restart()
+        }
+        onExited: monitorRestart.start()
+    }
+    Timer {
+        id: monitorRestart
+        interval: 5000
+        onTriggered: monitor.running = true
+    }
+    Timer {
+        id: vpnDebounce
+        interval: 300
+        onTriggered: root.refreshVpn()
+    }
+    Component.onCompleted: refreshVpn()
+
+    // Connect on open Wi-Fi
+    readonly property string vpnSettingsPath: Quickshell.env("HOME") + "/.local/state/network/vpn.json"
+    property bool vpnAuto: false
+    property string vpnLast: ""
+    property bool vpnSettingsLoaded: false
+    function setVpnAuto(on) {
+        vpnAuto = on
+        saveVpnSettings()
+        autoVpn()
+    }
+    function saveVpnSettings() {
+        vpnSaver.command = ["sh", "-c", 'mkdir -p "$(dirname "$1")" && printf "%s\\n" "$2" > "$1"', "sh",
+            vpnSettingsPath, JSON.stringify({ auto: vpnAuto, last: vpnLast })]
+        vpnSaver.running = true
+    }
+    Process { id: vpnSaver }
+    FileView {
+        path: root.vpnSettingsPath
+        printErrors: false
+        onLoaded: {
+            try {
+                const s = JSON.parse(text())
+                root.vpnAuto = s.auto === true
+                root.vpnLast = typeof s.last === "string" ? s.last : ""
+            } catch (err) {}
+            root.vpnSettingsLoaded = true
+            root.autoVpn()
+        }
+        onLoadFailed: root.vpnSettingsLoaded = true
+    }
+    readonly property var wifiNet: {
+        const w = Networking.devices.values.find(d => d.type === DeviceType.Wifi)
+        return w ? (w.networks.values.find(n => n.connected) ?? null) : null
+    }
+    readonly property bool openWifi: wifiNet !== null
+        && (wifiNet.security === WifiSecurityType.Open || wifiNet.security === WifiSecurityType.Owe)
+    onOpenWifiChanged: autoVpn()
+    function autoVpn() {
+        if (openWifi && vpnAuto && vpnLast !== "" && vpnLoaded && vpnSettingsLoaded && vpnUuid === "" && vpnBusy === "")
+            vpnUp(vpnLast)
     }
 
     // Each device's byte counters when its connection came up.

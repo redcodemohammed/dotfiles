@@ -210,10 +210,9 @@ Column {
         stdout: StdioCollector {
             id: hotspotOut
             onStreamFinished: {
-                const unescape = s => (s ?? "").replace(/\\(.)/g, "$1") // nmcli -g escapes ':' and '\\'
                 const lines = hotspotOut.text.split("\n")
-                root.hotspotName = unescape(lines[0])
-                root.hotspotPw = unescape(lines[1])
+                root.hotspotName = NetState.unescaped(lines[0])
+                root.hotspotPw = NetState.unescaped(lines[1])
             }
         }
     }
