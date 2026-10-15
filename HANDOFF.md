@@ -571,7 +571,7 @@ Test (configured, untested on the VM):
 - hyprsunset (21:00-06:30, 4500K): the VM GPU had no CTM. Preview with
   `hyprctl hyprsunset temperature 4500`, judge amber vs grays by eye (screenshots don't show it),
   then `hyprctl hyprsunset reset`.
-- Lock screen on three monitors: typed input shared across surfaces.
+- Lock screen on three monitors: works (owner, 2026-10-15), so hyprlock may go (safety rule 5).
 - Island and bar on multiple screens: work. Lid closed: works. Laptop alone and plugging back
   in: deferred (see section 6). (`hs.dsp.grab_rogue_windows()` not needed: visitors show in the bar.)
 - Glyph sizes on all screens (laptop scale; they look right in the 15:21 screenshot), laptop panel
