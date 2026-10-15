@@ -10,11 +10,16 @@ import Quickshell.Io
 // (zenity) for a WireGuard .conf or an OpenVPN .ovpn/.conf, imported with nmcli and set not to start
 // on its own; a notification says how it went. Connect on open Wi-Fi: NetState brings up the last
 // VPN used when an open network connects. Connecting and the active VPN live in NetState.
+// swanctl connections (NetState.swanConns, strongSwan's own daemon) join the list, tagged
+// "swanctl"; a muted line says when that daemon is down or not reachable yet.
 Column {
     id: root
     required property var panel
     readonly property bool live: panel.visible && panel.tab === "vpn"
-    property var profiles: [] // { uuid, name, proto, server }
+    property var profiles: [] // NetworkManager's: { uuid, name, proto, tag, server }
+    readonly property var all: profiles.concat(NetState.swanConns.map(c => ({
+        uuid: "swan:" + c.name, name: c.name, proto: "IPsec (swanctl)", tag: "swanctl", server: c.remote
+    }))).sort((a, b) => a.name.localeCompare(b.name))
     property bool loaded: false
     property string sel: "" // the open row
     property string latency: "" // ping to the open row's server
@@ -33,6 +38,7 @@ Column {
     function load() {
         if (!loader.running)
             loader.running = true
+        NetState.refreshSwan()
     }
     // One line per VPN: uuid, type, name (nmcli -t escaped), then the details holding the server.
     Process {
@@ -62,9 +68,9 @@ Column {
                         : detail.indexOf("strongswan") >= 0 ? "IPsec"
                         : "VPN"
                     const m = detail.match(/endpoint=([^\s;]+)/) || detail.match(/(?:remote|gateway|address) = ([^,\s]+)/)
-                    list.push({ uuid: f[0], name: NetState.unescaped(f[2]), proto: proto, server: m ? m[1] : "" })
+                    list.push({ uuid: f[0], name: NetState.unescaped(f[2]), proto: proto, tag: proto, server: m ? m[1] : "" })
                 }
-                root.profiles = list.sort((a, b) => a.name.localeCompare(b.name))
+                root.profiles = list
                 root.loaded = true
             }
         }
@@ -78,7 +84,7 @@ Column {
         return parts.length === 2 ? parts[0] : server
     }
     function ping() {
-        const p = profiles.find(p => p.uuid === sel)
+        const p = all.find(p => p.uuid === sel)
         if (!p || p.server === "" || pinger.running)
             return
         pinger.command = ["ping", "-c", "1", "-W", "2", "-n", host(p.server)]
@@ -142,7 +148,7 @@ Column {
     }
 
     Text {
-        visible: root.loaded && root.profiles.length === 0
+        visible: root.loaded && root.all.length === 0
         width: parent.width
         text: "No VPN profiles yet"
         font.family: "JetBrainsMono Nerd Font"
@@ -154,7 +160,7 @@ Column {
         width: parent.width
         spacing: 4
         Repeater {
-            model: root.profiles
+            model: root.all
             Rectangle {
                 id: vpnRow
                 required property var modelData
@@ -201,7 +207,7 @@ Column {
                             anchors.right: parent.right
                             anchors.rightMargin: 8
                             anchors.verticalCenter: parent.verticalCenter
-                            text: vpnRow.on ? "Connected" : vpnRow.modelData.proto
+                            text: vpnRow.on ? "Connected" : vpnRow.modelData.tag
                             font.family: "JetBrainsMono Nerd Font"
                             font.pixelSize: 13
                             color: Theme.fgMuted
@@ -295,6 +301,17 @@ Column {
         }
     }
 
+    Text { // swanctl's daemon
+        visible: NetState.swanStatus !== ""
+        width: parent.width
+        text: NetState.swanStatus === "denied" ? "strongSwan: no access yet (log in again for the vpn group)"
+            : "strongSwan isn't running (swanctl connections show when it is)"
+        wrapMode: Text.Wrap
+        font.family: "JetBrainsMono Nerd Font"
+        font.pixelSize: 12
+        color: Theme.fgMuted
+    }
+
     PanelButton {
         width: parent.width
         icon: Icons.plus
@@ -329,7 +346,7 @@ Column {
         visible: NetState.vpnAuto
         width: parent.width
         text: {
-            const last = root.profiles.find(p => p.uuid === NetState.vpnLast)
+            const last = root.all.find(p => p.uuid === NetState.vpnLast)
             return last ? "Brings up " + last.name + ", the last VPN used" : "Connect a VPN once to choose which"
         }
         wrapMode: Text.Wrap

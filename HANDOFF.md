@@ -249,6 +249,16 @@ Done (section 4):
   (`~/.local/state/network/vpn.json`). No secret agent: VPNs that ask for a password at connect
   fail with NetworkManager's error. QML gotcha: a method named like a JS global (`unescape`) fails
   the whole load with "Illegal method name". Works.
+- **swanctl in the VPN tab** (owner's request; strongSwan 6.1's own daemon, not NetworkManager).
+  Access: group `vpn` (system group, owner added), `strongswan/charon-group.conf` in this repo
+  (not stowed) installed to `/etc/strongswan.d/` sets `charon.group = vpn`, which makes the VICI
+  socket `/run/charon.vici` root:vpn (verified on 6.1; the docs don't say it, a maintainer's list
+  post does), so swanctl runs as the owner without sudo. `strongswan.service` stays disabled and is
+  started by hand (owner's choice); the tab says so while it is down. `NetState`: connections from
+  `swanctl --list-conns`, state from `--list-sas`, re-read on each `swanctl --log` event (restarted
+  every 10 s while the daemon is down); ids `swan:<name>`, merged with NetworkManager's VPN in
+  `combine()` (bar square, caption, one VPN at a time either way, Connect on open Wi-Fi). Connect
+  initiates every child (`--initiate --child`), Disconnect terminates the IKE SA. Works.
 - **Claude desktop tray icon: works** (checked 2026-10-15). Chromium offers its icon two ways:
   pixels only (`IconPixmap`, normal start) or, when it thinks it runs on GNOME
   (`GNOME_DESKTOP_SESSION_ID`, set session-wide by `env-hyprland`), a named icon in a temp folder

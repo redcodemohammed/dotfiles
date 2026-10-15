@@ -17,6 +17,11 @@ import Quickshell.Networking
 // `nmcli monitor` reports; connect (one at a time) and disconnect for the panel. Connect on open
 // Wi-Fi (owner's choice): when an open (or OWE) Wi-Fi network connects, bring up the last VPN
 // used. Both kept in ~/.local/state/network/vpn.json.
+// swanctl (owner's request): strongSwan's own daemon, not NetworkManager, reached through its VICI
+// socket (root:vpn via charon.group in /etc/strongswan.d/charon-group.conf; the owner is in vpn).
+// Connections and state from swanctl --list-conns / --list-sas, re-read on every event
+// `swanctl --log` streams; their ids are "swan:<name>". The daemon is started by hand (owner's
+// choice): while it is down, swanStatus says so and none show.
 Singleton {
     id: root
 
@@ -120,10 +125,27 @@ Singleton {
         onRunningChanged: if (!running) root.last = null
     }
 
-    // VPN
-    property string vpnUuid: "" // the active VPN, if any
+    // VPN: NetworkManager's active VPN and swanctl's IKE SAs, combined
+    property string vpnUuid: "" // the active VPN, if any: a NetworkManager uuid or "swan:<name>"
     property string vpnName: ""
     property string vpnState: "" // activating, activated, deactivating
+    property string nmVpnUuid: ""
+    property string nmVpnName: ""
+    property string nmVpnState: ""
+    function combine() {
+        if (nmVpnUuid !== "") {
+            vpnUuid = nmVpnUuid
+            vpnName = nmVpnName
+            vpnState = nmVpnState
+            return
+        }
+        const names = Object.keys(swanSas)
+        const name = names.find(n => swanSas[n] === "ESTABLISHED") ?? names[0]
+        vpnUuid = name === undefined ? "" : "swan:" + name
+        vpnName = name ?? ""
+        const st = name === undefined ? "" : swanSas[name]
+        vpnState = st === "" ? "" : st === "ESTABLISHED" ? "activated" : st === "DELETING" ? "deactivating" : "activating"
+    }
     readonly property bool vpnOn: vpnState === "activated"
     property bool vpnLoaded: false
     property string vpnBusy: "" // the VPN being connected from here
@@ -133,18 +155,36 @@ Singleton {
         if (!vpnReader.running)
             vpnReader.running = true
     }
-    function vpnUp(uuid) {
+    // One VPN at a time: the active one goes down first. A swanctl connection starts each of its
+    // children (or the bare IKE SA if it has none).
+    function vpnUp(id) {
         vpnFailed = ""
-        vpnBusy = uuid
-        vpnSwitcher.target = uuid
+        vpnBusy = id
+        vpnSwitcher.target = id
+        const conn = swanConns.find(c => "swan:" + c.name === id)
         vpnSwitcher.command = ["sh", "-c", '
-            [ -n "$2" ] && [ "$2" != "$1" ] && nmcli connection down uuid "$2" >/dev/null 2>&1
-            out=$(nmcli --wait 30 connection up uuid "$1" 2>&1) || { printf "%s\n" "$out" | tail -n 1; exit 1; }
-            echo ok', "sh", uuid, vpnUuid]
+            down() {
+                case $1 in
+                    swan:*) swanctl --terminate --ike "${1#swan:}" --timeout 10 >/dev/null 2>&1 ;;
+                    ?*) nmcli connection down uuid "$1" >/dev/null 2>&1 ;;
+                esac
+            }
+            fail() { printf "%s\n" "$1" | tail -n 1; exit 1; }
+            [ -n "$2" ] && [ "$2" != "$1" ] && down "$2"
+            case $1 in
+                swan:*)
+                    if [ -z "$3" ]; then out=$(swanctl --initiate --ike "${1#swan:}" --timeout 30 2>&1) || fail "$out"; fi
+                    for c in $3; do out=$(swanctl --initiate --child "$c" --timeout 30 2>&1) || fail "$out"; done ;;
+                *) out=$(nmcli --wait 30 connection up uuid "$1" 2>&1) || fail "$out" ;;
+            esac
+            echo ok', "sh", id, vpnUuid, conn ? conn.children.join(" ") : ""]
         vpnSwitcher.running = true
     }
-    function vpnDown(uuid) {
-        Quickshell.execDetached(["nmcli", "connection", "down", "uuid", uuid])
+    function vpnDown(id) {
+        if (id.startsWith("swan:"))
+            Quickshell.execDetached(["swanctl", "--terminate", "--ike", id.slice(5), "--timeout", "10"])
+        else
+            Quickshell.execDetached(["nmcli", "connection", "down", "uuid", id])
     }
     Process {
         id: vpnSwitcher
@@ -162,6 +202,7 @@ Singleton {
                     root.vpnFailText = r.replace(/^Error: /, "") || "Couldn't connect"
                 }
                 root.refreshVpn()
+                root.refreshSwan()
             }
         }
     }
@@ -179,9 +220,10 @@ Singleton {
                         break
                     }
                 }
-                root.vpnUuid = found ? found[0] : ""
-                root.vpnState = found ? found[2] : ""
-                root.vpnName = found ? found.slice(3).join(":") : ""
+                root.nmVpnUuid = found ? found[0] : ""
+                root.nmVpnState = found ? found[2] : ""
+                root.nmVpnName = found ? found.slice(3).join(":") : ""
+                root.combine()
                 if (!root.vpnLoaded) {
                     root.vpnLoaded = true
                     root.autoVpn()
@@ -208,7 +250,86 @@ Singleton {
         interval: 300
         onTriggered: root.refreshVpn()
     }
-    Component.onCompleted: refreshVpn()
+    Component.onCompleted: {
+        refreshVpn()
+        refreshSwan()
+    }
+
+    // swanctl
+    property var swanConns: [] // { name, remote, children }
+    property var swanSas: ({}) // IKE SA name -> state (CONNECTING, ESTABLISHED, DELETING, ...)
+    property string swanStatus: "" // "", "off" (daemon not running) or "denied" (not in the vpn group yet)
+    property bool swanLoaded: false
+    function refreshSwan() {
+        if (!swanReader.running)
+            swanReader.running = true
+    }
+    Process {
+        id: swanReader
+        command: ["sh", "-c", 'swanctl --list-conns 2>&1 && echo "--- sas" && swanctl --list-sas 2>&1']
+        stdout: StdioCollector {
+            id: swanOut
+            onStreamFinished: root.parseSwan(swanOut.text)
+        }
+    }
+    function parseSwan(text) {
+        const parts = text.split("--- sas")
+        const conns = []
+        const sas = {}
+        if (parts.length < 2) {
+            swanStatus = /Permission denied/.test(text) ? "denied" : "off"
+        } else {
+            swanStatus = ""
+            let cur = null
+            for (const line of parts[0].split("\n")) {
+                let m = line.match(/^(\S+): IKE/)
+                if (m) {
+                    cur = { name: m[1], remote: "", children: [] }
+                    conns.push(cur)
+                } else if (cur && (m = line.match(/^  remote: *(.*)$/))) {
+                    const r = m[1].split(",")[0].trim()
+                    if (cur.remote === "" && r !== "%any")
+                        cur.remote = r
+                } else if (cur && (m = line.match(/^  (\S+): (TUNNEL|TRANSPORT|PASS|DROP)/))) {
+                    cur.children.push(m[1])
+                }
+            }
+            for (const line of parts[1].split("\n")) {
+                const m = line.match(/^(\S+): #\d+, (\w+),/)
+                if (m)
+                    sas[m[1]] = m[2]
+            }
+        }
+        swanConns = conns
+        swanSas = sas
+        combine()
+        if (!swanLoaded) {
+            swanLoaded = true
+            autoVpn()
+        }
+    }
+    Process { // a line on every daemon event; exits while the daemon is down, so try again
+        id: swanLog
+        running: true
+        command: ["swanctl", "--log"]
+        stdout: SplitParser {
+            onRead: _ => swanDebounce.restart()
+        }
+        onExited: swanLogRestart.start()
+    }
+    Timer {
+        id: swanLogRestart
+        interval: 10000
+        onTriggered: {
+            root.refreshSwan()
+            swanLog.running = true
+        }
+    }
+    Timer {
+        id: swanDebounce
+        interval: 500
+        onTriggered: root.refreshSwan()
+    }
 
     // Connect on open Wi-Fi
     readonly property string vpnSettingsPath: Quickshell.env("HOME") + "/.local/state/network/vpn.json"
@@ -248,7 +369,7 @@ Singleton {
         && (wifiNet.security === WifiSecurityType.Open || wifiNet.security === WifiSecurityType.Owe)
     onOpenWifiChanged: autoVpn()
     function autoVpn() {
-        if (openWifi && vpnAuto && vpnLast !== "" && vpnLoaded && vpnSettingsLoaded && vpnUuid === "" && vpnBusy === "")
+        if (openWifi && vpnAuto && vpnLast !== "" && vpnLoaded && swanLoaded && vpnSettingsLoaded && vpnUuid === "" && vpnBusy === "")
             vpnUp(vpnLast)
     }
 
