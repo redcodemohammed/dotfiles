@@ -26,6 +26,7 @@ Rectangle {
     readonly property var scan: panel.info[net.name] ?? null
 
     function connect() {
+        NetState.userChange()
         if (needsPw) {
             if (panel.pw.length < 8) {
                 panel.err = net.name
@@ -250,6 +251,7 @@ Rectangle {
                     width: actions.buttonWidth
                     label: "Disconnect"
                     onPressed: {
+                        NetState.userChange()
                         row.net.disconnect()
                         row.panel.sel = ""
                     }
@@ -260,6 +262,7 @@ Rectangle {
                     muted: true
                     label: "Forget"
                     onPressed: {
+                        NetState.userChange()
                         row.net.forget()
                         row.panel.sel = ""
                     }

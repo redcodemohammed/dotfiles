@@ -231,6 +231,7 @@ PopupWindow {
         nmcli connection delete uuid "$uuid" >/dev/null 2>&1
         printf "%s\\n" "$out" | tail -n 1'
     function joinHidden(name, psk) {
+        NetState.userChange()
         joinError = ""
         joining = true
         joiner.psk = psk

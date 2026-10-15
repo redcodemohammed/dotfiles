@@ -182,6 +182,7 @@ Column {
     readonly property bool hotspotLive: live && hotspotOn
     onHotspotLiveChanged: if (hotspotLive) hotspotReader.running = true
     function setHotspot(on) {
+        NetState.userChange()
         hotspotError = ""
         hotspotBusy = on ? "Starting hotspot" : "Stopping hotspot"
         hotspotSwitcher.command = ["sh", "-c", on ? '
@@ -544,7 +545,10 @@ Column {
         width: parent.width
         danger: true
         label: "Forget this network"
-        onPressed: root.net.forget()
+        onPressed: {
+            NetState.userChange()
+            root.net.forget()
+        }
     }
 
     Rectangle {

@@ -89,7 +89,7 @@ PanelWindow {
         MouseArea {
             anchors.fill: parent
             visible: !IslandState.open
-            onClicked: IslandState.expand()
+            onClicked: IslandState.click(root.modelData.name)
         }
 
         // The state's content, below the gap. Compact: centred in the bar (4px into it).
@@ -118,6 +118,11 @@ PanelWindow {
                 open: root.shownOpen
             }
 
+            IslandConnect {
+                anchors.fill: parent
+                visible: root.shownKind === "connect"
+            }
+
             IslandRecord {
                 anchors.fill: parent
                 visible: root.shownKind === "record" || root.shownKind === "recsetup"
@@ -140,7 +145,7 @@ PanelWindow {
 
             // Placeholder content for states not built yet (recording).
             Text {
-                visible: ["volume", "brightness", "battery", "media", "record", "recsetup", "notify", "build"].indexOf(root.shownKind) < 0
+                visible: ["volume", "brightness", "battery", "connect", "media", "record", "recsetup", "notify", "build"].indexOf(root.shownKind) < 0
                 x: root.shownOpen ? 12 : 8
                 y: root.shownOpen ? 12 : (parent.height - height) / 2
                 text: root.shownKind + (root.shownOpen ? " · expanded" : "")

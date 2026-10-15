@@ -291,6 +291,15 @@ Done (section 4):
   `Hyprland.dispatch("hl.dsp.focus({ workspace = N })")`, `WorkspaceSquare.qml`). Opening the lid:
   hyprsplit's `ensure_good_workspaces` (on `monitor.added` and `config.reloaded`) moves them home.
   `hyprctl repl/eval` run Lua inside Hyprland (handy for checks). Works.
+- **Island Wi-Fi and Bluetooth events** (owner's request; owner chose all four events and the
+  battery-pill look). Kind `connect`, compact only 260x24, 3 s (`IslandConnect.qml`): name, then
+  a muted word (Connected / Lost / Disconnected, or a Bluetooth device's battery %) and the glyph;
+  Wi-Fi lost is red only with no other link. A click runs `IslandState.click(screen)`: Wi-Fi opens
+  the network panel on that screen's bar (`NetState.panelRequested`), Bluetooth opens bluetui; other
+  states still expand. Rules: quiet for 5 s after start; "lost" waits 2 s (a new network in time
+  shows only "connected") and is skipped while Wi-Fi is off, the hotspot runs, or within 15 s of
+  the panel changing the connection (`NetState.userChange()`); Bluetooth events skipped while the
+  adapter isn't Enabled. Test hooks: `qs ipc call island test wifi|wifilost|bt|btoff`. Works.
 - **Claude desktop tray icon: works** (checked 2026-10-15). Chromium offers its icon two ways:
   pixels only (`IconPixmap`, normal start) or, when it thinks it runs on GNOME
   (`GNOME_DESKTOP_SESSION_ID`, set session-wide by `env-hyprland`), a named icon in a temp folder
@@ -478,9 +487,7 @@ Build:
   laptop bar turns full, the externals' windows land on it behind a monitor glyph) and plugging
   back in (G5 full again, workspaces home, visitors gone; island follows focus; network panel from
   the laptop bar). Bar items, slim bars and the lid are done and tested.
-- New island events the owner asked for: Wi-Fi connected, Bluetooth device connected. Not in the
-  spec or design yet: settle layout (likely compact like battery 260x24), timer, glyphs, and
-  whether disconnects show, before building.
+- Island Wi-Fi and Bluetooth events: done (see progress).
 - GTK under Hyprland: COSMIC owns `~/.config/gtk-{3,4}.0/gtk.css` (links to its `cosmic/dark.css`,
   rewritten at login), so our GTK folders are in `.stow-local-ignore`. When Hyprland is the daily
   desktop: turn off COSMIC's GTK theming, delete the two gtk lines there, move the real folders

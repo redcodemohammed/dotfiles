@@ -5,6 +5,8 @@ import Quickshell.Io
 import Quickshell.Services.Pipewire
 import Quickshell.Services.UPower
 import Quickshell.Services.Mpris
+import Quickshell.Bluetooth
+import Quickshell.Networking
 
 // Island state machine (island spec + design canvas "Desktop test").
 // One state at a time: transient > recording > media > nothing.
@@ -24,8 +26,9 @@ Singleton {
         recsetup: [0, 0, 340, 324], // recording setup (audio, fps, quality, Start): opens expanded
         battery: [260, 24, 340, 148],
         build:   [320, 24, 440, 192],
+        connect: [260, 24, 0, 0], // Wi-Fi / Bluetooth events: compact only, a click opens the panel or bluetui
     })
-    readonly property var timeouts: ({ notify: 8000, volume: 2500, brightness: 2500, battery: 3000, build: 6000 })
+    readonly property var timeouts: ({ notify: 8000, volume: 2500, brightness: 2500, battery: 3000, build: 6000, connect: 3000 })
 
     property var active: null // current transient: { kind, data, persistent }
     property var queued: null
@@ -165,6 +168,73 @@ Singleton {
         timer.stop() // expanding cancels the timer
     }
 
+    // A click on the compact island (Island.qml, with its screen's name). A Wi-Fi pill opens the
+    // network panel on that screen's bar, a Bluetooth pill opens bluetui; the rest expand.
+    function click(screen) {
+        if (active && active.kind === "connect") {
+            const d = active.data
+            next()
+            if (d.what === "wifi")
+                NetState.panelRequested(screen)
+            else
+                Quickshell.execDetached(["alacritty", "--class", "bluetui", "-e", "bluetui"])
+            return
+        }
+        expand()
+    }
+
+    // Wi-Fi and Bluetooth events (owner, 2026-10-15): a 260x24 pill for 3 s, like the battery's.
+    // Wi-Fi connected (its name), and lost: the network dropped on its own, so not when Wi-Fi is
+    // off, the hotspot starts, or the panel changed the connection in the last 15 s; a drop with a
+    // new network within 2 s (switching) shows only the new one. Bluetooth: a device connected (its
+    // battery when it reports one) or disconnected, not while the adapter turns off. Quiet for the
+    // first 5 s, while NetworkManager and BlueZ load.
+    property bool eventsReady: false
+    Timer {
+        running: true
+        interval: 5000
+        onTriggered: root.eventsReady = true
+    }
+    readonly property string wifiNow: NetState.wifiNet ? NetState.wifiNet.name : ""
+    property string wifiLast: ""
+    onWifiNowChanged: {
+        const was = wifiLast
+        wifiLast = wifiNow
+        if (!eventsReady)
+            return
+        if (wifiNow !== "") {
+            wifiLostWait.stop()
+            push("connect", { what: "wifi", on: true, name: wifiNow }, false)
+        } else if (was !== "") {
+            wifiLostWait.name = was
+            wifiLostWait.restart()
+        }
+    }
+    Timer {
+        id: wifiLostWait
+        property string name
+        interval: 2000
+        onTriggered: {
+            if (root.wifiNow !== "" || !Networking.wifiEnabled || NetState.hotspotOn
+                    || Date.now() - NetState.userChangeAt < 15000)
+                return
+            root.push("connect", { what: "wifi", on: false, name: name }, false)
+        }
+    }
+    Instantiator {
+        model: Bluetooth.devices
+        delegate: Connections {
+            required property var modelData
+            target: modelData
+            function onConnectedChanged() {
+                const a = Bluetooth.defaultAdapter
+                if (!root.eventsReady || !a || a.state !== BluetoothAdapterState.Enabled)
+                    return
+                root.push("connect", { what: "bt", on: modelData.connected, name: modelData.name, device: modelData }, false)
+            }
+        }
+    }
+
     // Chevron. Expanded transient: dismiss. Expanded media or recording: back to compact.
     function collapse() {
         if (active)
@@ -280,6 +350,10 @@ Singleton {
             if (kind === "media") root.mediaTest = !root.mediaTest
             else if (kind === "record") root.recordingTest = !root.recordingTest
             else if (kind === "buildfail") root.push("build", { failed: true }, true)
+            else if (kind === "wifi") root.push("connect", { what: "wifi", on: true, name: "Home-5G" }, false)
+            else if (kind === "wifilost") root.push("connect", { what: "wifi", on: false, name: "Home-5G" }, false)
+            else if (kind === "bt") root.push("connect", { what: "bt", on: true, name: "WH-1000XM4", device: null }, false)
+            else if (kind === "btoff") root.push("connect", { what: "bt", on: false, name: "WH-1000XM4", device: null }, false)
             else root.push(kind, {}, false)
         }
         // Build hook (bin/island-build). Failure persists with a red border until dismissed.

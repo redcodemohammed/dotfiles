@@ -44,6 +44,15 @@ Singleton {
     }
 
     readonly property bool linkUp: Networking.devices.values.some(d => d.connected)
+    readonly property bool hotspotOn: Networking.devices.values.some(d => d.type === DeviceType.Wifi
+        && d.mode === WifiDeviceMode.AccessPoint)
+    // The island's Wi-Fi pill: the panel notes when it changes the connection on purpose (so a drop
+    // isn't "lost"), and a click on the pill asks the bar on that screen to open the panel.
+    property double userChangeAt: 0
+    function userChange() {
+        userChangeAt = Date.now()
+    }
+    signal panelRequested(string screen)
     readonly property string internet: !linkUp ? "down"
         : Networking.connectivity === NetworkConnectivity.Portal ? "portal"
         : Networking.connectivity === NetworkConnectivity.None

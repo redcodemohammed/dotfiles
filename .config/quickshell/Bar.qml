@@ -38,6 +38,13 @@ PanelWindow {
         id: networkPanel
         bar: bar
     }
+    Connections { // the island's Wi-Fi pill, clicked on this screen
+        target: NetState
+        function onPanelRequested(screen) {
+            if (screen === bar.modelData.name && !networkPanel.visible)
+                networkPanel.toggle()
+        }
+    }
 
     BarBlock {
         id: workspacesBlock
