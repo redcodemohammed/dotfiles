@@ -268,6 +268,16 @@ Done (section 4):
   Audio|Stream|Source with isSink false; monitor captures come from the sink node, not counted).
   Camera = `fuser -s /dev/video*` every 2 s (apps open V4L2 directly). Bar media item skipped:
   the island shows what plays (owner). Works.
+- **Bar profiles, step 1 of hotplug** (spec "Monitors and bars"). No hotplug tool (owner's choice,
+  overrides the spec's "a tool like kanshi or hyprdynamicmonitors is needed", which assumed Waybar):
+  Quickshell makes and drops a bar per screen (`Variants` over `Quickshell.screens`), and each bar
+  picks its profile in `Bar.qml`: full on the G5 (matched by model "Odyssey G5"), on a screen alone,
+  or on the laptop when the G5 is away; slim elsewhere (workspaces, title, clock; the laptop's
+  adds network and battery). Right screen's media item left out (the island shows it). Research:
+  hyprdynamicmonitors writes hyprlang `monitors.conf` (deprecated since Hyprland 0.55, the config
+  is Lua; README silent on Lua; AUR 1.4.0); kanshi 1.9.0 (extra) would work through the output
+  protocol but was not needed: the owner's setups are all three screens or the laptop alone, and
+  Hyprland's `desc:` rules place each monitor. Works.
 - **Claude desktop tray icon: works** (checked 2026-10-15). Chromium offers its icon two ways:
   pixels only (`IconPixmap`, normal start) or, when it thinks it runs on GNOME
   (`GNOME_DESKTOP_SESSION_ID`, set session-wide by `env-hyprland`), a named icon in a temp folder
@@ -289,6 +299,15 @@ Done (section 4):
   tmux-yank @acfd36e (copy-mode `y` to the clipboard), tmux-fzf-url @09d4998 (`prefix x`),
   vim-tmux-navigator @c45243d (Ctrl+h/j/k/l). The navigator's Neovim half is the same repo @c45243d
   in `.config/nvim/pack/plugins/start/` (native packages, no plugin manager). Works.
+- **Strata as file manager and file picker** (owner, 2026-10-15). Strata's installer (everything
+  in `~/.local`, outside the repo) set `inode/directory` in `~/.config/mimeapps.list` (left
+  untracked: apps rewrite that file), the `org.freedesktop.FileManager1` D-Bus service ("Show in
+  folder") and a FileChooser portal backend (`strata --portal`; xdg-desktop-portal 1.22 does read
+  `strata.portal` from `~/.local/share/xdg-desktop-portal/portals`). Now tracked:
+  `.config/xdg-desktop-portal/hyprland-portals.conf` (FileChooser `strata;hyprland;gtk`).
+  `env-hyprland` sets `GTK_USE_PORTAL=1` (GTK3; Firefox/Zen "auto" counts it too) and
+  `GDK_DEBUG=portals` (GTK4), so native GTK dialogs use Strata. SUPER+F (code 41) opens Strata:
+  owner asked for an invented bind, the spec has none. Telegram's picker works through Strata.
 
 Notes:
 - GTK is not stowed on purpose (see `.stow-local-ignore` and section 6).
@@ -306,6 +325,9 @@ Notes:
 **Next: step 11** (section 6 real-machine list, one item per step).
 Open from 2026-10-15:
 - Verify `env-hyprland` after a re-login (see the Electron note in section 8).
+- After a re-login: file dialogs in a GTK3 app (Mousepad), GTK4 (`zenity --file-selection`), Zen
+  and Chrome should open Strata. If GTK apps start asking "Open with" for links or files, that is
+  the portal's OpenURI side effect of the two GTK variables in `env-hyprland`.
 - Try the "Wallpaper" picker in Vicinae: does `vicinae dmenu` show Quick Look previews for the
   image paths? If the full paths look noisy, switch to names with `--format index`.
 - Hyprland config is Lua (`hl.config`, `hl.bind`, `hl.dsp.*`). `hyprctl dispatch` takes Lua:
@@ -360,6 +382,7 @@ build 6 s. Transient arriving while one is open: queue one. Paused media hides a
 | SUPER+/ | Vicinae | 61 |
 | SUPER+I | notification inbox (`qs ipc call inbox toggle`) | 31 |
 | SUPER+E | Android emulator picker (`~/.local/scripts/vicinae-emulator.sh`, owner's addition) | 26 |
+| SUPER+F | Strata file manager (`~/.local/bin/strata`, owner's addition) | 41 |
 | SUPER+Space | layout toggle (XKB `grp:win_space_toggle`, `us,ara`) | |
 | SUPER+Q | close window | 24 |
 | SUPER+V | float toggle (sized, centred) | 55 |
@@ -439,8 +462,9 @@ Build:
   brightness (DDC): not wanted (owner, 2026-10-15).
 - Per-app notification quiet rules for chat apps: not wanted (owner, 2026-10-15; overrides the
   spec's "Per-app notification rules: yes").
-- Slim bars on non-main screens (spec table). (Bar items done; the full bar's media item was
-  skipped, the island shows what plays.)
+- Hotplug step 2: lid bind (`switch:on:Lid Switch` / `switch:off:Lid Switch`, `locked = true`, per
+  the 0.56 wiki) turning `eDP-1` off while other screens exist; step 3: tests (three screens,
+  laptop alone, lid closed). Bar items and slim bars done.
 - New island events the owner asked for: Wi-Fi connected, Bluetooth device connected. Not in the
   spec or design yet: settle layout (likely compact like battery 260x24), timer, glyphs, and
   whether disconnects show, before building.

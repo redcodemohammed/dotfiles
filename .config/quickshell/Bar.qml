@@ -4,10 +4,21 @@ import Quickshell
 // Top bar, one per screen: 32px tall, floating 6px from the screen's top and sides. The bar is
 // transparent; each widget sits on its own block in the bar colour, 6px apart, so the widgets
 // float (owner, 2026-10-15). The bar centre belongs to the island, a notch from the top edge.
+// Profiles (spec, "Monitors and bars"): the main screen (the G5) gets the full bar, the others a
+// slim one (workspaces, window title, clock; the laptop's adds network and battery). A screen on
+// its own gets the full bar, and so does the laptop when the G5 is away. Screens are matched by
+// model, like the Hyprland rules match by description. Quickshell makes and drops a bar per screen
+// as they come and go, so no hotplug tool is needed (owner, 2026-10-15). The right screen's media
+// item is left out: the island shows what plays (owner).
 PanelWindow {
     id: bar
     required property var modelData
     screen: modelData
+
+    readonly property bool laptop: modelData.name.startsWith("eDP")
+    readonly property bool mainPresent: [...Quickshell.screens].some(s => s.model === "Odyssey G5")
+    readonly property bool full: Quickshell.screens.length === 1 || modelData.model === "Odyssey G5"
+        || (laptop && !mainPresent)
 
     anchors {
         top: true
@@ -54,7 +65,7 @@ PanelWindow {
         spacing: 6
 
         BarBlock {
-            visible: tray.width > 0
+            visible: bar.full && tray.width > 0 // main bar only (spec)
             Tray {
                 id: tray
                 window: bar
@@ -64,12 +75,13 @@ PanelWindow {
             Clock {}
         }
         BarBlock {
-            visible: keyboardLayout.keymap !== "" // its condition, not its visible: a child of a hidden block reads as hidden
+            visible: bar.full && keyboardLayout.keymap !== "" // its condition, not its visible: a child of a hidden block reads as hidden
             KeyboardLayout {
                 id: keyboardLayout
             }
         }
         BarBlock { // screen recording: muted when idle, red while recording; click: the island panel
+            visible: bar.full
             clickable: true
             onClicked: IslandState.showRecording()
             Text {
@@ -80,13 +92,13 @@ PanelWindow {
             }
         }
         BarBlock { // mic and camera: red, only while something captures (spec)
-            visible: capture.live // its condition, not its visible: a child of a hidden block reads as hidden
+            visible: bar.full && capture.live // its condition, not its visible: a child of a hidden block reads as hidden
             CaptureIndicator {
                 id: capture
             }
         }
         BarBlock { // click: the volume island with the device lists
-            visible: volume.sink !== null
+            visible: bar.full && volume.sink !== null
             clickable: true
             onClicked: IslandState.showVolume()
             Volume {
@@ -94,12 +106,13 @@ PanelWindow {
             }
         }
         BarBlock { // click: the network panel
+            visible: bar.full || bar.laptop
             clickable: true
             onClicked: networkPanel.toggle()
             Network {}
         }
         BarBlock { // hidden without an adapter; click: bluetui in a terminal (owner's choice)
-            visible: bluetooth.adapter !== null
+            visible: bar.full && bluetooth.adapter !== null
             clickable: true
             onClicked: Quickshell.execDetached(["alacritty", "--class", "bluetui", "-e", "bluetui"])
             BluetoothStatus {
@@ -107,12 +120,13 @@ PanelWindow {
             }
         }
         BarBlock { // laptop only: hidden without a laptop battery
-            visible: battery.device.ready && battery.device.isLaptopBattery
+            visible: (bar.full || bar.laptop) && battery.device.ready && battery.device.isLaptopBattery
             Battery {
                 id: battery
             }
         }
         BarBlock {
+            visible: bar.full
             NotificationCount {}
         }
     }
