@@ -370,6 +370,17 @@ Done (section 4):
   panel closes on success, shows kcd's message on failure. Android needs the KDE Connect app's file
   access. kcd's docs confirm the Android app ignores lock requests (Lock phone was rightly left
   out). Works.
+- **OBS screen capture** (spec: OBS for real content, gpu-screen-recorder for quick capture).
+  OBS 32.2 "Screen Capture (PipeWire)" → xdg-desktop-portal 1.22.1 → xdg-desktop-portal-hyprland
+  1.4.1 (picker `hyprland-share-picker`: screen / window / region, optional restore token). The
+  portals must be started under Hyprland (`XDG_CURRENT_DESKTOP=Hyprland`; COSMIC's backend stays
+  idle) and `~/.config/xdg-desktop-portal/hyprland-portals.conf` (the owner's, uncommitted) sends
+  everything to hyprland then gtk, file dialogs to Strata. Hyprland's `enforce_permissions` is off.
+  ScreenCast offers source types 7, cursor modes 3, version 6. Works (owner, 2026-10-15).
+  Side finding: on 2026-10-15 11:47 (logout for the vpn group) Hyprland segfaulted while exiting,
+  in Aquamarine's DRM backend destructor (`exit` → `__cxa_finalize` → `CDRMBackend` →
+  `flushAsyncCommitEvents`); the portal backend and hyprsunset died with the compositor. A
+  shutdown-only crash, harmless; watch for it if logouts ever misbehave.
 - **Claude desktop tray icon: works** (checked 2026-10-15). Chromium offers its icon two ways:
   pixels only (`IconPixmap`, normal start) or, when it thinks it runs on GNOME
   (`GNOME_DESKTOP_SESSION_ID`, set session-wide by `env-hyprland`), a named icon in a temp folder
@@ -548,7 +559,7 @@ Follow `CLAUDE.md` safety rules. Before each step: tell the owner what changes a
 ## 6. Real machine: still to build or test
 
 Build:
-- OBS for real content (spec).
+- OBS for real content (spec): done, screen capture works (see progress).
 - Brightness: OSD now lives in the island volume panel (Brightness row, `hasBrightness` in
   `IslandState.qml`); brightness keys are already bound to `brightnessctl`. External-monitor
   brightness (DDC): not wanted (owner, 2026-10-15).
