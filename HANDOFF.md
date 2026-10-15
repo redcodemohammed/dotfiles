@@ -329,6 +329,12 @@ Done (section 4):
   Dismiss (`kcd dismiss`, on the phone too); Clear all empties this list only. `PanelInput` got
   `action` (a small accent button inside the field). IPC: `qs ipc call phone open` (panel on the
   focused screen), `phone test` / `phone clearTest` (sample notifications). Works.
+- **Phone bridge, step 3: Actions tab.** Ring phone (`kcd findmyphone`; no stop command, touch the
+  phone), Send clipboard (`kcd clipboard`), Send file (zenity picker, then `kcd share`; panel
+  closes for the picker), Transfers (last five; `share.progress` per file name, `share.complete`
+  with success/error; received files in `~/Downloads/kcd`, kcd's default). Left out: Lock phone
+  (owner), Link to open on phone (kcd sends files only; Send clipboard covers it), Last clipboard
+  from phone (kcd writes it into the desktop clipboard without an event), Stop ringing. Works.
 - **Claude desktop tray icon: works** (checked 2026-10-15). Chromium offers its icon two ways:
   pixels only (`IconPixmap`, normal start) or, when it thinks it runs on GNOME
   (`GNOME_DESKTOP_SESSION_ID`, set session-wide by `env-hyprland`), a named icon in a temp folder

@@ -6,7 +6,8 @@ import Quickshell.Io
 // block, 420 wide, 4px under the bar, its right edge on the block's. Grabs the keyboard, closes on
 // an outside click or Escape. Header: the phone's name, "Connected · battery · network" (Low and a
 // red battery at 15% or less), Reconnect while it is away (kcd has no disconnect: Unpair in
-// Settings). Tabs: Inbox (unread count), Actions and Settings (next steps). Away: "Phone not
+// Settings). Tabs: Inbox (unread count), Actions (ring, send clipboard, send file, transfers) and
+// Settings (next step). Away: "Phone not
 // connected". Inbox: the phone's notifications (Phone.qml), newest first; opening one marks it
 // read and shows Reply (when the app allows it), Copy code (a verification code) and Dismiss (on
 // the phone too). Clear all empties this list only. A line at the bottom confirms actions.
@@ -273,12 +274,121 @@ PopupWindow {
                 }
             }
 
-            Text { // Actions and Settings come in the next steps
-                visible: (Phone.connected && panel.tab === "actions") || panel.tab === "settings"
+            Column { // Actions
+                visible: Phone.connected && panel.tab === "actions"
+                width: parent.width
+                spacing: 4
+
+                PanelButton {
+                    width: parent.width
+                    icon: Icons.bellRinging
+                    label: "Ring phone"
+                    onPressed: {
+                        Phone.ring()
+                        panel.say("Phone is ringing (touch it to stop)")
+                    }
+                }
+                PanelButton {
+                    width: parent.width
+                    icon: Icons.clipboardText
+                    label: "Send clipboard to phone"
+                    onPressed: {
+                        Phone.sendClipboard()
+                        panel.say("Clipboard sent to phone")
+                    }
+                }
+                PanelButton {
+                    width: parent.width
+                    icon: Icons.uploadSimple
+                    label: "Send file"
+                    onPressed: {
+                        panel.visible = false // the file picker needs the keyboard
+                        Phone.pickAndSend()
+                    }
+                }
+
+                Column {
+                    visible: Phone.transfers.length > 0
+                    width: parent.width
+                    spacing: 4
+                    topPadding: 4
+                    Text {
+                        height: 16
+                        text: "Transfers"
+                        font.family: "JetBrainsMono Nerd Font"
+                        font.pixelSize: 12
+                        color: Theme.fgMuted
+                    }
+                    Repeater {
+                        model: Phone.transfers
+                        Rectangle {
+                            id: transfer
+                            required property var modelData
+                            readonly property var t: modelData
+                            readonly property int pct: t.total > 0 ? Math.round(t.current * 100 / t.total) : 0
+                            width: parent.width
+                            height: transferCol.implicitHeight + 20
+                            color: "transparent"
+                            border.width: 2
+                            border.color: Theme.border
+                            Column {
+                                id: transferCol
+                                x: 10
+                                y: 10
+                                width: parent.width - 20
+                                spacing: 4
+                                Item {
+                                    width: parent.width
+                                    height: 16
+                                    Text {
+                                        width: sizeText.x - 8
+                                        text: (transfer.t.up ? "↑ " : "↓ ") + transfer.t.name
+                                        elide: Text.ElideMiddle
+                                        font.family: "JetBrainsMono Nerd Font"
+                                        font.pixelSize: 13
+                                        color: Theme.fg
+                                    }
+                                    Text {
+                                        id: sizeText
+                                        anchors.right: parent.right
+                                        text: transfer.t.total > 0 ? NetState.amount(transfer.t.total).replace(/^0 MB$/, "< 1 MB") : ""
+                                        font.family: "JetBrainsMono Nerd Font"
+                                        font.pixelSize: 13
+                                        color: Theme.fgMuted
+                                    }
+                                }
+                                Rectangle {
+                                    width: parent.width
+                                    height: 4
+                                    color: Theme.border
+                                    Rectangle {
+                                        height: 4
+                                        width: transfer.t.state === "done" ? parent.width : parent.width * transfer.pct / 100
+                                        color: transfer.t.state === "failed" ? Theme.alert : Theme.fg
+                                    }
+                                }
+                                Text {
+                                    width: parent.width
+                                    text: transfer.t.state === "failed" ? "Failed" + (transfer.t.error ? ": " + transfer.t.error : "")
+                                        : transfer.t.state === "done" ? (transfer.t.up ? "Sent" : "Saved to ~/Downloads/kcd")
+                                        : (transfer.t.up ? "Sending" : "Receiving") + (transfer.t.total > 0 ? " " + transfer.pct + "%" : "")
+                                    elide: Text.ElideRight
+                                    font.family: "JetBrainsMono Nerd Font"
+                                    font.pixelSize: 12
+                                    color: transfer.t.state === "failed" ? Theme.alert : Theme.fgMuted
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            Text { // Settings comes in the next step
+                visible: panel.tab === "settings"
                 width: parent.width
                 topPadding: 8
                 bottomPadding: 8
-                text: (panel.tab === "actions" ? "Actions" : "Settings") + " is the next step."
+                text: "Settings is the next step."
                 font.family: "JetBrainsMono Nerd Font"
                 font.pixelSize: 12
                 color: Theme.fgMuted

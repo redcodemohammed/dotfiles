@@ -87,6 +87,11 @@ Singleton {
     readonly property string laptop: "\ue586"
     readonly property string monitor: "\ue32e"
 
+    // Phone panel actions
+    readonly property string bellRinging: "\ue5e8"
+    readonly property string clipboardText: "\ue198"
+    readonly property string uploadSimple: "\ue4c0"
+
     // Wi-Fi signal level 1-4 from Quickshell's strength (0-1), for the bar block and the panel.
     function wifiLevel(strength) {
         return strength >= 0.75 ? 4 : strength >= 0.5 ? 3 : strength >= 0.3 ? 2 : 1

@@ -54,6 +54,52 @@ Singleton {
         id: advertiser
         command: ["timeout", "20", "kcd", "pair", "--advertise-only"]
     }
+    // Actions (the panel's Actions tab). kcd can't stop a ring (touch the phone) or send a link
+    // (Send clipboard covers it); the phone's clipboard lands in yours without an event.
+    function ring() {
+        Quickshell.execDetached(["kcd", "findmyphone", deviceId])
+    }
+    function sendClipboard() {
+        Quickshell.execDetached(["kcd", "clipboard", deviceId])
+    }
+    function pickAndSend() { // a file picker, then kcd share
+        if (!picker.running)
+            picker.running = true
+    }
+    Process {
+        id: picker
+        command: ["zenity", "--file-selection", "--title=Send to phone"]
+        stdout: StdioCollector {
+            id: picked
+            onStreamFinished: {
+                const f = picked.text.trim()
+                if (f !== "")
+                    root.sendFile(f)
+            }
+        }
+    }
+    function sendFile(path) {
+        addTransfer({ name: path.split("/").pop(), up: true, current: 0, total: 0, state: "sending", error: "" })
+        Quickshell.execDetached(["kcd", "share", deviceId, path])
+    }
+    // Transfers, newest first, the last five: { name, up, current, total, state, error }, state
+    // sending / receiving / done / failed. Received files land in ~/Downloads/kcd (kcd's default).
+    property var transfers: []
+    function addTransfer(t) {
+        transfers = [t].concat(transfers.filter(x => x.name !== t.name)).slice(0, 5)
+    }
+    function changeTransfer(name, change, fallback) {
+        const i = transfers.findIndex(x => x.name === name)
+        if (i < 0) {
+            addTransfer(Object.assign({ name: name, up: false, current: 0, total: 0, state: "receiving", error: "" },
+                fallback, change))
+            return
+        }
+        const list = transfers.slice()
+        list[i] = Object.assign({}, list[i], change)
+        transfers = list
+    }
+
     // A verification code in a notification: a 4-8 digit number next to a code-ish word.
     function codeIn(text) {
         if (!/code|otp|verif|passcode|pin|رمز|كود/i.test(text))
@@ -106,6 +152,14 @@ Singleton {
         case "notification.canceled":
             if (ours)
                 setNotifications(notifications.filter(x => x.id !== p.id))
+            break
+        case "share.progress":
+            if (ours)
+                changeTransfer(p.file, { current: p.current, total: p.total }, { state: "receiving" })
+            break
+        case "share.complete":
+            if (ours)
+                changeTransfer(p.file, { state: p.success === false ? "failed" : "done", error: p.error || "" }, {})
             break
         case "device.added":
         case "device.removed":
