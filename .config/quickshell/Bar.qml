@@ -79,6 +79,12 @@ PanelWindow {
                 color: Recording.active ? Theme.alert : Theme.fgMuted
             }
         }
+        BarBlock { // mic and camera: red, only while something captures (spec)
+            visible: capture.live // its condition, not its visible: a child of a hidden block reads as hidden
+            CaptureIndicator {
+                id: capture
+            }
+        }
         BarBlock { // click: the volume island with the device lists
             visible: volume.sink !== null
             clickable: true
@@ -91,6 +97,14 @@ PanelWindow {
             clickable: true
             onClicked: networkPanel.toggle()
             Network {}
+        }
+        BarBlock { // hidden without an adapter; click: bluetui in a terminal (owner's choice)
+            visible: bluetooth.adapter !== null
+            clickable: true
+            onClicked: Quickshell.execDetached(["alacritty", "--class", "bluetui", "-e", "bluetui"])
+            BluetoothStatus {
+                id: bluetooth
+            }
         }
         BarBlock { // laptop only: hidden without a laptop battery
             visible: battery.device.ready && battery.device.isLaptopBattery

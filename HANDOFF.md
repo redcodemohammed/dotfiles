@@ -259,6 +259,15 @@ Done (section 4):
   every 10 s while the daemon is down); ids `swan:<name>`, merged with NetworkManager's VPN in
   `combine()` (bar square, caption, one VPN at a time either way, Connect on open Wi-Fi). Connect
   initiates every child (`--initiate --child`), Disconnect terminates the IKE SA. Works.
+- **Bar items** (spec). Bluetooth (`BluetoothStatus.qml`, not `Bluetooth.qml`, which would shadow
+  Quickshell.Bluetooth's singleton): icon only, grey; slash off/blocked, plain on, connected glyph
+  with a device; hidden without an adapter; click opens `alacritty --class bluetui -e bluetui`
+  (owner's choice; `bluetui` in `packages/repo.txt`). Mic and camera (`CaptureIndicator.qml`): red
+  Fill glyphs, block shown only while live, between record and volume. Mic = a PipeWire link group
+  from an `AudioSource` to an `AudioInStream` (Quickshell types an app's capture stream
+  Audio|Stream|Source with isSink false; monitor captures come from the sink node, not counted).
+  Camera = `fuser -s /dev/video*` every 2 s (apps open V4L2 directly). Bar media item skipped:
+  the island shows what plays (owner). Works.
 - **Claude desktop tray icon: works** (checked 2026-10-15). Chromium offers its icon two ways:
   pixels only (`IconPixmap`, normal start) or, when it thinks it runs on GNOME
   (`GNOME_DESKTOP_SESSION_ID`, set session-wide by `env-hyprland`), a named icon in a temp folder
@@ -430,8 +439,8 @@ Build:
   brightness (DDC): not wanted (owner, 2026-10-15).
 - Per-app notification quiet rules for chat apps: not wanted (owner, 2026-10-15; overrides the
   spec's "Per-app notification rules: yes").
-- Bar items: Bluetooth, battery (laptop only), media (only while playing), mic/camera indicator
-  (red, only when live). Slim bars on non-main screens (spec table).
+- Slim bars on non-main screens (spec table). (Bar items done; the full bar's media item was
+  skipped, the island shows what plays.)
 - New island events the owner asked for: Wi-Fi connected, Bluetooth device connected. Not in the
   spec or design yet: settle layout (likely compact like battery 260x24), timer, glyphs, and
   whether disconnects show, before building.

@@ -76,6 +76,13 @@ Singleton {
     readonly property string qrCode: "\ue3e6" // share network
     readonly property string shield: "\ue40a" // VPN profile (Fill while on)
 
+    // Bar: Bluetooth, and the capture indicator (Fill, red, while live)
+    readonly property string bluetooth: "\ue0da"
+    readonly property string bluetoothConnected: "\ue0dc"
+    readonly property string bluetoothSlash: "\ue0de"
+    readonly property string microphone: "\ue326"
+    readonly property string webcam: "\ue9b2"
+
     // Wi-Fi signal level 1-4 from Quickshell's strength (0-1), for the bar block and the panel.
     function wifiLevel(strength) {
         return strength >= 0.75 ? 4 : strength >= 0.5 ? 3 : strength >= 0.3 ? 2 : 1

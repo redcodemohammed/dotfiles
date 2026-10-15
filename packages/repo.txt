@@ -9,6 +9,7 @@ qt5-wayland
 qt6-wayland
 networkmanager
 dnsmasq
+bluetui
 polkit-gnome
 alacritty
 ttf-jetbrains-mono-nerd
