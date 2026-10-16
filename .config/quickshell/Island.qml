@@ -125,6 +125,17 @@ PanelWindow {
                 visible: root.shownKind === "connect"
             }
 
+            IslandPomodoro {
+                anchors.fill: parent
+                visible: root.shownKind === "pomodoro"
+            }
+
+            IslandTimer {
+                anchors.fill: parent
+                visible: root.shownKind === "timer"
+                open: root.shownOpen
+            }
+
             IslandRecord {
                 anchors.fill: parent
                 visible: root.shownKind === "record" || root.shownKind === "recsetup"
@@ -147,7 +158,7 @@ PanelWindow {
 
             // Placeholder content for states not built yet (recording).
             Text {
-                visible: ["volume", "brightness", "battery", "connect", "media", "record", "recsetup", "notify", "build"].indexOf(root.shownKind) < 0
+                visible: ["volume", "brightness", "battery", "connect", "media", "record", "recsetup", "notify", "build", "pomodoro", "timer"].indexOf(root.shownKind) < 0
                 x: root.shownOpen ? 12 : 8
                 y: root.shownOpen ? 12 : (parent.height - height) / 2
                 text: root.shownKind + (root.shownOpen ? " · expanded" : "")

@@ -9,7 +9,7 @@ import Quickshell.Bluetooth
 import Quickshell.Networking
 
 // Island state machine (island spec + design canvas "Desktop test").
-// One state at a time: transient > recording > media > nothing.
+// One state at a time: transient > recording > Pomodoro timer > media > nothing.
 // A transient ends on its own timer; expanding stops the timer; closing an expanded
 // transient dismisses it. One transient waits in the queue while another is expanded.
 // ("transient" is a reserved word in QML, so the current one is held in `active`.)
@@ -27,6 +27,8 @@ Singleton {
         battery: [260, 24, 340, 148],
         build:   [320, 24, 440, 192],
         connect: [260, 24, 0, 0], // Wi-Fi / Bluetooth events: compact only, a click opens the panel or bluetui
+        pomodoro: [0, 0, 340, 116], // a Pomodoro phase ended (Pomodoro.qml): opens expanded, waits for an answer
+        timer:   [160, 24, 340, 148], // a Pomodoro phase running or paused (IslandTimer.qml); above media (owner)
     })
     readonly property var timeouts: ({ notify: 8000, volume: 2500, brightness: 2500, battery: 3000, build: 6000, connect: 3000 })
 
@@ -116,9 +118,10 @@ Singleton {
 
     readonly property string kind: active ? active.kind
         : recording ? "record"
+        : Pomodoro.phase !== "idle" ? "timer"
         : media ? "media"
         : ""
-    readonly property bool open: expanded || kind === "notify"
+    readonly property bool open: expanded || kind === "notify" || kind === "pomodoro"
     readonly property var size: {
         const s = sizes[kind]
         if (!s) return [0, 0]
@@ -161,6 +164,14 @@ Singleton {
             queued = null
             show(q)
         }
+    }
+
+    // The Pomodoro question was answered elsewhere (SUPER + P, the panel): take it down.
+    function dropPomodoro() {
+        if (queued && queued.kind === "pomodoro")
+            queued = null
+        if (active && active.kind === "pomodoro")
+            next()
     }
 
     function expand() {

@@ -547,6 +547,23 @@ Done (section 4):
   with more than one action in the island (with Dismiss) and the inbox (32 px buttons; a click
   closes it). Owner wanted one line: the island's notify width = max(360, row + 24), capped at
   the 640 window; the inbox = max(360, widest row + 64). Others keep 360 and Reply/Dismiss. Works.
+- **Pomodoro** (owner, 2026-10-17): `.config/quickshell/Pomodoro.qml` (singleton) keeps the
+  phase's end time, not a countdown, in `~/.local/state/pomodoro.json` (FileView, atomicWrites),
+  so reloads and logins keep it exact. 25 / 5 / 15 min, long break every 4th; the panel sets
+  them in 5-min steps (5-120). A phase that ends waits for the owner (no auto-start): island card
+  `pomodoro` (IslandPomodoro.qml, persistent, opens expanded): "Focus done" Start break / Skip
+  break, "Break over" Start focus / Later; `IslandState.dropPomodoro()` takes it down when
+  answered elsewhere. While a phase runs or is paused: island state `timer` (IslandTimer.qml,
+  compact 160x24 glyph + time, expanded 340x148 with Pause/Resume, Skip, Reset), priority
+  transient > recording > timer > media (owner). Bar block (PomodoroStatus.qml, left of the record
+  block): muted timer idle, accent timer while focusing, coffee in breaks, "Break?"/"Focus?" when
+  waiting; click: PomodoroPanel.qml (phase, today's count, time, main/skip/reset, timings).
+  Do Not Disturb on during focus, restored after (`dndBefore`). Today's count only for focus that
+  ran out (skips don't count), day by local date (`Qt.formatDate`; `toISOString` is UTC). SUPER+P
+  (`code:33`): `qs ipc call pomodoro toggle`; IPC also skip/reset/state. Glyphs from Phosphor web
+  2.1.2: timer e492, coffee e1c2, arrow-counter-clockwise e038. Island gotcha: Island.qml draws a
+  placeholder label (state name) for every kind NOT in its exclusion list; add each new island
+  state there. Works.
 - **Claude desktop tray icon: works** (checked 2026-10-15). Chromium offers its icon two ways:
   pixels only (`IconPixmap`, normal start) or, when it thinks it runs on GNOME
   (`GNOME_DESKTOP_SESSION_ID`, set session-wide by `env-hyprland`), a named icon in a temp folder

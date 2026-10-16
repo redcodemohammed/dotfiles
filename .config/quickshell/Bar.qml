@@ -43,6 +43,11 @@ PanelWindow {
         bar: bar
         block: phoneBlock
     }
+    PomodoroPanel { // drops from the Pomodoro block
+        id: pomodoroPanel
+        bar: bar
+        block: pomodoroBlock
+    }
     PhonePanel { // drops from the phone block, its right edge on the block's
         id: phonePanel
         bar: bar
@@ -111,6 +116,13 @@ PanelWindow {
             clickable: true
             onClicked: phonePanel.toggle()
             PhoneStatus {}
+        }
+        BarBlock { // Pomodoro (owner, 2026-10-17): glyph and time left; click: its panel
+            id: pomodoroBlock
+            visible: bar.full
+            clickable: true
+            onClicked: pomodoroPanel.toggle()
+            PomodoroStatus {}
         }
         BarBlock { // screen recording: muted when idle, red while recording; click: the island panel
             visible: bar.full
