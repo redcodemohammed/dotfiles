@@ -591,8 +591,8 @@ Open from 2026-10-15:
 - Wallpaper: an image now (owner, 2026-10-15, overriding the spec's "solid color is final"):
   hyprpaper 0.8 with `.config/hypr/hyprpaper.conf` (one `wallpaper {}` block, empty `monitor` =
   every screen, `fit_mode = cover`, `splash = false`), started from `hyprland.lua`. The image is
-  `~/Pictures/Wallpapers/wallhaven-1qod3w.jpg` (3840x2160, from Wallpaper search 2026-10-16; its
-  palette is the default one: amber #f5a524, bg #111111), outside the repo; change it live with
+  `~/Pictures/Wallpapers/wallhaven-2k726x.jpg` (a red rose on black, from Wallpaper search
+  2026-10-17; red accent #fd7279, bg #131010), outside the repo; change it live with
   `hyprctl hyprpaper wallpaper '<monitor>,<path>,cover'`. Hyprland's solid `bg`
   (`misc.background_color`) stays underneath. The lock screen stays solid.
 - Gaps: 6px everywhere (owner, 2026-10-15), screen edges and bar-to-window included:
