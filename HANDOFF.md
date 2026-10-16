@@ -461,6 +461,10 @@ Done (section 4):
   to switch). Only undoes what the installers added; `GRUB_DISABLE_BOOTNEXT=true` stays.
   Dry-run on copies: `mkinitcpio.conf` identical to the original. Not run for real.
   `~/greeter-rollback.sh` is superseded (the owner may delete it).
+- **Inbox and bell** (owner, 2026-10-16): the bar's bell, left click toggles the inbox, right
+  click toggles Do Not Disturb (was: any click, DND). Clear all and dismissing the last entry (X)
+  close the inbox. Closing on a click outside was tried with `HyprlandFocusGrab` (protocol present
+  in Hyprland 0.56) but it never cleared on the inbox's layer surface; dropped at the owner's word.
 - **Claude desktop tray icon: works** (checked 2026-10-15). Chromium offers its icon two ways:
   pixels only (`IconPixmap`, normal start) or, when it thinks it runs on GNOME
   (`GNOME_DESKTOP_SESSION_ID`, set session-wide by `env-hyprland`), a named icon in a temp folder

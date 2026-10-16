@@ -31,6 +31,9 @@ Singleton {
         if (open)
             unread = 0
     }
+    function toggleInbox() { // the bar's bell, SUPER + I
+        setInbox(!inboxOpen)
+    }
 
     // Enter: run the sender's default action, if it is still listening.
     function invoke(entry) {
@@ -138,6 +141,6 @@ Singleton {
     // SUPER + I runs: qs ipc call inbox toggle
     IpcHandler {
         target: "inbox"
-        function toggle(): void { root.setInbox(!root.inboxOpen) }
+        function toggle(): void { root.toggleInbox() }
     }
 }

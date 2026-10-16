@@ -2,7 +2,8 @@ import QtQuick
 
 // Anything unread? Gray bell at zero. Amber filled bell plus count when unread.
 // Do Not Disturb swaps the glyph to a slashed bell; amber still means unread.
-// Click toggles Do Not Disturb: no island cards, the inbox still collects.
+// Left click opens (or closes) the inbox; right click toggles Do Not Disturb: no island cards,
+// the inbox still collects (owner, 2026-10-16).
 Item {
     id: root
     readonly property int unread: Notifs.unread
@@ -37,6 +38,12 @@ Item {
     MouseArea {
         anchors.fill: parent
         anchors.margins: -8 // easier to hit
-        onClicked: Notifs.dnd = !Notifs.dnd
+        acceptedButtons: Qt.LeftButton | Qt.RightButton
+        onClicked: mouse => {
+            if (mouse.button === Qt.RightButton)
+                Notifs.dnd = !Notifs.dnd
+            else
+                Notifs.toggleInbox()
+        }
     }
 }

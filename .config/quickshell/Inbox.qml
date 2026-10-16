@@ -6,7 +6,9 @@ import Quickshell.Widgets
 
 // Notification inbox. Same look as the island card: 360px wide, top-right, 6px below
 // the bar and 6px from the right edge. Rows scroll when the list is long.
-// SUPER + I toggles, Escape closes. Opening clears the unread count.
+// SUPER + I or a left click on the bar's bell toggles it; Escape, Clear all and dismissing the
+// last one close it (owner, 2026-10-16). Opening clears the unread count. (Closing on a click
+// outside was tried with HyprlandFocusGrab: it never cleared on this layer surface; dropped.)
 // J/K or arrows move, Enter runs the default action, X dismisses. Letters by keycode.
 PanelWindow {
     id: root
@@ -51,6 +53,8 @@ PanelWindow {
                     Notifs.setInbox(false)
             } else if (code === 53 && current) {
                 Notifs.dismiss(current)
+                if (Notifs.entries.length === 0)
+                    Notifs.setInbox(false) // the last one: nothing left to show
             } else {
                 return
             }
@@ -224,7 +228,10 @@ PanelWindow {
                     anchors.fill: parent
                     anchors.margins: -6
                     hoverEnabled: true
-                    onClicked: Notifs.clearAll()
+                    onClicked: {
+                        Notifs.clearAll()
+                        Notifs.setInbox(false)
+                    }
                 }
             }
         }
