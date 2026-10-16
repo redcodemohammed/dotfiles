@@ -4,14 +4,14 @@ import QtQuick
 import Quickshell
 
 Singleton {
-    readonly property color bg: "#0e1116"
-    readonly property color surface: "#161a20"
-    readonly property color surfaceSelected: "#20242a"
-    readonly property color border: "#2f3339"
-    readonly property color fg: "#e4e6ea"
-    readonly property color fgMuted: "#888a8e"
-    readonly property color fgDim: "#5a5c60"
-    readonly property color accent: "#7ebcff"
-    readonly property color textOnAccent: "#0e1116"
+    readonly property color bg: "#150f13"
+    readonly property color surface: "#1e181c"
+    readonly property color surfaceSelected: "#282226"
+    readonly property color border: "#383135"
+    readonly property color fg: "#e9e5e7"
+    readonly property color fgMuted: "#8d898b"
+    readonly property color fgDim: "#5f5b5d"
+    readonly property color accent: "#fe8ebc"
+    readonly property color textOnAccent: "#150f13"
     readonly property color alert: "#e5484d"
 }
