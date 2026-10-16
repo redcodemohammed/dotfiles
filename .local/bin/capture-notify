@@ -1,0 +1,78 @@
+#!/usr/bin/env bash
+# capture-notify <file>: the "saved" notification for a screenshot or a recording, with actions
+# (owner, 2026-10-17). Called by `screenshot` (the Print binds) and by screen-record when a
+# recording ends. The island and the inbox show every action as a button; Enter or a click on the
+# notification runs the first one ("default").
+#   Screenshot: Copy (default), Send to phone, Show in folder, Annotate, Delete
+#   Recording:  Play (default), Copy, Send to phone, Show in folder, Delete
+# Copy: an image goes to the clipboard as PNG; a video as a file (text/uri-list), to paste into
+# chat apps or the file manager. Send to phone: kcd share to the paired phone (POCO M6 Pro), when
+# it is connected. Show in folder: org.freedesktop.FileManager1.ShowItems (Strata answers it).
+# Delete: to the trash (gio trash), so it can still be undone.
+set -euo pipefail
+file=$(realpath "${1:?usage: capture-notify <file>}")
+[ -s "$file" ] || exit 0
+name=$(basename "$file")
+dir=${file%/*}
+dir=${dir/#$HOME/\~}
+
+case "$(file -b --mime-type "$file")" in
+    image/*)
+        kind=Screenshot
+        app=Screenshot
+        actions=(-A default=Copy -A send="Send to phone" -A show="Show in folder"
+            -A annotate=Annotate -A delete=Delete)
+        image=(-i "$file") # the island and inbox show it as the picture
+        ;;
+    video/*)
+        kind=Recording
+        app=Recording
+        actions=(-A default=Play -A copy=Copy -A send="Send to phone" -A show="Show in folder"
+            -A delete=Delete)
+        image=(-i video-x-generic)
+        ;;
+    *) exit 0 ;;
+esac
+
+say() { notify-send -a "$app" "$@" >/dev/null 2>&1 || true; }
+
+copy() {
+    if [ "$kind" = Screenshot ]; then
+        wl-copy -t image/png <"$file"
+    else
+        printf 'file://%s\n' "$file" | wl-copy -t text/uri-list
+    fi
+}
+
+send() {
+    local phone
+    phone=$(kcd devices --json 2>/dev/null |
+        jq -r 'first(.[] | select(.state == "PAIRED" and .connected)) | .id // empty') || phone=""
+    if [ -z "$phone" ]; then
+        say -u critical "Phone not connected" "$name was not sent."
+        return
+    fi
+    if kcd share "$phone" "$file" >/dev/null 2>&1; then
+        say "Sent to phone" "$name"
+    else
+        say -u critical "Sending failed" "$name"
+    fi
+}
+
+show() {
+    gdbus call --session --dest org.freedesktop.FileManager1 --object-path /org/freedesktop/FileManager1 \
+        --method org.freedesktop.FileManager1.ShowItems "['file://$file']" "" >/dev/null 2>&1 ||
+        xdg-open "${file%/*}" >/dev/null 2>&1 &
+}
+
+action=$(notify-send -a "$app" "${image[@]}" "${actions[@]}" --wait \
+    "$kind saved" "$name in $dir" 2>/dev/null || true)
+
+case "$action" in
+    default) if [ "$kind" = Screenshot ]; then copy; else setsid -f xdg-open "$file" >/dev/null 2>&1; fi ;;
+    copy) copy ;;
+    send) send ;;
+    show) show ;;
+    annotate) setsid -f satty -f "$file" -o "${file%.*}-annotated.png" --copy-command wl-copy >/dev/null 2>&1 ;;
+    delete) gio trash "$file" && say "$kind moved to the trash" "$name" ;;
+esac

@@ -66,7 +66,7 @@ start() {
         rm -f "$state"
         ping_shell
         if [ -s "$file" ]; then
-            notify-send -a Recording "Recording saved" "$(basename "$file") in $dir"
+            "$HOME/.local/bin/capture-notify" "$file" # Play, Copy, Send to phone, Show in folder, Delete
         else
             rm -f "$file"
             notify-send -a Recording -u critical "Recording failed" "$(tail -n 3 "$run/gsr.log")"

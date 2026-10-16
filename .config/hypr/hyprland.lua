@@ -337,7 +337,9 @@ hl.bind(mainMod .. " + code:41", hl.dsp.exec_cmd("~/.local/bin/strata")) -- F ke
 hl.bind(mainMod .. " + Escape", hl.dsp.exec_cmd([[sh -c 'flock -n "$XDG_RUNTIME_DIR/quickshell-lock.flock" qs -p ~/.config/quickshell-lock']]))
 
 -- Screenshots: saved to the folder and copied to the clipboard. Never all screens at once.
-local shot = "hyprshot -o ~/Pictures/Screenshots "
+-- ~/.local/bin/screenshot runs hyprshot, then a notification with Copy / Send to phone / Show in
+-- folder / Annotate / Delete (capture-notify).
+local shot = "~/.local/bin/screenshot "
 hl.bind("Print",                         hl.dsp.exec_cmd(shot .. "-m region"))
 hl.bind(mainMod .. " + Print",           hl.dsp.exec_cmd(shot .. "-m window -m active"))
 hl.bind(mainMod .. " + SHIFT + Print",   hl.dsp.exec_cmd(shot .. "-m output -m active"))

@@ -10,6 +10,8 @@ import Quickshell.Widgets
 // last one close it (owner, 2026-10-16). Opening clears the unread count. (Closing on a click
 // outside was tried with HyprlandFocusGrab: it never cleared on this layer surface; dropped.)
 // J/K or arrows move, Enter runs the default action, X dismisses. Letters by keycode.
+// Notifications with more than one action (screenshots, recordings) show them as buttons under
+// the body (ActionRow); a click runs one and closes the inbox.
 PanelWindow {
     id: root
     required property var modelData
@@ -26,7 +28,16 @@ PanelWindow {
     margins.right: 6
     exclusiveZone: 0
     color: "transparent"
-    implicitWidth: 360
+    // 360 as designed; wider when a notification's actions (ActionRow) need it for one line:
+    // 12 + 24 icon + 12 left, 12 right, 2 + 2 frame.
+    implicitWidth: Math.min(Math.max(360, widestActions + 64), modelData.width - 12)
+    readonly property real widestActions: {
+        let widest = 0
+        for (const child of list.contentItem.children)
+            if (child.actionsWidth !== undefined)
+                widest = Math.max(widest, child.actionsWidth)
+        return widest
+    }
     implicitHeight: Math.min(frame.implicitHeight, modelData.height - 38 - 12) // bar reserves 38; 6px gap above and below
     WlrLayershell.keyboardFocus: visible ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.None
 
@@ -90,6 +101,7 @@ PanelWindow {
 
                 width: ListView.view.width
                 height: rowContent.implicitHeight + 24
+                readonly property real actionsWidth: actionRow.visible ? actionRow.oneLineWidth : 0
 
                 // Selected: lighter surface plus a 2px amber marker on the left edge.
                 Rectangle {
@@ -182,6 +194,16 @@ PanelWindow {
                             wrapMode: Text.Wrap
                             maximumLineCount: 2
                             elide: Text.ElideRight
+                        }
+
+                        ActionRow {
+                            id: actionRow
+                            visible: row.modelData.notification
+                                && row.modelData.notification.actions.length > 1
+                            width: parent.width
+                            entry: row.modelData
+                            buttonHeight: 32
+                            onInvoked: Notifs.setInbox(false)
                         }
                     }
                 }

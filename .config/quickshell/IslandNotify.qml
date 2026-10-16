@@ -5,7 +5,8 @@ import Quickshell.Widgets
 // Island notification (design: Notify / NotifyAr artboards and the Desktop prototype).
 // Opens expanded, 360 wide: icon, title, time, amber unread count, 2-line body,
 // Reply (runs the default action; labelled with the action's own text when the app gives one,
-// e.g. "Apply now") and Dismiss, then "Earlier" x2.
+// e.g. "Apply now") and Dismiss, then "Earlier" x2. A notification with more actions (screenshots,
+// recordings) shows all of them instead, as a wrapping row (ActionRow), then Dismiss.
 // Arabic text: right-to-left, Vazirmatn 14/22, no Earlier list.
 // Height follows the content; the island reads implicitHeight.
 Item {
@@ -17,6 +18,9 @@ Item {
     readonly property var defaultAction: entry && entry.notification
         ? (entry.notification.actions.find(a => a.identifier === "default") ?? null) : null
     readonly property bool canReply: defaultAction !== null
+    readonly property bool manyActions: entry && entry.notification ? entry.notification.actions.length > 1 : false
+    // 360 as designed; wider for a row of actions, so it fits on one line (the island caps it).
+    readonly property real wantedWidth: manyActions ? Math.max(360, actionRow.oneLineWidth + 24) : 360
     readonly property string replyLabel: {
         const t = defaultAction ? defaultAction.text.trim() : ""
         return t !== "" && t.toLowerCase() !== "default" ? t : rtl ? "رد" : "Reply"
@@ -150,7 +154,19 @@ Item {
             color: Theme.fgMuted
         }
 
+        ActionRow {
+            id: actionRow
+            visible: root.manyActions
+            width: parent.width
+            entry: root.entry
+            family: root.family
+            dismissLabel: root.rtl ? "تجاهل" : "Dismiss"
+            onInvoked: IslandState.next()
+            onDismissed: IslandState.next() // the inbox keeps it
+        }
+
         Row {
+            visible: !root.manyActions
             width: parent.width
             spacing: 4
             Button {

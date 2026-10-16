@@ -59,7 +59,9 @@ PanelWindow {
         anchors.horizontalCenter: parent.horizontalCenter
         // Shown: top border just off-screen. Hidden: fully above the screen, so it slides in from there.
         y: root.wanted ? -root.edge : -(height + root.edge)
-        width: root.shownSize[0]
+        // Notifications with a row of actions are wider (IslandNotify.wantedWidth), up to the window.
+        width: root.shownKind === "notify" && root.shownOpen
+            ? Math.min(root.implicitWidth, notify.wantedWidth) : root.shownSize[0]
         // The state's own box. Notifications size to their content (body, Earlier list, Arabic).
         readonly property real contentHeight: root.shownKind === "notify"
             ? notify.implicitHeight + 4 : root.shownSize[1]

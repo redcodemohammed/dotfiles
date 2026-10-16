@@ -532,6 +532,21 @@ Done (section 4):
   `code --install-extension --force [--profile <name>]` for Default and every profile in
   `globalStorage/storage.json`. Works. Unverified: whether an open window recolours by itself
   after a wallpaper change or needs Developer: Reload Window. `vscode/` is stow-ignored.
+- **Screenshot / recording notifications with actions** (owner, 2026-10-17):
+  `.local/bin/capture-notify <file>` sends "Screenshot saved" (picture as icon; default=Copy,
+  Send to phone, Show in folder, Annotate, Delete) or "Recording saved" (default=Play, Copy, Send
+  to phone, Show in folder, Delete) with `notify-send --wait -A` and runs the chosen one. Copy:
+  PNG for images, `text/uri-list` file:// for videos. Send: `kcd share` to the first connected
+  paired device ("Phone not connected" otherwise). Show: FileManager1.ShowItems over D-Bus (Strata
+  provides it; xdg-open of the folder as fallback). Delete: `gio trash` (undoable; my choice).
+  The Print binds call `.local/bin/screenshot` (hyprshot `-s -f <name>`, then capture-notify);
+  hyprshot exits 1 even after saving, so its status is ignored and the file decides (that broke
+  the first version under `set -e`). screen-record calls capture-notify when a recording is
+  saved. Quickshell: `ActionRow.qml` (a Flow of buttons, default first; `oneLineWidth` sums the
+  buttons by a `counted` flag, not `visible`, which is false while hidden) shows notifications
+  with more than one action in the island (with Dismiss) and the inbox (32 px buttons; a click
+  closes it). Owner wanted one line: the island's notify width = max(360, row + 24), capped at
+  the 640 window; the inbox = max(360, widest row + 64). Others keep 360 and Reply/Dismiss. Works.
 - **Claude desktop tray icon: works** (checked 2026-10-15). Chromium offers its icon two ways:
   pixels only (`IconPixmap`, normal start) or, when it thinks it runs on GNOME
   (`GNOME_DESKTOP_SESSION_ID`, set session-wide by `env-hyprland`), a named icon in a temp folder

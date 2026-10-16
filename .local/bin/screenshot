@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+# screenshot <hyprshot mode args>: hyprshot without its own notification, then capture-notify's
+# notification with actions (owner, 2026-10-17). The Print binds in hyprland.lua call this.
+# hyprshot still saves to ~/Pictures/Screenshots and copies to the clipboard; a cancelled
+# region selection saves nothing, so no notification.
+set -euo pipefail
+dir="$HOME/Pictures/Screenshots"
+file="$dir/$(date +%Y-%m-%d-%H%M%S)_hyprshot.png"
+# Its exit status is no guide (1 after a saved shot, 2026-10-17): the file decides.
+hyprshot -s -o "$dir" -f "${file##*/}" "$@" || true
+# hyprshot may save after it returns (it can background the save): wait up to 5 s for the file.
+for _ in $(seq 1 50); do
+    [ -s "$file" ] && break
+    sleep 0.1
+done
+exec "$HOME/.local/bin/capture-notify" "$file"
