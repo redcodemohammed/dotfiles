@@ -35,6 +35,7 @@ _darcs
 ^/strongswan
 ^/greeter
 ^/grub
+^/plymouth
 ^/spotifast
 ^/strata
 

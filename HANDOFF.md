@@ -427,6 +427,20 @@ Done (section 4):
   /boot/grub/grub.cfg` (Catppuccin stays installed). Bug fixed on the way: the key setter also
   matched commented `#GRUB_THEME=` lines and activated them; it now changes only active lines.
   Timeout 5 s kept. Works (owner).
+- **Plymouth boot splash** (owner's choice, 2026-10-16; the spec doesn't cover boot). `plymouth/`
+  (stow-ignored): `make-theme.py` builds a `script` theme from `palette/palette.toml`: palette
+  bg, the Arch logo (`/usr/share/pixmaps/archlinux-logo.svg`, first path only, the others are a
+  ™ sign; recoloured to the accent, `rsvg-convert` 112 px), three 12 px accent squares pulsing in
+  turn under it, boot messages muted at the bottom, a plain password prompt (none expected, no
+  disk encryption); fonts JetBrains Mono. `sudo plymouth/install.sh` installs it to
+  `/usr/share/plymouth/themes/hypr`, `plymouth-set-default-theme hypr`, puts the `plymouth` hook
+  right after `systemd` in `/etc/mkinitcpio.conf`, adds `splash` to `GRUB_CMDLINE_LINUX_DEFAULT`,
+  then `mkinitcpio -P` and `grub-mkconfig`. Re-run after a wallpaper change (rebuilds the
+  initramfs, ~1 min). First run keeps `*.pre-plymouth` copies of `mkinitcpio.conf`,
+  `/etc/default/grub` and `initramfs-linux-zen.img`. Skip once: `e` in GRUB, delete `splash`.
+  Undo: copy the two config backups back, `mkinitcpio -P`, `grub-mkconfig -o /boot/grub/grub.cfg`.
+  NVIDIA modules load early (MODULES) and `nvidia_drm.fbdev=1`, so the splash has a display;
+  greetd starts after `plymouth-quit-wait`. Works (owner).
 - **Claude desktop tray icon: works** (checked 2026-10-15). Chromium offers its icon two ways:
   pixels only (`IconPixmap`, normal start) or, when it thinks it runs on GNOME
   (`GNOME_DESKTOP_SESSION_ID`, set session-wide by `env-hyprland`), a named icon in a temp folder
