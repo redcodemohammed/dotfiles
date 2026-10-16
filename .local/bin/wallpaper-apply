@@ -5,7 +5,8 @@
 # 1. hyprpaper shows the image on every screen now, and hyprpaper.conf keeps it for the next login.
 # 2. palette/from-wallpaper.py writes palette/palette.toml from the image, palette/generate.py
 #    writes every app's colours from it (Quickshell, Hyprland, Alacritty, tmux, Neovim, Vicinae,
-#    satty, GTK css, Spotifast, Strata, keyboard RGB).
+#    satty, GTK css, Spotifast, Strata, keyboard RGB), and palette/cursors.py builds the mouse
+#    cursor theme (~/.local/share/icons/hypr-cursors) from it.
 # 3. Running apps are told to reload. Quickshell (bar, island, lock), Spotifast and Hyprland's
 #    own files reload by themselves; the rest is nudged below. Satty and Strata pick it up when
 #    next opened. Owner's request, 2026-10-15.
@@ -37,9 +38,11 @@ else
     exit 2
 fi
 python3 -I "$D/palette/generate.py" >/dev/null
+python3 -I "$D/palette/cursors.py" >/dev/null || echo "wallpaper-apply: the mouse cursor kept its old colours" >&2
 
 # Running apps; each is best effort, so a closed app is no error.
 hyprctl reload >/dev/null 2>&1 || true                      # window borders (hypr_palette.lua)
+hyprctl setcursor hypr-cursors 24 >/dev/null 2>&1 || true   # mouse cursor, rebuilt by cursors.py
 touch "$HOME/.config/alacritty/alacritty.toml" 2>/dev/null || true  # Alacritty re-reads colors.toml
 tmux source-file "$HOME/.config/tmux/colors.conf" >/dev/null 2>&1 || true
 for sock in "${XDG_RUNTIME_DIR:-/run/user/$UID}"/nvim.*.0; do # every running Neovim

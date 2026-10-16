@@ -488,6 +488,18 @@ Done (section 4):
   remote image URLs through the blocked DNS. Toast gotcha: only the `style` and `title` setters
   redraw a toast, so set `message` first. Replaced the first version, a `vicinae dmenu` script
   (dmenu mode can't add Ctrl+B actions; removed). Works.
+- **Mouse cursor in the palette** (owner, 2026-10-16): `palette/cursors.py`, run by
+  `wallpaper-apply` after `generate.py`, then `hyprctl setcursor hypr-cursors 24`; `hyprland.lua`
+  sets `HYPRCURSOR_THEME=hypr-cursors`. Source: Catppuccin's peach hyprcursor theme
+  (`/usr/share/icons/catppuccin-mocha-peach-cursors/hyprcursors/*.hlc`, package
+  `catppuccin-cursors-mocha` from chaotic-aur, GPL-2.0, based on Volantes; owner picked its shapes
+  over Adwaita's bitmaps). Each `.hlc` is a zip of `meta.hl` + SVGs; layers are a blurred shadow
+  (`filter:url`, removed: style rules), the edge `#1e1e2e` and the body `#fab387`. Owner's colours:
+  body = `accent`, edge = `on_accent` (`#232627`, a detail line on `draft`, too), swapped in one
+  regex pass; every SVG must still parse. `hyprcursor-util --create` packs it; the folder
+  `~/.local/share/icons/hypr-cursors` is swapped in with two renames. Generated, not in the repo
+  (Catppuccin is GPL). Step 1 of 3, works: Hyprland's own cursor. Next: XCursor files for apps
+  that draw their own cursor (needs `xorg-xcursorgen`), then the login screen via boot-colours.
 - **Claude desktop tray icon: works** (checked 2026-10-15). Chromium offers its icon two ways:
   pixels only (`IconPixmap`, normal start) or, when it thinks it runs on GNOME
   (`GNOME_DESKTOP_SESSION_ID`, set session-wide by `env-hyprland`), a named icon in a temp folder

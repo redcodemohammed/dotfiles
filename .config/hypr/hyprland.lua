@@ -131,6 +131,9 @@ end)
 
 hl.env("XCURSOR_SIZE", "24")
 hl.env("HYPRCURSOR_SIZE", "24")
+-- Mouse cursor in the palette (owner, 2026-10-16): built by palette/cursors.py at every wallpaper
+-- change into ~/.local/share/icons/hypr-cursors (Catppuccin's shapes, accent body, dark edge).
+hl.env("HYPRCURSOR_THEME", "hypr-cursors")
 
 
 -----------------------
