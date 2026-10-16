@@ -465,21 +465,29 @@ Done (section 4):
   click toggles Do Not Disturb (was: any click, DND). Clear all and dismissing the last entry (X)
   close the inbox. Closing on a click outside was tried with `HyprlandFocusGrab` (protocol present
   in Hyprland 0.56) but it never cleared on the inbox's layer surface; dropped at the owner's word.
-- **Wallpaper search** (owner, 2026-10-16): "Wallpaper search" in Vicinae
-  (`.local/share/applications/wallpaper-search.desktop` → `.local/bin/wallpaper-search`). First
-  list: Toplist this month / Latest / Random / the last 8 searches
-  (`~/.local/state/wallpaper-search/history`); typed text that matches nothing comes back as the
-  query (`vicinae dmenu` does that, tested). Wallhaven API `/api/v1/search`, anonymous: purity 100
-  (SFW, the only level without a key), `atleast=2560x1440`, 24 per page, random keeps its `seed`
-  across pages. Thumbnails (`thumbs.large`) into `~/.cache/wallpaper-search` as
-  `<WxH>_<id>.jpg`, 8 at a time (~1.4 s), listed by path for Quick Look, then "More results" /
-  "New search". Pick: `~/Pictures/Wallpapers/wallhaven-<id>.<ext>` (with a "Downloading"
-  notification), then `wallpaper-apply`. The owner's network blocks wallhaven.cc at the DNS level
-  (plain queries to 1.1.1.1 / 8.8.8.8 are intercepted, empty answers); the script alone resolves
-  wallhaven.cc, w.wallhaven.cc and th.wallhaven.cc over Cloudflare's DNS-over-HTTPS and pins them
-  with `curl --resolve` (owner's choice; TLS still checks certificates). Bug fixed on the way:
-  `[ -f "$history" ] && cat "$history"` as the last command of the list group returned 1 when
-  the file didn't exist and, with `pipefail`, made `|| exit 0` quit after the first search. Works.
+- **Wallpaper search** (owner, 2026-10-16): a Vicinae extension,
+  `vicinae-extensions/wallpaper-search/` (TypeScript/React, `@vicinae/api` 0.29.1, stow-ignored).
+  Rebuild after edits: `npm install` once, then `npm run build` in that folder; `vici build`
+  installs into `~/.local/share/vicinae/extensions/wallpaper-search` (no Vicinae restart). The
+  build also makes `assets/icon.png` from Papirus-Dark's `preferences-desktop-wallpaper` (GPL, so
+  not committed) and `vicinae-env.d.ts` (generated); the manifest's `license` must be "MIT".
+  Grid of thumbnails, 4 per row: typing searches 500 ms after the last key (debounce; a
+  generation counter drops answers to older searches), the dropdown picks Relevance / Toplist
+  this month / Latest / Random (empty bar + Relevance = this month's toplist), scrolling loads the
+  next page (`pagination`; random keeps its `seed`). Empty bar: "Recent searches" tiles (8, in the
+  extension's LocalStorage), Enter runs one, Ctrl+B Remove from history / Clear all; a search is
+  saved only once a wallpaper from it is set or downloaded (owner's choice). Wallpaper: Enter =
+  Set as wallpaper (download to `~/Pictures/Wallpapers/wallhaven-<id>.<ext>`, spawn
+  `wallpaper-apply`, HUD closes Vicinae); Ctrl+B also Download only, Open on Wallhaven (browser's
+  own DNS: may hit the block), Copy link. Wallhaven API anonymous: purity 100 (SFW, all an
+  anonymous search gets), `atleast=2560x1440`, 24 per page, 45 requests/min. The owner's network
+  blocks wallhaven.cc at the DNS level (plain queries to 1.1.1.1 / 8.8.8.8 come back empty), so
+  `src/wallhaven.ts` passes a `lookup` function to `node:https` that resolves the three Wallhaven
+  hosts over Cloudflare's DNS-over-HTTPS (Node 24 calls it with `all: true`); thumbnails are
+  downloaded into `~/.cache/wallpaper-search` (pruned after a day) because Vicinae would fetch
+  remote image URLs through the blocked DNS. Toast gotcha: only the `style` and `title` setters
+  redraw a toast, so set `message` first. Replaced the first version, a `vicinae dmenu` script
+  (dmenu mode can't add Ctrl+B actions; removed). Works.
 - **Claude desktop tray icon: works** (checked 2026-10-15). Chromium offers its icon two ways:
   pixels only (`IconPixmap`, normal start) or, when it thinks it runs on GNOME
   (`GNOME_DESKTOP_SESSION_ID`, set session-wide by `env-hyprland`), a named icon in a temp folder

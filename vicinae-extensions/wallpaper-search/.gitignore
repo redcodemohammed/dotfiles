@@ -1,0 +1,5 @@
+node_modules/
+# Built from Papirus-Dark (GPL) by `npm run icon`: not kept in this public repo.
+assets/icon.png
+# Generated from package.json by every build.
+vicinae-env.d.ts

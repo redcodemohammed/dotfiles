@@ -1,0 +1,31 @@
+{
+  "name": "wallpaper-search",
+  "title": "Wallpaper search",
+  "description": "Search Wallhaven for wallpapers, download one and recolour the desktop from it",
+  "icon": "icon.png",
+  "author": "redcodemohammed",
+  "license": "MIT",
+  "platforms": ["Linux"],
+  "private": true,
+  "commands": [
+    {
+      "name": "wallpaper-search",
+      "title": "Wallpaper search",
+      "description": "Find a wallpaper on Wallhaven and set it",
+      "mode": "view"
+    }
+  ],
+  "scripts": {
+    "icon": "mkdir -p assets && rsvg-convert -w 512 -h 512 -o assets/icon.png /usr/share/icons/Papirus-Dark/64x64/apps/preferences-desktop-wallpaper.svg",
+    "build": "npm run icon && vici build",
+    "dev": "npm run icon && vici develop",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@vicinae/api": "^0.29.1"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "typescript": "5.9.2"
+  }
+}

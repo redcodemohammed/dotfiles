@@ -38,6 +38,7 @@ _darcs
 ^/plymouth
 ^/spotifast
 ^/strata
+^/vicinae-extensions
 
 # GTK stays with COSMIC for now: COSMIC rewrites gtk.css at every login.
 # When Hyprland is the daily desktop: turn off COSMIC's GTK theming, delete these two lines, restow.
