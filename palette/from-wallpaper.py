@@ -3,11 +3,13 @@
 
 Keeps the design system's structure (dark, grayscale chrome, one accent):
 - accent: the image's most vivid hue, at the lightness of the default amber (OKLCH L 0.78), kept
-  away from the alert red (red means live or failed). A gray image keeps the default accent.
+  10 degrees away from the alert red (red means live or failed; owner, 2026-10-16: 22 degrees
+  turned red images orange). An image with too little colour (fewer than 1% vivid pixels, e.g.
+  black and white) gets a light gray accent, a monochrome desktop (owner, 2026-10-16).
 - neutrals (bg, surfaces, border, text): the default palette's exact lightness, faintly tinted
   toward the image's dominant hue, so contrast stays what it was.
-- alert and the ANSI colours stay as in the default, except yellow (= accent) and the grays
-  (= the tinted neutrals).
+- alert and the ANSI colours stay as in the default, except yellow (= accent, unless the accent
+  is gray: a gray "yellow" would hide warnings) and the grays (= the tinted neutrals).
 Every pair that matters is checked against WCAG contrast and nudged if needed.
 
   from-wallpaper.py <image>     write palette.toml from the image
@@ -27,7 +29,8 @@ TARGET = HERE / "palette.toml"
 ACCENT_L = 0.78               # lightness of the default amber
 ACCENT_C = (0.10, 0.17)       # chroma range for the accent
 ALERT_HUE = 25.0              # OKLCH hue of the alert red
-ALERT_KEEPOUT = 22.0          # accent hues closer than this to red are pushed toward orange
+ALERT_KEEPOUT = 10.0          # accent hues closer than this to red are pushed toward orange
+GRAY_ACCENT = "#bebebe"       # too little colour: OKLCH L 0.80, no chroma (contrast 10 on bg)
 TINT_MAX = 0.012              # neutral tint chroma at most (barely there)
 NEUTRALS = ("bg", "surface", "surface_selected", "border", "fg", "fg_muted", "fg_dim")
 
@@ -160,8 +163,10 @@ def build(path):
         chroma = max(ACCENT_C[0], min(ACCENT_C[1], accent_chroma))
         ui["accent"] = oklch_hex(ACCENT_L, chroma, accent_hue)
         bright["yellow"] = oklch_hex(ACCENT_L + 0.04, chroma, accent_hue)
+        normal["yellow"] = ui["accent"]
+    else:  # too little colour: a monochrome desktop; ANSI yellow stays the default
+        ui["accent"] = GRAY_ACCENT
     ui["on_accent"] = ui["bg"]
-    normal["yellow"] = ui["accent"]
 
     # Contrast floors (WCAG): text 7, muted text and accent 4.5, text on the accent 4.5.
     def lift(role, floor, step=0.01):
