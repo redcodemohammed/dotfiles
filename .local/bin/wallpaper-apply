@@ -50,3 +50,5 @@ done
 vicinae theme set hypr >/dev/null 2>&1 || true
 systemctl --user try-restart openrgb-kb.service >/dev/null 2>&1 || true  # keyboard RGB (color.env)
 notify-send -a Wallpaper "Wallpaper" "$what" >/dev/null 2>&1 || true
+# The boot screens keep their own copy of the palette: remind, with an "Apply now" button.
+setsid -f "$HOME/.local/bin/boot-colours" --remind >/dev/null 2>&1 </dev/null || true

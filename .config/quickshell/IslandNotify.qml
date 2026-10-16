@@ -4,7 +4,8 @@ import Quickshell.Widgets
 
 // Island notification (design: Notify / NotifyAr artboards and the Desktop prototype).
 // Opens expanded, 360 wide: icon, title, time, amber unread count, 2-line body,
-// Reply (runs the default action) and Dismiss, then "Earlier" x2.
+// Reply (runs the default action; labelled with the action's own text when the app gives one,
+// e.g. "Apply now") and Dismiss, then "Earlier" x2.
 // Arabic text: right-to-left, Vazirmatn 14/22, no Earlier list.
 // Height follows the content; the island reads implicitHeight.
 Item {
@@ -13,8 +14,13 @@ Item {
     readonly property bool rtl: /[؀-ۿ]/.test((entry ? entry.summary + entry.body : ""))
     readonly property string family: rtl ? "Vazirmatn" : "JetBrainsMono Nerd Font"
     readonly property int lineHeight: rtl ? 22 : 20
-    readonly property bool canReply: entry && entry.notification
-        ? entry.notification.actions.some(a => a.identifier === "default") : false
+    readonly property var defaultAction: entry && entry.notification
+        ? (entry.notification.actions.find(a => a.identifier === "default") ?? null) : null
+    readonly property bool canReply: defaultAction !== null
+    readonly property string replyLabel: {
+        const t = defaultAction ? defaultAction.text.trim() : ""
+        return t !== "" && t.toLowerCase() !== "default" ? t : rtl ? "رد" : "Reply"
+    }
     readonly property var earlier: rtl || !entry ? [] : Notifs.entries.filter(e => e !== entry).slice(0, 2)
     readonly property string icon: !entry ? ""
         : entry.image !== "" ? entry.image
@@ -151,7 +157,7 @@ Item {
                 visible: root.canReply
                 width: (parent.width - 4) / 2
                 primary: true
-                label: root.rtl ? "رد" : "Reply"
+                label: root.replyLabel
                 onClicked: {
                     Notifs.invoke(root.entry)
                     IslandState.next()

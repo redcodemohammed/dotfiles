@@ -17,5 +17,9 @@ install -d -m 700 -o greeter -g greeter /var/lib/quickshell-greeter
 install -d -m 755 /etc/systemd/system/greetd.service.d
 install -m 644 "$src/greetd-dropin.conf" /etc/systemd/system/greetd.service.d/quickshell-greeter.conf
 systemctl daemon-reload
-echo "Installed. Nothing enabled. Test on terminal 7:"
-echo "  sudo greetd --vt 7 -s /run/greetd-test.sock -c /etc/greetd/quickshell-greeter-test.toml"
+if systemctl is-enabled --quiet greetd.service; then
+    echo "Installed: the login screen uses it from the next login."
+else
+    echo "Installed. Nothing enabled. Test on terminal 7:"
+    echo "  sudo greetd --vt 7 -s /run/greetd-test.sock -c /etc/greetd/quickshell-greeter-test.toml"
+fi

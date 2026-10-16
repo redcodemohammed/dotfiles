@@ -441,6 +441,26 @@ Done (section 4):
   Undo: copy the two config backups back, `mkinitcpio -P`, `grub-mkconfig -o /boot/grub/grub.cfg`.
   NVIDIA modules load early (MODULES) and `nvidia_drm.fbdev=1`, so the splash has a display;
   greetd starts after `plymouth-quit-wait`. Works (owner).
+- **After a wallpaper change: `boot-colours`** (owner, 2026-10-16; `.local/bin/boot-colours`,
+  asks for sudo itself): runs `greeter/install.sh`, `grub/install.sh`, `plymouth/install.sh` in
+  order and, only if all succeed, records `sha256(palette/palette.toml)` in
+  `/var/lib/boot-colours/palette.sha256`. `--check` compares it (before the first run: the
+  greeter's Theme.qml copy stands in). `--remind`: if stale, a notification "Boot screens have
+  the old colours" whose **default** action "Apply now" opens `alacritty --class boot-colours`
+  running it (the island and inbox only know the `default` action: a named one like `apply`
+  showed no button; the island's primary button now shows the default action's own text, falling
+  back to "Reply"). `wallpaper-apply` calls `--remind` after a change, Hyprland 15 s after login
+  (`hyprland.start`); one reminder at a time (flock). Works (owner used Apply now).
+- **Safety net: `boot-restore`** (`.local/bin/boot-restore`, works from a TTY, only system
+  tools, asks first and before rebooting; `--yes` asks nothing and doesn't reboot): cosmic-greeter
+  back (greetd disabled, our drop-in and `/etc/greetd` files removed), `plymouth` hook and
+  `splash` removed, `GRUB_THEME` back to the line in `/etc/default/grub.pre-hypr-theme`
+  (Catppuccin), our theme dirs removed, `mkinitcpio -P` (rebuilt, not the old image: the kernel
+  may be newer), `grub-mkconfig`; then `/var/lib/boot-colours/off` stops reminders until
+  `boot-colours` runs again (which reinstalls all but leaves cosmic-greeter in use, and says how
+  to switch). Only undoes what the installers added; `GRUB_DISABLE_BOOTNEXT=true` stays.
+  Dry-run on copies: `mkinitcpio.conf` identical to the original. Not run for real.
+  `~/greeter-rollback.sh` is superseded (the owner may delete it).
 - **Claude desktop tray icon: works** (checked 2026-10-15). Chromium offers its icon two ways:
   pixels only (`IconPixmap`, normal start) or, when it thinks it runs on GNOME
   (`GNOME_DESKTOP_SESSION_ID`, set session-wide by `env-hyprland`), a named icon in a temp folder

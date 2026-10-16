@@ -118,6 +118,8 @@ hl.on("hyprland.start", function ()
     hl.exec_cmd("hypridle")       -- idle chain: lock 5 min, screens off 6 min, suspend 30 min on battery
     hl.exec_cmd("hyprsunset")     -- night light, 21:00 to 06:30 (hypr/hyprsunset.conf)
     hl.exec_cmd("hyprpaper")      -- wallpaper image (hypr/hyprpaper.conf); background_color stays below it
+    -- Boot screens still on an older palette: a reminder once the bar (notifications) is up.
+    hl.exec_cmd("sleep 15 && ~/.local/bin/boot-colours --remind")
 end)
 
 

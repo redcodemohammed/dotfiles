@@ -1,0 +1,76 @@
+#!/usr/bin/env bash
+# boot-colours [--check | --remind]: give the boot screens the current palette (owner, 2026-10-16).
+# Run it after a wallpaper change (a notification reminds you). In order it runs
+# greeter/install.sh (login screen), grub/install.sh (GRUB menu) and plymouth/install.sh (boot
+# splash; rebuilds the initramfs, about a minute), asking for sudo itself. Only a full success
+# records the palette's hash in /var/lib/boot-colours/palette.sha256.
+#   --check   exit 0 when the boot screens have the current palette (or boot-restore set them back)
+#   --remind  when they don't: a notification with "Apply now", which opens a terminal running
+#             boot-colours (wallpaper-apply calls it, and Hyprland at every login). It is the
+#             notification's "default" action: the island's button and Enter in the inbox run that.
+# Safety net: boot-restore puts the original boot screens back.
+set -euo pipefail
+self=$(readlink -f "$0")
+dots=$(dirname "$(dirname "$(dirname "$self")")") # ~/dotfiles/.local/bin/boot-colours
+state=/var/lib/boot-colours
+
+current() { sha256sum "$dots/palette/palette.toml" | cut -d' ' -f1; }
+up_to_date() {
+    [ -e "$state/off" ] && return 0 # boot-restore: no reminders until boot-colours runs again
+    if [ -r "$state/palette.sha256" ]; then
+        [ "$(cat "$state/palette.sha256")" = "$(current)" ]
+    else # before the first run: the login screen's copy of the bar's colours stands in
+        cmp -s /etc/greetd/quickshell-greeter/Theme.qml "$dots/.config/quickshell/Theme.qml"
+    fi
+}
+
+case "${1:-}" in
+    --check)
+        up_to_date
+        exit
+        ;;
+    --remind)
+        up_to_date && exit 0
+        exec 9>"${XDG_RUNTIME_DIR:-/tmp}/boot-colours-remind.lock"
+        flock -n 9 || exit 0 # one reminder at a time
+        action=$(notify-send -a "Boot screens" -A default="Apply now" --wait \
+            "Boot screens have the old colours" \
+            "The login screen, boot splash and GRUB menu still use the previous wallpaper's palette." || true)
+        if [ "$action" = default ]; then
+            setsid -f alacritty --class boot-colours -e sh -c \
+                '"$1"; printf "\nPress Enter to close. "; read -r _' sh "$self" >/dev/null 2>&1
+        fi
+        exit 0
+        ;;
+    "") ;;
+    *)
+        echo "usage: boot-colours [--check | --remind]" >&2
+        exit 2
+        ;;
+esac
+
+[ "$(id -u)" -eq 0 ] || exec sudo "$self"
+
+step=""
+trap 'echo; echo "Stopped: $step failed. Run boot-colours again, or boot-restore for the original boot screens." >&2' ERR
+step="Login screen"
+echo "== $step"
+"$dots/greeter/install.sh"
+step="GRUB menu"
+echo; echo "== $step"
+"$dots/grub/install.sh"
+step="Boot splash (rebuilds the initramfs, about a minute)"
+echo; echo "== $step"
+"$dots/plymouth/install.sh"
+
+install -d -m 755 "$state"
+current >"$state/palette.sha256"
+chmod 644 "$state/palette.sha256"
+echo
+if [ -e "$state/off" ]; then
+    rm -f "$state/off"
+    echo "Done. COSMIC's login screen is still the one in use (boot-restore chose it); to switch back:"
+    echo "  sudo systemctl disable cosmic-greeter.service && sudo systemctl enable greetd.service, then reboot"
+else
+    echo "Done: the boot screens have the current colours (you see them at the next boot)."
+fi

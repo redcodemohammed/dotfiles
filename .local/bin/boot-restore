@@ -1,0 +1,68 @@
+#!/usr/bin/env bash
+# boot-restore [--yes]: the safety net for boot-colours (owner, 2026-10-16). Puts the boot screens
+# back as they were before this setup: COSMIC's login screen (cosmic-greeter), no boot splash and
+# the GRUB theme from before (Catppuccin). Works from a text console (Ctrl+Alt+F2, log in) and
+# needs only system tools. It undoes only what the installers added, so other edits to these
+# files stay; their backups (*.pre-hypr-theme, *.pre-plymouth) are left in place. GRUB's
+# "EFI BootNext" entries stay hidden. Asks before starting and before rebooting (--yes: no
+# questions, no reboot). boot-colours brings it all back.
+set -euo pipefail
+self=$(readlink -f "$0")
+yes=0
+[ "${1:-}" = --yes ] && yes=1
+[ "$(id -u)" -eq 0 ] || exec sudo "$self" "$@"
+
+if [ "$yes" = 0 ]; then
+    echo "This puts back COSMIC's login screen, removes the boot splash and restores the old GRUB theme."
+    read -r -p "Continue? [y/N] " answer
+    case "$answer" in y | Y) ;; *) exit 1 ;; esac
+fi
+
+step=""
+trap 'echo; echo "Stopped: $step failed; the rest is unchanged. Fix it and run boot-restore again." >&2' ERR
+
+step="Login screen"
+echo "== $step: cosmic-greeter"
+systemctl disable greetd.service
+systemctl enable cosmic-greeter.service
+rm -f /etc/systemd/system/greetd.service.d/quickshell-greeter.conf
+rmdir --ignore-fail-on-non-empty /etc/systemd/system/greetd.service.d 2>/dev/null || true
+systemctl daemon-reload
+rm -rf /etc/greetd/quickshell-greeter /etc/greetd/quickshell-greeter.toml \
+    /etc/greetd/quickshell-greeter-test.toml /etc/greetd/hyprland-greeter.lua \
+    /etc/greetd/hypr_palette.lua /var/lib/quickshell-greeter
+
+step="Boot splash"
+echo; echo "== $step: off"
+sed -i -E '/^HOOKS=/ s/ plymouth\b//' /etc/mkinitcpio.conf
+sed -i -E '/^GRUB_CMDLINE_LINUX_DEFAULT=/ s/ splash\b//' /etc/default/grub
+plymouth-set-default-theme bgrt 2>/dev/null || true # the package default, as before
+rm -rf /usr/share/plymouth/themes/hypr
+
+step="GRUB theme"
+echo; echo "== $step: the one from before"
+original=$(grep -E '^GRUB_THEME=' /etc/default/grub.pre-hypr-theme 2>/dev/null | tail -n 1 || true)
+if [ -n "$original" ]; then
+    sed -i -E "s|^GRUB_THEME=.*|$original|" /etc/default/grub
+else # no backup: GRUB's own look
+    sed -i -E 's|^GRUB_THEME=|#GRUB_THEME=|' /etc/default/grub
+fi
+rm -rf /boot/grub/themes/hypr
+
+step="Initramfs rebuild"
+echo; echo "== $step"
+mkinitcpio -P
+step="GRUB config"
+echo; echo "== $step"
+grub-mkconfig -o /boot/grub/grub.cfg
+
+install -d -m 755 /var/lib/boot-colours
+rm -f /var/lib/boot-colours/palette.sha256
+touch /var/lib/boot-colours/off # no "old colours" reminders
+
+echo
+echo "Done. The original boot screens come back at the next boot."
+if [ "$yes" = 0 ]; then
+    read -r -p "Reboot now? [y/N] " answer
+    case "$answer" in y | Y) systemctl reboot ;; esac
+fi
