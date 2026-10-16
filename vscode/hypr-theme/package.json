@@ -1,0 +1,15 @@
+{
+  "name": "hypr-theme",
+  "displayName": "Hypr",
+  "description": "The desktop palette (palette/palette.toml), regenerated at every wallpaper change by palette/generate.py",
+  "version": "1.0.0",
+  "publisher": "local",
+  "license": "MIT",
+  "engines": { "vscode": "^1.70.0" },
+  "categories": ["Themes"],
+  "contributes": {
+    "themes": [
+      { "label": "Hypr", "uiTheme": "vs-dark", "path": "./themes/hypr-color-theme.json" }
+    ]
+  }
+}

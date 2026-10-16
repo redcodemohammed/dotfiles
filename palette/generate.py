@@ -238,6 +238,160 @@ def strata_theme(palette):
     return f"# {HEADER}\n" + "".join(f'{key} = "{value}"\n' for key, value in keys.items())
 
 
+def vscode_theme(palette):
+    # VS Code colour theme "Hypr" (owner, 2026-10-17), installed as a local extension (see COPIES).
+    # Chrome as the rest of the desktop: accent for focus only, red for errors only, warnings in fg
+    # (the icon tells them apart), no shadows. Syntax as in .config/nvim/colors/hypr.lua.
+    ui, n, b = palette["ui"], palette["ansi"]["normal"], palette["ansi"]["bright"]
+    none = "#00000000"
+    colors = {
+        "foreground": ui["fg"], "descriptionForeground": ui["fg_muted"], "errorForeground": ui["alert"],
+        "focusBorder": ui["accent"], "contrastBorder": none, "widget.shadow": none,
+        "scrollbar.shadow": none, "selection.background": ui["surface_selected"],
+        "icon.foreground": ui["fg_muted"], "textLink.foreground": n["blue"],
+        "textLink.activeForeground": b["blue"], "sash.hoverBorder": ui["accent"],
+        "progressBar.background": ui["accent"],
+        "badge.background": ui["accent"], "badge.foreground": ui["on_accent"],
+        "button.background": ui["accent"], "button.foreground": ui["on_accent"],
+        "button.hoverBackground": b["yellow"], "button.secondaryBackground": ui["surface_selected"],
+        "button.secondaryForeground": ui["fg"], "button.border": none,
+        "input.background": ui["bg"], "input.foreground": ui["fg"], "input.border": ui["border"],
+        "input.placeholderForeground": ui["fg_dim"], "inputOption.activeBorder": ui["accent"],
+        "inputOption.activeBackground": ui["surface_selected"],
+        "dropdown.background": ui["surface"], "dropdown.border": ui["border"],
+        "dropdown.foreground": ui["fg"], "checkbox.background": ui["bg"], "checkbox.border": ui["border"],
+        "inputValidation.errorBorder": ui["alert"], "inputValidation.errorBackground": ui["surface"],
+        "inputValidation.warningBorder": ui["fg"], "inputValidation.warningBackground": ui["surface"],
+        "inputValidation.infoBorder": ui["fg_muted"], "inputValidation.infoBackground": ui["surface"],
+        "titleBar.activeBackground": ui["bg"], "titleBar.activeForeground": ui["fg"],
+        "titleBar.inactiveBackground": ui["bg"], "titleBar.inactiveForeground": ui["fg_muted"],
+        "titleBar.border": ui["border"], "menu.background": ui["surface"], "menu.foreground": ui["fg"],
+        "menu.selectionBackground": ui["surface_selected"], "menu.selectionForeground": ui["fg"],
+        "menu.border": ui["border"], "menu.separatorBackground": ui["border"],
+        "activityBar.background": ui["bg"], "activityBar.foreground": ui["fg"],
+        "activityBar.inactiveForeground": ui["fg_dim"], "activityBar.activeBorder": ui["accent"],
+        "activityBar.border": ui["border"], "activityBarBadge.background": ui["accent"],
+        "activityBarBadge.foreground": ui["on_accent"],
+        "sideBar.background": ui["bg"], "sideBar.foreground": ui["fg"], "sideBar.border": ui["border"],
+        "sideBarTitle.foreground": ui["fg_muted"], "sideBarSectionHeader.background": ui["bg"],
+        "sideBarSectionHeader.foreground": ui["fg_muted"], "sideBarSectionHeader.border": ui["border"],
+        "list.activeSelectionBackground": ui["surface_selected"], "list.activeSelectionForeground": ui["fg"],
+        "list.inactiveSelectionBackground": ui["surface"], "list.inactiveSelectionForeground": ui["fg"],
+        "list.hoverBackground": ui["surface"], "list.focusOutline": ui["accent"],
+        "list.focusBackground": ui["surface_selected"], "list.highlightForeground": ui["accent"],
+        "list.errorForeground": ui["alert"], "list.warningForeground": ui["fg"],
+        "list.inactiveFocusOutline": ui["border"], "tree.indentGuidesStroke": ui["border"],
+        "editorGroup.border": ui["border"], "editorGroupHeader.tabsBackground": ui["bg"],
+        "editorGroupHeader.tabsBorder": ui["border"], "editorGroupHeader.noTabsBackground": ui["bg"],
+        "tab.activeBackground": ui["surface"], "tab.activeForeground": ui["fg"],
+        "tab.activeBorderTop": ui["accent"], "tab.inactiveBackground": ui["bg"],
+        "tab.inactiveForeground": ui["fg_muted"], "tab.unfocusedActiveForeground": ui["fg"],
+        "tab.unfocusedActiveBorderTop": ui["border"], "tab.border": ui["border"],
+        "tab.hoverBackground": ui["surface"], "breadcrumb.background": ui["bg"],
+        "breadcrumb.foreground": ui["fg_muted"], "breadcrumb.focusForeground": ui["fg"],
+        "breadcrumb.activeSelectionForeground": ui["accent"],
+        "editor.background": ui["bg"], "editor.foreground": ui["fg"],
+        "editorLineNumber.foreground": ui["fg_dim"], "editorLineNumber.activeForeground": ui["accent"],
+        "editorCursor.foreground": ui["accent"], "editorCursor.background": ui["on_accent"],
+        "editor.lineHighlightBackground": ui["surface"], "editor.lineHighlightBorder": none,
+        "editor.selectionBackground": ui["surface_selected"],
+        "editor.inactiveSelectionBackground": ui["surface"],
+        "editor.selectionHighlightBackground": ui["surface_selected"],
+        "editor.wordHighlightBackground": ui["surface_selected"],
+        "editor.wordHighlightStrongBackground": ui["surface_selected"],
+        "editor.findMatchBackground": ui["accent"] + "66", "editor.findMatchBorder": ui["accent"],
+        "editor.findMatchHighlightBackground": ui["border"],
+        "editorBracketMatch.background": none, "editorBracketMatch.border": ui["accent"],
+        "editorWhitespace.foreground": ui["border"], "editorIndentGuide.background1": ui["border"],
+        "editorIndentGuide.activeBackground1": ui["fg_dim"], "editorRuler.foreground": ui["border"],
+        "editorCodeLens.foreground": ui["fg_dim"], "editorInlayHint.foreground": ui["fg_dim"],
+        "editorInlayHint.background": ui["surface"],
+        "editorError.foreground": ui["alert"], "editorWarning.foreground": ui["fg"],
+        "editorInfo.foreground": ui["fg_muted"], "editorHint.foreground": ui["fg_muted"],
+        "editorGutter.addedBackground": n["green"], "editorGutter.modifiedBackground": n["blue"],
+        "editorGutter.deletedBackground": n["red"],
+        "editorOverviewRuler.border": none, "editorOverviewRuler.errorForeground": ui["alert"],
+        "editorOverviewRuler.warningForeground": ui["fg_muted"],
+        "editorWidget.background": ui["surface"], "editorWidget.border": ui["border"],
+        "editorSuggestWidget.background": ui["surface"], "editorSuggestWidget.border": ui["border"],
+        "editorSuggestWidget.selectedBackground": ui["surface_selected"],
+        "editorSuggestWidget.highlightForeground": ui["accent"],
+        "editorHoverWidget.background": ui["surface"], "editorHoverWidget.border": ui["border"],
+        "peekView.border": ui["accent"], "peekViewEditor.background": ui["surface"],
+        "peekViewResult.background": ui["surface"], "peekViewTitle.background": ui["surface"],
+        "diffEditor.insertedTextBackground": n["green"] + "26",
+        "diffEditor.removedTextBackground": n["red"] + "26",
+        "panel.background": ui["bg"], "panel.border": ui["border"],
+        "panelTitle.activeForeground": ui["fg"], "panelTitle.inactiveForeground": ui["fg_muted"],
+        "panelTitle.activeBorder": ui["accent"],
+        "statusBar.background": ui["surface"], "statusBar.foreground": ui["fg"],
+        "statusBar.border": ui["border"], "statusBar.noFolderBackground": ui["surface"],
+        "statusBar.debuggingBackground": ui["alert"], "statusBar.debuggingForeground": ui["bg"],
+        "statusBarItem.remoteBackground": ui["accent"], "statusBarItem.remoteForeground": ui["on_accent"],
+        "statusBarItem.hoverBackground": ui["surface_selected"],
+        "statusBarItem.errorBackground": ui["alert"], "statusBarItem.warningBackground": ui["surface_selected"],
+        "quickInput.background": ui["surface"], "quickInput.foreground": ui["fg"],
+        "quickInputList.focusBackground": ui["surface_selected"],
+        "pickerGroup.foreground": ui["fg_muted"], "pickerGroup.border": ui["border"],
+        "keybindingLabel.background": ui["surface_selected"], "keybindingLabel.foreground": ui["fg"],
+        "keybindingLabel.border": ui["border"], "keybindingLabel.bottomBorder": ui["border"],
+        "notifications.background": ui["surface"], "notifications.foreground": ui["fg"],
+        "notifications.border": ui["border"], "notificationCenterHeader.background": ui["surface"],
+        "notificationsErrorIcon.foreground": ui["alert"], "notificationsWarningIcon.foreground": ui["fg"],
+        "notificationsInfoIcon.foreground": ui["fg_muted"],
+        "gitDecoration.addedResourceForeground": n["green"],
+        "gitDecoration.untrackedResourceForeground": n["green"],
+        "gitDecoration.modifiedResourceForeground": n["blue"],
+        "gitDecoration.deletedResourceForeground": n["red"],
+        "gitDecoration.conflictingResourceForeground": ui["alert"],
+        "gitDecoration.ignoredResourceForeground": ui["fg_dim"],
+        "terminal.background": ui["bg"], "terminal.foreground": ui["fg"],
+        "terminalCursor.foreground": ui["accent"], "terminal.selectionBackground": ui["surface_selected"],
+        "minimap.background": ui["bg"], "minimapSlider.background": ui["border"] + "80",
+        "scrollbarSlider.background": ui["border"] + "80", "scrollbarSlider.hoverBackground": ui["border"],
+        "scrollbarSlider.activeBackground": ui["fg_dim"],
+        "welcomePage.tileBackground": ui["surface"], "walkThrough.embeddedEditorBackground": ui["surface"],
+    }
+    for name in ("black", "red", "green", "yellow", "blue", "magenta", "cyan", "white"):
+        colors[f"terminal.ansi{name.capitalize()}"] = n[name]
+        colors[f"terminal.ansiBright{name.capitalize()}"] = b[name]
+
+    def rule(scopes, fg, style=None):
+        settings = {"foreground": fg} | ({"fontStyle": style} if style is not None else {})
+        return {"scope": scopes, "settings": settings}
+    token_colors = [
+        rule(["comment", "punctuation.definition.comment"], ui["fg_muted"], "italic"),
+        rule(["constant", "constant.numeric", "constant.language", "support.constant",
+              "variable.other.constant"], n["cyan"]),
+        rule(["string", "punctuation.definition.string"], n["green"]),
+        rule(["constant.character.escape", "string.regexp", "constant.other.placeholder"], b["cyan"]),
+        rule(["entity.name.function", "support.function", "meta.function-call.generic"], n["blue"]),
+        rule(["keyword", "storage", "storage.type", "storage.modifier", "keyword.control",
+              "meta.preprocessor", "keyword.other.import"], n["magenta"]),
+        rule(["keyword.operator", "variable", "variable.parameter", "meta.definition.variable",
+              "entity.name.variable"], ui["fg"]),
+        rule(["entity.name.type", "entity.name.class", "support.type", "support.class",
+              "entity.other.inherited-class", "entity.name.namespace"], b["blue"]),
+        rule(["entity.name.tag", "markup.heading", "entity.other.attribute-name"], n["blue"]),
+        rule(["punctuation", "meta.brace", "punctuation.separator", "punctuation.terminator"], ui["fg_muted"]),
+        rule(["markup.inserted"], n["green"]), rule(["markup.deleted"], n["red"]),
+        rule(["markup.changed"], n["blue"]), rule(["markup.bold"], ui["fg"], "bold"),
+        rule(["markup.italic"], ui["fg"], "italic"), rule(["markup.underline.link"], n["blue"], "underline"),
+        rule(["invalid", "invalid.illegal"], ui["alert"]),
+    ]
+    semantic = {
+        "comment": ui["fg_muted"], "string": n["green"], "number": n["cyan"], "enumMember": n["cyan"],
+        "keyword": n["magenta"], "function": n["blue"], "method": n["blue"], "macro": n["magenta"],
+        "type": b["blue"], "class": b["blue"], "interface": b["blue"], "enum": b["blue"],
+        "struct": b["blue"], "typeParameter": b["blue"], "namespace": b["blue"],
+        "variable": ui["fg"], "parameter": ui["fg"], "property": ui["fg"],
+        "variable.readonly": n["cyan"], "regexp": b["cyan"], "operator": ui["fg"],
+    }
+    theme = {"$comment": HEADER, "name": "Hypr", "type": "dark", "semanticHighlighting": True,
+             "colors": colors, "tokenColors": token_colors, "semanticTokenColors": semantic}
+    return json.dumps(theme, indent=2) + "\n"
+
+
 def gtk3_css(palette):
     colors = "\n".join(f"@define-color {role}_color {value};" for role, value in gtk_roles(palette).items())
     return f"/* {HEADER} */\n/* GTK3 via adw-gtk3: overrides its named colors. */\n{colors}\n@define-color borders {palette['ui']['border']};\n{GTK_SHAPE}"
@@ -267,6 +421,7 @@ OUTPUTS = {
     ".config/openrgb-kb/color.env": keyboard_env,
     "spotifast/Hypr.json": spotifast_theme,  # not stowed: see COPIES
     "strata/hypr.toml": strata_theme,  # not stowed: see COPIES
+    "vscode/hypr-theme/themes/hypr-color-theme.json": vscode_theme,  # not stowed: see COPIES
 }
 
 # Apps that skip symlinked files get a real copy in $HOME; the repo file stays the tracked source.
@@ -275,6 +430,11 @@ OUTPUTS = {
 COPIES = {
     "spotifast/Hypr.json": "~/.config/spotifast/themes/Hypr.json",
     "strata/hypr.toml": "~/.config/strata/themes/hypr.toml",
+    # VS Code: a local extension, a real folder (it may skip symlinked extensions). package.json
+    # is hand-written and fixed; the theme is regenerated.
+    "vscode/hypr-theme/package.json": "~/.vscode/extensions/local.hypr-theme-1.0.0/package.json",
+    "vscode/hypr-theme/themes/hypr-color-theme.json":
+        "~/.vscode/extensions/local.hypr-theme-1.0.0/themes/hypr-color-theme.json",
 }
 
 

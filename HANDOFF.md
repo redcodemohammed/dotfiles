@@ -512,9 +512,26 @@ Done (section 4):
   THEME variables. Installed and checked on disk 2026-10-16; not yet seen at a real login.
 - **Wallpaper colour picker fixes** (owner, 2026-10-16, `palette/from-wallpaper.py`): red images
   were pushed to orange by a 22-degree keep-out around the alert red's hue; now 10 degrees
-  (wallhaven-rro57q.png: #fe987e salmon instead of #fb9c6c). Images with under 1% vivid pixels
+  (wallhaven-rro57q.png: #fe987e salmon instead of #fb9c6c). 2026-10-17: the keep-out is gone
+  (owner, overriding the spec's "red means live or failed only"): accent hues within 20 degrees
+  of the alert red's hue are lit at OKLCH L 0.72 instead of 0.78 (at 0.78 red turns coral), alert
+  stays #e5484d (rose wallhaven-2k726x.jpg: #fd7279, contrast 7.1). Images with under 1% vivid pixels
   (black and white) used to keep the default amber, which looked like the picker failing; they
-  now get a light gray accent #bebebe (ANSI yellow stays the default then). Works.
+  now get a light gray accent #bebebe (ANSI yellow stays the default then). Works. Open: soft
+  colourful images (all pixels under chroma 0.06, e.g. "wallpaperflare.com_wallpaper (1).jpg",
+  blue dusk + small sunset) also fall to gray; owner to choose warm highlight vs most colourful
+  area before a relative threshold is built.
+- **VS Code theme "Hypr"** (owner, 2026-10-17): `generate.py` writes
+  `vscode/hypr-theme/themes/hypr-color-theme.json` (206 UI colours, TextMate token rules,
+  semantic tokens; syntax as in nvim's `colors/hypr.lua`, accent = focus, red = errors, warnings
+  in fg, shadows transparent); COPIES puts it and the fixed `vscode/hypr-theme/package.json` into
+  `~/.vscode/extensions/local.hypr-theme-1.0.0/` (real files). VS Code registers a new folder
+  there for the Default profile only; the owner works in profile "Bro" (also "AlQaseh"), so
+  `vscode/install.sh` (once per machine / new profile) builds a VSIX by hand (zip:
+  `[Content_Types].xml`, `extension.vsixmanifest`, `extension/`) and runs
+  `code --install-extension --force [--profile <name>]` for Default and every profile in
+  `globalStorage/storage.json`. Works. Unverified: whether an open window recolours by itself
+  after a wallpaper change or needs Developer: Reload Window. `vscode/` is stow-ignored.
 - **Claude desktop tray icon: works** (checked 2026-10-15). Chromium offers its icon two ways:
   pixels only (`IconPixmap`, normal start) or, when it thinks it runs on GNOME
   (`GNOME_DESKTOP_SESSION_ID`, set session-wide by `env-hyprland`), a named icon in a temp folder
