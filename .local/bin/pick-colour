@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+# pick-colour: click a pixel anywhere, its hex goes to the clipboard (owner, 2026-10-17; the tools
+# panel's Pick colour). hyprpicker freezes the screens; Escape cancels and prints nothing. The last
+# 8 colours are kept, newest first, in ~/.local/state/picked-colours for the panel's swatches.
+set -euo pipefail
+# Not -q: it hides the result line too (2026-10-17). The colour is the last line.
+hex=$(hyprpicker -f hex -l -b -r 2>/dev/null | tail -1 | tr -d '[:space:]') || hex=""
+[[ "$hex" =~ ^#[0-9a-f]{6}$ ]] || exit 0
+printf '%s' "$hex" | wl-copy
+list="$HOME/.local/state/picked-colours"
+{ printf '%s\n' "$hex"; grep -vx "$hex" "$list" 2>/dev/null || true; } | head -n 8 >"$list.tmp"
+mv "$list.tmp" "$list"
+swatch="${XDG_RUNTIME_DIR:-/tmp}/picked-colour.png"
+magick -size 64x64 "xc:$hex" "$swatch" 2>/dev/null || swatch=color-select
+notify-send -a "Colour picker" -i "$swatch" "Copied $hex" >/dev/null 2>&1 || true

@@ -6,7 +6,9 @@ import Quickshell
 // SUPER + X toggles it (Tools.qml). Power: Lock, Log out, Suspend, Reboot, Shut down, then
 // UEFI setup and Windows (boot it once). Everything but Lock and Suspend asks for a second click
 // within 3 s (the button turns primary and reads "Again?"). The actions are .local/bin/power-action.
-// Next steps add the screen tools, the web dev tools and a Settings button.
+// Tools (step 2): Pick colour (the panel closes, hyprpicker; recent colours below as swatches, a
+// click copies one), Keep awake (on/off; pauses the idle chain), Text from screen (OCR).
+// Next steps add the web dev tools and a Settings button.
 PopupWindow {
     id: panel
     required property var bar
@@ -33,7 +35,17 @@ PopupWindow {
         if (!visible) {
             closedAt = Date.now()
             armed = ""
+            note = ""
         }
+    }
+
+    // A short line under the tools (e.g. "Copied #f5a524"), cleared after 2 s.
+    property string note: ""
+    onNoteChanged: if (note !== "") noteTimer.restart()
+    Timer {
+        id: noteTimer
+        interval: 2000
+        onTriggered: panel.note = ""
     }
 
     // The action waiting for its confirming click.
@@ -92,6 +104,43 @@ PopupWindow {
         }
     }
 
+    // A tool button: glyph and label; `lit` (Keep awake) shows it lit, with the accent glyph.
+    component ToolTile: Rectangle {
+        id: tile
+        property string glyph
+        property string label
+        property bool lit: false
+        signal clicked
+        height: 64
+        color: lit || tileHover.containsMouse ? Theme.surfaceSelected : Theme.bg
+        border.width: 2
+        border.color: lit ? Theme.accent : Theme.border
+        Column {
+            anchors.centerIn: parent
+            spacing: 4
+            Text {
+                anchors.horizontalCenter: parent.horizontalCenter
+                text: tile.glyph
+                font.family: tile.lit ? Icons.fill : Icons.regular
+                font.pixelSize: 20
+                color: tile.lit ? Theme.accent : Theme.fg
+            }
+            Text {
+                anchors.horizontalCenter: parent.horizontalCenter
+                text: tile.label
+                font.family: "JetBrainsMono Nerd Font"
+                font.pixelSize: 12
+                color: tile.lit ? Theme.fg : Theme.fgMuted
+            }
+        }
+        MouseArea {
+            id: tileHover
+            anchors.fill: parent
+            hoverEnabled: true
+            onClicked: tile.clicked()
+        }
+    }
+
     Rectangle {
         id: body
         width: parent.width
@@ -147,6 +196,78 @@ PopupWindow {
                     action: "windows"
                     confirm: true
                 }
+            }
+
+            Text {
+                topPadding: 4
+                text: "Tools"
+                font.family: "JetBrainsMono Nerd Font"
+                font.pixelSize: 12
+                color: Theme.fgMuted
+            }
+
+            Row {
+                width: parent.width
+                spacing: 4
+                readonly property real cell: (width - 2 * spacing) / 3
+                ToolTile {
+                    width: parent.cell
+                    glyph: Icons.eyedropper
+                    label: "Pick colour"
+                    onClicked: {
+                        panel.visible = false
+                        Tools.pickColour()
+                    }
+                }
+                ToolTile {
+                    width: parent.cell
+                    glyph: Icons.coffee
+                    label: Tools.keepAwake ? "Awake: on" : "Keep awake"
+                    lit: Tools.keepAwake
+                    onClicked: Tools.setKeepAwake(!Tools.keepAwake)
+                }
+                ToolTile {
+                    width: parent.cell
+                    glyph: Icons.textT
+                    label: "Text from screen"
+                    onClicked: {
+                        panel.visible = false
+                        Tools.readText()
+                    }
+                }
+            }
+
+            Row { // recent colours: a click copies
+                visible: Tools.colours.length > 0
+                spacing: 4
+                Repeater {
+                    model: Tools.colours
+                    Rectangle {
+                        required property string modelData
+                        width: 32
+                        height: 32
+                        color: modelData
+                        border.width: 2
+                        border.color: swatchHover.containsMouse ? Theme.fg : Theme.border
+                        MouseArea {
+                            id: swatchHover
+                            anchors.fill: parent
+                            hoverEnabled: true
+                            onClicked: {
+                                Tools.copy(parent.modelData)
+                                panel.note = "Copied " + parent.modelData
+                            }
+                        }
+                    }
+                }
+            }
+
+            Text {
+                visible: panel.note !== ""
+                text: panel.note
+                font.family: "JetBrainsMono Nerd Font"
+                font.pixelSize: 12
+                color: Theme.fgMuted
             }
         }
     }

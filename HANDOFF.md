@@ -571,8 +571,16 @@ Done (section 4):
   `.local/bin/power-action` (lock = the Quickshell lock with flock; logout = hyprshutdown or
   exit; firmware = `systemctl reboot --firmware-setup`, OsIndicationsSupported 0x7f; windows =
   `pkexec efibootmgr --bootnext <Windows Boot Manager entry, 0004 now>` then reboot: polkit-gnome
-  asks for the password, GRUB untouched, the boot after is GRUB again). Works. Planned next:
-  step 2 colour picker (hyprpicker), keep awake, OCR (tesseract eng + ara); step 3 clipboard
+  asks for the password, GRUB untouched, the boot after is GRUB again). Works.
+  Step 2, works: Tools row: Pick colour (`.local/bin/pick-colour`: `hyprpicker -f hex -l -b -r`,
+  never `-q`, which also hides the result line; started 150 ms after the panel closes so the
+  frozen frame doesn't show it; last 8 in `~/.local/state/picked-colours` as swatches, a click
+  copies), Keep awake (`.local/bin/keep-awake`: `systemd-inhibit --what=idle ... sleep infinity`
+  under setsid, PID in $XDG_RUNTIME_DIR, so it outlasts reloads; the bar's power glyph turns
+  accent; hypridle honours it), Text from screen (`.local/bin/screen-ocr`: slurp, `grim -s 2`,
+  `tesseract -l eng+ara`, wl-copy). Packages: hyprpicker, tesseract, tesseract-data-eng/-ara.
+  QML gotcha: a property named `on` breaks an inline component ("X is not a type"), and
+  Quickshell kept failing for a few reloads after the rename. Planned next: step 3 clipboard
   transforms, generators (UUID, timestamps, lorem), localhost QR; step 4 settings panel
   (one settings file `~/.config/hypr-settings.json`, read by Quickshell live and by hyprland.lua
   at load, changes applied live with hyprctl): Look, Bar and island, Input, Displays and power.

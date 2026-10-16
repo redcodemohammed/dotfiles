@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+# screen-ocr: drag over an area, its text (English or Arabic) goes to the clipboard (owner,
+# 2026-10-17; the tools panel's Text from screen). grim captures at twice the size, which tesseract
+# reads much better on screen text; tesseract 5 with eng + ara data.
+set -euo pipefail
+region=$(slurp 2>/dev/null) || exit 0 # Escape: nothing
+text=$(grim -s 2 -g "$region" - | tesseract - - -l eng+ara 2>/dev/null | sed -e 's/[[:space:]]*$//' | sed -e '/./,$!d') || text=""
+if [ -z "$(printf '%s' "$text" | tr -d '[:space:]')" ]; then
+    notify-send -a "Text from screen" "No text found" >/dev/null 2>&1 || true
+    exit 0
+fi
+printf '%s' "$text" | wl-copy
+lines=$(printf '%s\n' "$text" | wc -l)
+notify-send -a "Text from screen" "Copied $lines line$([ "$lines" = 1 ] || echo s)" \
+    "$(printf '%s\n' "$text" | head -n 2)" >/dev/null 2>&1 || true

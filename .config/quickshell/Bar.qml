@@ -189,11 +189,11 @@ PanelWindow {
             id: toolsBlock
             clickable: true
             onClicked: toolsPanel.toggle()
-            Text {
+            Text { // accent while Keep awake holds the idle chain
                 text: Icons.power
-                font.family: Icons.regular
+                font.family: Tools.keepAwake ? Icons.fill : Icons.regular
                 font.pixelSize: 16
-                color: Theme.fgMuted
+                color: Tools.keepAwake ? Theme.accent : Theme.fgMuted
             }
         }
     }

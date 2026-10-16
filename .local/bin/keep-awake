@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+# keep-awake on|off|toggle|status: pause the idle chain (owner, 2026-10-17; the tools panel).
+# A systemd-inhibit "idle" lock: hypridle respects it (hypridle.conf leaves ignore_systemd_inhibit
+# off), so lock, screens off and suspend wait until it is released. Lid close and the power
+# buttons still work. Its PID lives in $XDG_RUNTIME_DIR, so it outlasts Quickshell reloads and
+# ends with the session. status prints on or off.
+set -euo pipefail
+pidfile="${XDG_RUNTIME_DIR:-/tmp}/keep-awake.pid"
+running() { [ -f "$pidfile" ] && kill -0 "$(cat "$pidfile")" 2>/dev/null; }
+case "${1:-status}" in
+    on)
+        running && exit 0
+        setsid systemd-inhibit --what=idle --who="Keep awake" --why="Tools panel: keep awake" \
+            sleep infinity >/dev/null 2>&1 </dev/null &
+        echo $! >"$pidfile"
+        ;;
+    off)
+        if running; then kill "$(cat "$pidfile")"; fi
+        rm -f "$pidfile"
+        ;;
+    toggle) if running; then "$0" off; else "$0" on; fi ;;
+    status) if running; then echo on; else echo off; fi ;;
+    *) echo "usage: keep-awake on|off|toggle|status" >&2; exit 2 ;;
+esac
