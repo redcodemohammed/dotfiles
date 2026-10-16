@@ -497,9 +497,16 @@ Done (section 4):
   (`filter:url`, removed: style rules), the edge `#1e1e2e` and the body `#fab387`. Owner's colours:
   body = `accent`, edge = `on_accent` (`#232627`, a detail line on `draft`, too), swapped in one
   regex pass; every SVG must still parse. `hyprcursor-util --create` packs it; the folder
-  `~/.local/share/icons/hypr-cursors` is swapped in with two renames. Generated, not in the repo
-  (Catppuccin is GPL). Step 1 of 3, works: Hyprland's own cursor. Next: XCursor files for apps
-  that draw their own cursor (needs `xorg-xcursorgen`), then the login screen via boot-colours.
+  `~/.local/share/icons/hypr-cursors` is swapped in with two renames (`copytree(symlinks=True)`:
+  the default copies links as files). Generated, not in the repo (Catppuccin is GPL).
+  XCursor half (`cursors/`, for apps that draw their own: XWayland, Electron/Qt): every SVG
+  rendered by `rsvg-convert` at nominal sizes 24/32/48/64 (image = size / nominal_size 0.75, so
+  24 -> 32 px, as Catppuccin's own files; hotspot = fraction x px), packed by `xcursorgen`
+  (`xorg-xcursorgen`, installed 2026-10-16), the 74 `define_override` names as symlinks,
+  `index.theme` `Inherits=Adwaita`; ~0.3 s for everything. `hyprland.lua` also sets
+  `XCURSOR_THEME`; uwsm exports both (UWSM_FINALIZE_VARNAMES). Steps 1-2 of 3 work (an XWayland
+  test window showed it). Open: GTK3 apps may read `gsettings` cursor-theme ('default', shared
+  with COSMIC), untouched. Next: the login screen via boot-colours.
 - **Claude desktop tray icon: works** (checked 2026-10-15). Chromium offers its icon two ways:
   pixels only (`IconPixmap`, normal start) or, when it thinks it runs on GNOME
   (`GNOME_DESKTOP_SESSION_ID`, set session-wide by `env-hyprland`), a named icon in a temp folder
