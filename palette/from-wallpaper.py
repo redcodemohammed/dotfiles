@@ -2,9 +2,11 @@
 """Write palette/palette.toml from a wallpaper image, then let generate.py do the rest.
 
 Keeps the design system's structure (dark, grayscale chrome, one accent):
-- accent: the image's most vivid hue, at the lightness of the default amber (OKLCH L 0.78), kept
-  10 degrees away from the alert red (red means live or failed; owner, 2026-10-16: 22 degrees
-  turned red images orange). An image with too little colour (fewer than 1% vivid pixels, e.g.
+- accent: the image's most vivid hue, at the lightness of the default amber (OKLCH L 0.78). Reds
+  (within 20 degrees of the alert red's hue) are lit at L 0.72 instead, because at 0.78 red turns
+  coral or salmon; the alert red stays as it is (owner, 2026-10-17, overriding the spec's "red
+  means live or failed only": a red wallpaper gives a red accent; there used to be a keep-out
+  zone pushing red toward orange). An image with too little colour (fewer than 1% vivid pixels, e.g.
   black and white) gets a light gray accent, a monochrome desktop (owner, 2026-10-16).
 - neutrals (bg, surfaces, border, text): the default palette's exact lightness, faintly tinted
   toward the image's dominant hue, so contrast stays what it was.
@@ -29,7 +31,8 @@ TARGET = HERE / "palette.toml"
 ACCENT_L = 0.78               # lightness of the default amber
 ACCENT_C = (0.10, 0.17)       # chroma range for the accent
 ALERT_HUE = 25.0              # OKLCH hue of the alert red
-ALERT_KEEPOUT = 10.0          # accent hues closer than this to red are pushed toward orange
+RED_RANGE = 20.0              # accent hues this close to the alert red's count as red
+RED_L = 0.72                  # their lightness: still red, lighter than alert (#e5484d, L 0.63)
 GRAY_ACCENT = "#bebebe"       # too little colour: OKLCH L 0.80, no chroma (contrast 10 on bg)
 TINT_MAX = 0.012              # neutral tint chroma at most (barely there)
 NEUTRALS = ("bg", "surface", "surface_selected", "border", "fg", "fg_muted", "fg_dim")
@@ -156,13 +159,12 @@ def build(path):
             chroma = tint if role in ("bg", "surface", "surface_selected", "border") else tint * 0.5
             ui[role] = oklch_hex(L, chroma, base_hue)
 
-    # Accent: the image's most vivid hue, lit like the default amber, never red.
+    # Accent: the image's most vivid hue, lit like the default amber (reds a little darker).
     if accent_hue is not None:
-        if hue_dist(accent_hue, ALERT_HUE) < ALERT_KEEPOUT:
-            accent_hue = (ALERT_HUE + ALERT_KEEPOUT) % 360  # nudge toward orange
+        lightness = RED_L if hue_dist(accent_hue, ALERT_HUE) <= RED_RANGE else ACCENT_L
         chroma = max(ACCENT_C[0], min(ACCENT_C[1], accent_chroma))
-        ui["accent"] = oklch_hex(ACCENT_L, chroma, accent_hue)
-        bright["yellow"] = oklch_hex(ACCENT_L + 0.04, chroma, accent_hue)
+        ui["accent"] = oklch_hex(lightness, chroma, accent_hue)
+        bright["yellow"] = oklch_hex(lightness + 0.04, chroma, accent_hue)
         normal["yellow"] = ui["accent"]
     else:  # too little colour: a monochrome desktop; ANSI yellow stays the default
         ui["accent"] = GRAY_ACCENT
