@@ -1,0 +1,113 @@
+#!/usr/bin/env bash
+# wallpaper-search: find a wallpaper on Wallhaven, download it, apply it (owner, 2026-10-16).
+# Opened from Vicinae as "Wallpaper search" (.local/share/applications/wallpaper-search.desktop).
+#   1. A Vicinae list: Toplist this month, Latest, Random, recent searches; typing anything else
+#      searches for it (vicinae dmenu returns typed text when nothing matches).
+#   2. Wallhaven's API (https://wallhaven.cc/api/v1/search, no account): safe for work only
+#      (purity 100, all an anonymous search gets), at least 2560x1440, 24 per page.
+#   3. The results as thumbnail files in a second list, so Quick Look previews them, then
+#      "More results" and "New search".
+#   4. The pick goes to ~/Pictures/Wallpapers/wallhaven-<id>.<ext> and wallpaper-apply sets it and
+#      recolours the desktop (its boot-colours reminder follows).
+# The owner's network blocks wallhaven.cc at the DNS level (even plain queries to 1.1.1.1 come back
+# empty), so this script alone looks Wallhaven's three hostnames up over Cloudflare's
+# DNS-over-HTTPS and pins them with curl --resolve; TLS still checks the certificates.
+set -euo pipefail
+cache="$HOME/.cache/wallpaper-search"
+history="$HOME/.local/state/wallpaper-search/history"
+walls="$HOME/Pictures/Wallpapers"
+api="https://wallhaven.cc/api/v1/search"
+mkdir -p "$cache" "$(dirname "$history")" "$walls"
+
+fail() {
+    notify-send -a Wallpaper -u critical "Wallpaper search" "$1" >/dev/null 2>&1 || true
+    exit 1
+}
+
+# curl arguments that pin Wallhaven's hostnames to addresses from encrypted DNS.
+resolve=()
+for host in wallhaven.cc w.wallhaven.cc th.wallhaven.cc; do
+    ip=$(curl -fsS -m 10 -H 'accept: application/dns-json' \
+        "https://cloudflare-dns.com/dns-query?name=$host&type=A" |
+        jq -r '[.Answer[]? | select(.type == 1) | .data][0] // empty') || ip=""
+    [ -n "$ip" ] && resolve+=(--resolve "$host:443:$ip")
+done
+[ ${#resolve[@]} -eq 6 ] || fail "Couldn't look up Wallhaven (no internet?)"
+get() { curl -fsS -m 30 "${resolve[@]}" "$@"; }
+
+top="Toplist this month"
+latest="Latest"
+random="Random"
+new="New search"
+
+while :; do
+    # 1. What to search for
+    query=$({
+        printf '%s\n' "$top" "$latest" "$random"
+        if [ -f "$history" ]; then cat "$history"; fi # not `[ ] && cat`: a missing file must not fail the list (pipefail)
+    } | vicinae dmenu --navigation-title "Wallpaper search" --placeholder "Search Wallhaven" \
+        --section-title "Search or pick one" --no-quick-look) || exit 0
+    [ -n "$query" ] || exit 0
+    case "$query" in
+        "$top") params="sorting=toplist&topRange=1M" ;;
+        "$latest") params="sorting=date_added" ;;
+        "$random") params="sorting=random" ;;
+        *)
+            params="q=$(jq -rn --arg q "$query" '$q | @uri')&sorting=relevance"
+            { printf '%s\n' "$query"; grep -vxF "$query" "$history" 2>/dev/null || true; } | head -n 8 >"$history.tmp"
+            mv "$history.tmp" "$history"
+            ;;
+    esac
+
+    page=1
+    seed=""
+    while :; do
+        # 2. One page of results
+        json=$(get "$api?$params&categories=111&purity=100&atleast=2560x1440&page=$page$seed") ||
+            fail "Wallhaven didn't answer; try again in a minute"
+        [ "$page" = 1 ] && seed=$(jq -r '.meta.seed // empty | if . == "" then "" else "&seed=" + . end' <<<"$json")
+        count=$(jq '.data | length' <<<"$json")
+        if [ "$count" = 0 ]; then
+            notify-send -a Wallpaper "Wallpaper search" "Nothing found for \"$query\"" >/dev/null 2>&1 || true
+            break
+        fi
+        last=$(jq '.meta.last_page' <<<"$json")
+
+        # 3. Thumbnails, then the list
+        find "$cache" -maxdepth 1 -name '*.jpg' -delete
+        jq -r '.data[] | "\(.thumbs.large)\t\(.resolution)_\(.id).jpg"' <<<"$json" >"$cache/thumbs.tsv"
+        while IFS=$'\t' read -r url name; do
+            get -o "$cache/$name" "$url" &
+            [ "$(jobs -r | wc -l)" -ge 8 ] && wait -n || true
+        done <"$cache/thumbs.tsv"
+        wait || true
+
+        more="More results (page $((page + 1)) of $last)"
+        pick=$({
+            jq -r '.data[] | "\(.resolution)_\(.id).jpg"' <<<"$json" | while read -r name; do
+                if [ -s "$cache/$name" ]; then printf '%s\n' "$cache/$name"; fi
+            done
+            if [ "$page" -lt "$last" ]; then printf '%s\n' "$more"; fi
+            printf '%s\n' "$new"
+        } | vicinae dmenu --navigation-title "Wallhaven: $query" --placeholder "Pick a wallpaper" \
+            --section-title "Page $page of $last ({count})") || exit 0
+
+        case "$pick" in
+            "" ) exit 0 ;;
+            "$new") break ;;
+            "$more") page=$((page + 1)); continue ;;
+        esac
+        id=$(basename "$pick" .jpg); id=${id#*_}
+        full=$(jq -r --arg id "$id" '.data[] | select(.id == $id) | .path' <<<"$json")
+        [ -n "$full" ] || break # typed text instead of a pick: back to the search
+
+        # 4. Download and apply
+        file="$walls/wallhaven-$id.${full##*.}"
+        if [ ! -s "$file" ]; then
+            notify-send -a Wallpaper "Wallpaper search" "Downloading wallhaven-$id" >/dev/null 2>&1 || true
+            get -o "$file.part" "$full" || { rm -f "$file.part"; fail "The download failed"; }
+            mv "$file.part" "$file"
+        fi
+        exec "$HOME/.local/bin/wallpaper-apply" "$file"
+    done
+done

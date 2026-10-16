@@ -465,6 +465,21 @@ Done (section 4):
   click toggles Do Not Disturb (was: any click, DND). Clear all and dismissing the last entry (X)
   close the inbox. Closing on a click outside was tried with `HyprlandFocusGrab` (protocol present
   in Hyprland 0.56) but it never cleared on the inbox's layer surface; dropped at the owner's word.
+- **Wallpaper search** (owner, 2026-10-16): "Wallpaper search" in Vicinae
+  (`.local/share/applications/wallpaper-search.desktop` → `.local/bin/wallpaper-search`). First
+  list: Toplist this month / Latest / Random / the last 8 searches
+  (`~/.local/state/wallpaper-search/history`); typed text that matches nothing comes back as the
+  query (`vicinae dmenu` does that, tested). Wallhaven API `/api/v1/search`, anonymous: purity 100
+  (SFW, the only level without a key), `atleast=2560x1440`, 24 per page, random keeps its `seed`
+  across pages. Thumbnails (`thumbs.large`) into `~/.cache/wallpaper-search` as
+  `<WxH>_<id>.jpg`, 8 at a time (~1.4 s), listed by path for Quick Look, then "More results" /
+  "New search". Pick: `~/Pictures/Wallpapers/wallhaven-<id>.<ext>` (with a "Downloading"
+  notification), then `wallpaper-apply`. The owner's network blocks wallhaven.cc at the DNS level
+  (plain queries to 1.1.1.1 / 8.8.8.8 are intercepted, empty answers); the script alone resolves
+  wallhaven.cc, w.wallhaven.cc and th.wallhaven.cc over Cloudflare's DNS-over-HTTPS and pins them
+  with `curl --resolve` (owner's choice; TLS still checks certificates). Bug fixed on the way:
+  `[ -f "$history" ] && cat "$history"` as the last command of the list group returned 1 when
+  the file didn't exist and, with `pipefail`, made `|| exit 0` quit after the first search. Works.
 - **Claude desktop tray icon: works** (checked 2026-10-15). Chromium offers its icon two ways:
   pixels only (`IconPixmap`, normal start) or, when it thinks it runs on GNOME
   (`GNOME_DESKTOP_SESSION_ID`, set session-wide by `env-hyprland`), a named icon in a temp folder

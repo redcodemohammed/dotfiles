@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=Wallpaper search
+GenericName=Find wallpapers online
+Comment=Search Wallhaven, download a wallpaper and recolour the desktop from it
+Exec=wallpaper-search
+Icon=preferences-desktop-wallpaper
+Terminal=false
+Categories=Settings;DesktopSettings;
+Keywords=wallpaper;background;search;online;download;wallhaven;internet;
