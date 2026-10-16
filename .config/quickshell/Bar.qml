@@ -43,6 +43,18 @@ PanelWindow {
         bar: bar
         block: phoneBlock
     }
+    ToolsPanel { // drops from the power block at the far right; SUPER + X (Tools.qml)
+        id: toolsPanel
+        bar: bar
+        block: toolsBlock
+    }
+    Connections {
+        target: Tools
+        function onPanelRequested(screen) {
+            if (screen === bar.modelData.name)
+                toolsPanel.toggle()
+        }
+    }
     PomodoroPanel { // drops from the Pomodoro block
         id: pomodoroPanel
         bar: bar
@@ -172,6 +184,17 @@ PanelWindow {
         BarBlock {
             visible: bar.full
             NotificationCount {}
+        }
+        BarBlock { // tools panel (owner, 2026-10-17): power options, tools, settings
+            id: toolsBlock
+            clickable: true
+            onClicked: toolsPanel.toggle()
+            Text {
+                text: Icons.power
+                font.family: Icons.regular
+                font.pixelSize: 16
+                color: Theme.fgMuted
+            }
         }
     }
 }

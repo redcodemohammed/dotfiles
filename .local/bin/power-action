@@ -1,0 +1,36 @@
+#!/usr/bin/env bash
+# power-action <lock|logout|suspend|reboot|poweroff|firmware|windows> (owner, 2026-10-17).
+# The tools panel's power buttons (ToolsPanel.qml); the confirm click lives in the panel.
+#   lock      the Quickshell lock (as SUPER + Escape; flock keeps it to one)
+#   logout    end the Hyprland session (as SUPER + SHIFT + Escape), back to the login screen
+#   suspend   systemctl suspend (the idle chain locks before sleep)
+#   reboot / poweroff
+#   firmware  reboot into the UEFI setup (the firmware supports it: OsIndicationsSupported bit 0)
+#   windows   boot Windows once: UEFI BootNext to the "Windows Boot Manager" entry, then reboot.
+#             Needs root: pkexec asks for the password (polkit-gnome agent). GRUB is untouched,
+#             the boot after that is GRUB again.
+set -euo pipefail
+case "${1:-}" in
+    lock) exec flock -n "$XDG_RUNTIME_DIR/quickshell-lock.flock" qs -p "$HOME/.config/quickshell-lock" ;;
+    logout)
+        if command -v hyprshutdown >/dev/null 2>&1; then exec hyprshutdown; fi
+        exec hyprctl dispatch 'hl.dsp.exit()'
+        ;;
+    suspend) exec systemctl suspend ;;
+    reboot) exec systemctl reboot ;;
+    poweroff) exec systemctl poweroff ;;
+    firmware) exec systemctl reboot --firmware-setup ;;
+    windows)
+        entry=$(efibootmgr | sed -nE 's/^Boot([0-9A-Fa-f]{4})\*? Windows Boot Manager.*/\1/p' | head -1)
+        if [ -z "$entry" ]; then
+            notify-send -a Power -u critical "No Windows entry" "efibootmgr lists no Windows Boot Manager."
+            exit 1
+        fi
+        pkexec efibootmgr --bootnext "$entry" >/dev/null || exit 1 # cancelled or wrong password: no reboot
+        exec systemctl reboot
+        ;;
+    *)
+        echo "usage: power-action lock|logout|suspend|reboot|poweroff|firmware|windows" >&2
+        exit 2
+        ;;
+esac

@@ -564,6 +564,18 @@ Done (section 4):
   2.1.2: timer e492, coffee e1c2, arrow-counter-clockwise e038. Island gotcha: Island.qml draws a
   placeholder label (state name) for every kind NOT in its exclusion list; add each new island
   state there. Works.
+- **Tools panel, step 1: power** (owner, 2026-10-17): bar block at the far right (muted power
+  glyph) or SUPER+X (`code:53`, `qs ipc call tools toggle` -> Tools.qml -> the focused screen's
+  bar) opens ToolsPanel.qml (PopupWindow, 360 wide). Lock, Log out, Sleep, Reboot, Off, UEFI
+  setup, Windows; all but Lock and Sleep need a second click within 3 s ("Again?"). Actions:
+  `.local/bin/power-action` (lock = the Quickshell lock with flock; logout = hyprshutdown or
+  exit; firmware = `systemctl reboot --firmware-setup`, OsIndicationsSupported 0x7f; windows =
+  `pkexec efibootmgr --bootnext <Windows Boot Manager entry, 0004 now>` then reboot: polkit-gnome
+  asks for the password, GRUB untouched, the boot after is GRUB again). Works. Planned next:
+  step 2 colour picker (hyprpicker), keep awake, OCR (tesseract eng + ara); step 3 clipboard
+  transforms, generators (UUID, timestamps, lorem), localhost QR; step 4 settings panel
+  (one settings file `~/.config/hypr-settings.json`, read by Quickshell live and by hyprland.lua
+  at load, changes applied live with hyprctl): Look, Bar and island, Input, Displays and power.
 - **Claude desktop tray icon: works** (checked 2026-10-15). Chromium offers its icon two ways:
   pixels only (`IconPixmap`, normal start) or, when it thinks it runs on GNOME
   (`GNOME_DESKTOP_SESSION_ID`, set session-wide by `env-hyprland`), a named icon in a temp folder

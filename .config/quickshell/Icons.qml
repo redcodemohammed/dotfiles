@@ -35,6 +35,9 @@ Singleton {
     // Island media
     readonly property string equalizer: "" // compact pill ("bars")
     readonly property string musicNote: "" // no cover art
+    readonly property string power: "\ue3da" // tools panel: the bar block, Shut down
+    readonly property string signOut: "\ue42a" // tools panel: Log out
+    readonly property string moon: "\ue330" // tools panel: Sleep
     readonly property string timer: "\ue492" // Pomodoro focus
     readonly property string coffee: "\ue1c2" // Pomodoro break
     readonly property string arrowCounterClockwise: "\ue038" // Pomodoro reset
