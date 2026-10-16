@@ -15,7 +15,10 @@ An app asking for size 24 gets a 32 px image: Catppuccin draws its shapes at 75%
 (nominal_size = 0.75 in meta.hl), so the shape itself is 24 px, as in Hyprland. wallpaper-apply
 runs this after generate.py and shows it with `hyprctl setcursor`; hyprland.lua sets
 HYPRCURSOR_THEME and XCURSOR_THEME for the next login.
+  --dest DIR  build there instead: greeter/install.sh (as root, from boot-colours) builds the
+              login screen's copy in /usr/share/icons/hypr-cursors, readable by the greeter user.
 """
+import argparse
 import os
 import re
 import shutil
@@ -31,7 +34,6 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 SOURCE = Path("/usr/share/icons/catppuccin-mocha-peach-cursors/hyprcursors")
 NAME = "hypr-cursors"
-DEST = Path.home() / ".local/share/icons" / NAME
 # XCursor sizes apps can ask for: XCURSOR_SIZE 24 at scale 1 (external screens), 4/3 (the laptop),
 # 2 and 8/3. An app takes the nearest one.
 XCURSOR_SIZES = (24, 32, 48, 64)
@@ -109,6 +111,9 @@ def xcursor_theme(shapes: Path, out: Path, scratch: Path):
 
 
 def main():
+    args = argparse.ArgumentParser(description="Build the hypr-cursors cursor theme.")
+    args.add_argument("--dest", type=Path, default=Path.home() / ".local/share/icons" / NAME)
+    dest = args.parse_args().dest.absolute()
     ui = tomllib.loads((ROOT / "palette/palette.toml").read_text())["ui"]
     if not SOURCE.is_dir():
         sys.exit(f"cursors.py: {SOURCE} is missing (package catppuccin-cursors-mocha); cursor unchanged")
@@ -145,16 +150,21 @@ def main():
         except (ValueError, subprocess.CalledProcessError) as err:
             sys.exit(f"cursors.py: XCursor: {err}; cursor unchanged")
         # Swap the whole folder, so a running Hyprland never sees half a theme.
-        DEST.parent.mkdir(parents=True, exist_ok=True)
-        new, old = DEST.with_name(f".{NAME}.new"), DEST.with_name(f".{NAME}.old")
+        dest.parent.mkdir(parents=True, exist_ok=True)
+        new, old = dest.with_name(f".{dest.name}.new"), dest.with_name(f".{dest.name}.old")
         shutil.rmtree(new, ignore_errors=True)
         shutil.rmtree(old, ignore_errors=True)
         shutil.copytree(built, new, symlinks=True)  # keep the other names as links
-        if DEST.exists():
-            DEST.rename(old)
-        new.rename(DEST)
+        for folder, _, files in os.walk(new):  # readable by everyone (the greeter user, too)
+            os.chmod(folder, 0o755)
+            for file in files:
+                if not os.path.islink(path := os.path.join(folder, file)):
+                    os.chmod(path, 0o644)
+        if dest.exists():
+            dest.rename(old)
+        new.rename(dest)
         shutil.rmtree(old, ignore_errors=True)
-    print(f"wrote {DEST}")
+    print(f"wrote {dest}")
 
 
 if __name__ == "__main__":

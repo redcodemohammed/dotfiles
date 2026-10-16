@@ -13,6 +13,10 @@ hl.monitor({ output = "", mode = "preferred", position = "auto", scale = "auto" 
 
 hl.env("XCURSOR_SIZE", "24")
 hl.env("HYPRCURSOR_SIZE", "24")
+-- The session's mouse cursor (palette/cursors.py), built for the greeter by install.sh into
+-- /usr/share/icons/hypr-cursors; missing, Hyprland falls back to its default cursor.
+hl.env("HYPRCURSOR_THEME", "hypr-cursors")
+hl.env("XCURSOR_THEME", "hypr-cursors")
 
 hl.config({
     misc = {

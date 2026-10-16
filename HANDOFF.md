@@ -506,7 +506,15 @@ Done (section 4):
   `index.theme` `Inherits=Adwaita`; ~0.3 s for everything. `hyprland.lua` also sets
   `XCURSOR_THEME`; uwsm exports both (UWSM_FINALIZE_VARNAMES). Steps 1-2 of 3 work (an XWayland
   test window showed it). Open: GTK3 apps may read `gsettings` cursor-theme ('default', shared
-  with COSMIC), untouched. Next: the login screen via boot-colours.
+  with COSMIC), untouched. Step 3, login screen: `greeter/install.sh` (so boot-colours / Apply
+  now) runs `cursors.py --dest /usr/share/icons/hypr-cursors` as root (the greeter user can't
+  read ~; files chmod 755/644 because TemporaryDirectory is 700), `greeter/hyprland.lua` sets both
+  THEME variables. Installed and checked on disk 2026-10-16; not yet seen at a real login.
+- **Wallpaper colour picker fixes** (owner, 2026-10-16, `palette/from-wallpaper.py`): red images
+  were pushed to orange by a 22-degree keep-out around the alert red's hue; now 10 degrees
+  (wallhaven-rro57q.png: #fe987e salmon instead of #fb9c6c). Images with under 1% vivid pixels
+  (black and white) used to keep the default amber, which looked like the picker failing; they
+  now get a light gray accent #bebebe (ANSI yellow stays the default then). Works.
 - **Claude desktop tray icon: works** (checked 2026-10-15). Chromium offers its icon two ways:
   pixels only (`IconPixmap`, normal start) or, when it thinks it runs on GNOME
   (`GNOME_DESKTOP_SESSION_ID`, set session-wide by `env-hyprland`), a named icon in a temp folder
