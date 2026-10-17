@@ -618,9 +618,14 @@ Done (section 4):
   every mouse and touchpad; a separate touchpad speed would need per-device rules by name),
   natural scrolling, tap to click. Lua key is `tap_to_click` (`["tap-to-click"]` is "unknown config
   key"; tested both ways). The template's `hl.device({ name = "epic-mouse-v1", sensitivity = -0.5 })`
-  matches no device, so it does nothing. Next: 4c Bar & island
-  (24/12 h, seconds, bar on all screens or main only, media, lyrics, Pomodoro 15-60 / 3-15 /
-  10-30 min), 4d Displays & power (lock 2-30 min, screen off 1-10 min after lock, sleep 10-120 min
+  matches no device, so it does nothing.
+  Step 4c (2026-10-17, works): Bar tab, read by the shell alone (no
+  generated file): 24-hour clock (off: "h:mm AP"), seconds (SystemClock precision follows), bars
+  on other screens (off: only the full bar shows; Bar `visible`), media in the island (off:
+  IslandState.media false). Pomodoro lengths and lyrics stay where they are (its panel, the
+  expanded media island): copying them would make two sources of truth; the tab says where they
+  are. Settings.apply now writes a generated file (and reloads Hyprland) only when its text
+  changed, so shell-only settings never reload Hyprland. Next: 4d Displays & power (lock 2-30 min, screen off 1-10 min after lock, sleep 10-120 min
   or never; scale left out: a wrong scale needs a revert countdown, its own step).
 - **Blur behind see-through apps** (owner, 2026-10-17, overriding the spec / CLAUDE.md "no
   transparency, no blur"; 2026-10-17, works): `hyprland.lua`

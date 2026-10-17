@@ -26,9 +26,11 @@ Singleton {
         }
     }
 
-    // Look (step 4a) and Input (4b). Defaults are today's values.
+    // Look (step 4a), Input (4b), Bar & island (4c). Defaults are today's values. Bar & island
+    // is read by the shell alone (Clock, Bar, IslandState): no generated file.
     readonly property alias look: adapter.look
     readonly property alias input: adapter.input
+    readonly property alias bar: adapter.bar
 
     FileView {
         id: file
@@ -59,6 +61,12 @@ Singleton {
                 property int pointerSpeed: 0    // tenths, -10 to 10 (Hyprland's -1.0 to 1.0)
                 property bool naturalScroll: true
                 property bool tapToClick: true
+            }
+            property JsonObject bar: JsonObject {
+                property bool clock24: true
+                property bool seconds: false
+                property bool otherScreens: true // bars on the screens without the full bar
+                property bool islandMedia: true  // the island shows what plays
             }
         }
     }
@@ -94,11 +102,23 @@ Singleton {
             + "[window]\n"
             + "opacity = " + (adapter.look.terminalOpacity / 100).toFixed(2) + "\n"
     }
+    // Only a file whose text changed is written (and Hyprland reloaded): a clock or island
+    // setting touches neither.
+    property string hyprWritten: ""
+    property string alacrittyWritten: ""
     function apply(reloadHypr) {
-        hyprFile.setText(hyprText())
-        alacrittyFile.setText(alacrittyText())
-        if (reloadHypr)
-            Quickshell.execDetached(["hyprctl", "reload"])
+        const h = hyprText()
+        if (h !== hyprWritten) {
+            hyprWritten = h
+            hyprFile.setText(h)
+            if (reloadHypr)
+                Quickshell.execDetached(["hyprctl", "reload"])
+        }
+        const a = alacrittyText()
+        if (a !== alacrittyWritten) {
+            alacrittyWritten = a
+            alacrittyFile.setText(a)
+        }
     }
 
     FileView {
@@ -107,6 +127,7 @@ Singleton {
         printErrors: false
         atomicWrites: true
         // Missing (a fresh clone): write it once the settings are in, and reload Hyprland.
+        onLoaded: root.hyprWritten = text()
         onLoadFailed: missingTimer.restart()
     }
     FileView {
@@ -114,6 +135,7 @@ Singleton {
         path: root.home + "/.config/alacritty/settings.toml"
         printErrors: false
         atomicWrites: true
+        onLoaded: root.alacrittyWritten = text()
         onLoadFailed: missingTimer.restart()
     }
     Timer { // after desktop-settings.json has had its chance to load

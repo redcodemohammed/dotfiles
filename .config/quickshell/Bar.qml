@@ -19,6 +19,8 @@ PanelWindow {
     readonly property bool mainPresent: [...Quickshell.screens].some(s => s.model === "Odyssey G5")
     readonly property bool full: Quickshell.screens.length === 1 || modelData.model === "Odyssey G5"
         || (laptop && !mainPresent)
+    // The settings panel can hide the slim bars (Bar & island, "Bars on other screens").
+    visible: full || Settings.bar.otherScreens
 
     anchors {
         top: true

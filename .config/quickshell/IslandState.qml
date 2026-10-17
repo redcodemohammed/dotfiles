@@ -37,7 +37,7 @@ Singleton {
     property bool recordingTest: false // test hook only
     readonly property bool recording: recordingTest || Recording.active // screen-record is running
     property bool mediaTest: false // test hook only: qs ipc call island test media
-    readonly property bool media: mediaTest || mediaPlayer !== null
+    readonly property bool media: mediaTest || (Settings.bar.islandMedia && mediaPlayer !== null) // off in the settings panel: no media state
     property bool expanded: false
 
     // Media (MPRIS): the playing player. After a pause it stays 30 s (owner's choice); a stop or
