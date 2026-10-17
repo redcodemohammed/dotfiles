@@ -1,5 +1,3 @@
-.config/spicetify
-!.config/spicetify/config-xpui.ini
 .env
 .config/hypr/hypr_settings.lua
 .config/alacritty/settings.toml
@@ -31,3 +29,7 @@
 # cava shaders the owner is trying out (2026-10-17): kept local, not backed up
 /.config/cava/shaders/orion_*.frag
 /.config/hypr/wallpaper-video
+
+# Machine state, kept local
+/.config/fish/fish_variables
+/.peaclock/history

@@ -17,7 +17,6 @@ set VISUAL code
 zoxide init fish | source
 
 
-fish_add_path /home/mohammed/.spicetify
 set -gx VOLTA_HOME "$HOME/.volta"
 set -gx PATH "$VOLTA_HOME/bin" $PATH
 
