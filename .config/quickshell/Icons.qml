@@ -89,6 +89,7 @@ Singleton {
     readonly property string bluetoothConnected: "\ue0dc"
     readonly property string bluetoothSlash: "\ue0de"
     readonly property string microphone: "\ue326"
+    readonly property string microphoneSlash: "\ue328" // a muted app in the sound panel
     readonly property string webcam: "\ue9b2"
 
     // Workspaces visiting from a screen that is gone (lid shut): where they belong

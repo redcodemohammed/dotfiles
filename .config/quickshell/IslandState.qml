@@ -65,8 +65,8 @@ Singleton {
     }
 
     // Audio devices for the volume panel's lists: real outputs and inputs, not app streams.
-    readonly property var audioSinks: Pipewire.nodes.values.filter(n => n.audio && n.isSink && !n.isStream)
-    readonly property var audioSources: Pipewire.nodes.values.filter(n => n.audio && !n.isSink && !n.isStream)
+    readonly property var audioSinks: (Pipewire.nodes?.values ?? []).filter(n => n.audio && n.isSink && !n.isStream)
+    readonly property var audioSources: (Pipewire.nodes?.values ?? []).filter(n => n.audio && !n.isSink && !n.isStream)
     // Expanded volume panel: padding 12, slider rows of 24 (8 apart), then each device list
     // (8 above it; divider, caption and rows as in IslandVolume.qml: 22 + 28 per device).
     readonly property int volumeHeight: {

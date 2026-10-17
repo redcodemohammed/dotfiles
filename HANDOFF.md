@@ -709,6 +709,17 @@ Done (section 4):
   documented as writable) and pairing. No agent runs (bluetui brings its own; adapter Pairable:
   no), and Quickshell has none: a small Python agent (python-dbus and python-gobject are
   installed) that tells the panel what a device asks (confirm a code, show a passkey).
+- **Per-app sound** (owner, 2026-10-17, works): the sound panel has
+  tabs Devices (the old view) and Apps. Apps: every PipeWire stream (Sound.qml: Pipewire.nodes,
+  isStream with audio, split by media.class Stream/Output (Playing) and Stream/Input
+  (Recording); a PwObjectTracker binds them so volume and mute are live). AppStream.qml per app:
+  its icon (application.icon-name or the binary; a click mutes), name and media.name, level %,
+  a slider (click, drag, wheel 5%), and Output / Input: Default or a device. Moving one app:
+  `pw-metadata -n default <stream id> target.object <device node.name>`; Default deletes the key;
+  WirePlumber moves the stream at once (tested with pw-play: analog and back to HDMI). The pins
+  are read back from `pw-metadata -n default` when the panel opens (Qt's JS has no
+  String.matchAll: a RegExp.exec loop). `Pipewire.nodes?.values ?? []` in Sound and IslandState:
+  at load Pipewire.nodes is null for a moment (gave "Unable to assign [undefined]" warnings).
 - **Bluetooth panel, step 5b** (owner, 2026-10-17, works): Scan
   (adapter.discovering; writable, BlueZ confirms it a moment later; tested with a throwaway qs
   instance: 4 unpaired devices in 10 s, stopping works) lists nearby named, unpaired devices;
