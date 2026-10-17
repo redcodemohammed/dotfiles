@@ -686,6 +686,50 @@ Done (section 4):
   the focus grab works (owner checked Escape and typing). The island's width/height: the same spline, 300 ms (was 120 ms linear).
   Both follow Settings > Look > Animations. The inbox and the shortcuts overlay are layer
   surfaces: Hyprland's layers fade already covers them.
+- **One panel at a time** (owner, 2026-10-17, works): `Panels.qml`
+  (singleton `current`, claim(panel)). Reveal claims when its window turns visible and closes
+  (sliding) when another claims; Notifs.setInbox(true) claims and drops inboxOpen when another
+  claims; Shortcuts claims as it shows and hides likewise. Tested via IPC: inbox, then settings
+  (inbox gone), then tools (settings gone). The island isn't part of it.
+- **Inbox as a bar panel** (owner, 2026-10-17, works): with the inbox
+  open nothing else could be clicked, not even the bell (owner). It was a PanelWindow with
+  WlrKeyboardFocus.Exclusive: on Hyprland an exclusive-keyboard layer also takes the pointer
+  (hyprwm/Hyprland discussion #14136; sway and niri pass clicks). Now a PopupWindow per bar under
+  the bell (a slim bar has no bell: under the power block), on Reveal like the other panels:
+  slide, focus grab (keys, close on an outside click), one panel at a time. Notifs.inboxOpen still
+  drives it (SUPER + I, the bell): the focused screen's bar opens; closing any other way sets it
+  back; a reopen within 300 ms of closing is the closing click landing on the bell, ignored.
+  Tested via IPC: opens under the bell, settings replaces it, toggle closes it.
+- **Chorus colours** (flatpak space.f1nn.chorus, lyrics; owner 2026-10-17, works,
+  uncommitted): no colour settings of its own (gschema: size, blur, background opacity). GTK4 in a
+  sandbox reads gtk.css from ~/.var/app/space.f1nn.chorus/config/gtk-4.0 and can't follow the
+  symlink into ~/dotfiles, so generate.py's COPIES writes a real copy there (no flatpak override
+  needed). Its lyrics view draws over the album art: likely only the window chrome follows.
+- **Terminal without tmux** (owner, 2026-10-17, works): SUPER + SHIFT +
+  Return runs `alacritty -e fish` (-e replaces alacritty.toml's terminal.shell, which is tmux).
+  Listed in the shortcuts overlay.
+- **cava, fastfetch, fish in the palette** (owner, 2026-10-17, works):
+  from-wallpaper.py adds a [wallpaper] table, c1-c6: the image's six strongest 20-degree hue
+  bands (pixels with chroma >= 0.035, bands with >= 2% of them), at L 0.74 with each band's median
+  chroma (0.06-0.16), in hue order from the accent; fewer bands repeat lighter; a gray image gives
+  a gray ramp. (The question offered "the palette's ANSI colours from the wallpaper": wrong, ANSI
+  stays the default; real image colours instead.) generate.py: palette/templates/ (cava,
+  dircolors, fastfetch.jsonc) with {{role}} / {{rgb:role}} tokens and `#@` / `//@` note lines; a
+  palette without [wallpaper] (the default) uses ANSI green, cyan, blue, magenta, red, yellow.
+  cava: gradient c1-c6 bottom to top, no background (the see-through terminal); SIGUSR2 from
+  wallpaper-apply reloads its colours (cava README; unverified here). fastfetch: moved into the
+  repo (was loose in ~/.config; old folder in the session scratchpad), keyColors accent / c2 /
+  c4 / c6 (fastfetch 2.70 takes #RRGGBB). .dircolors: Dracula mapped (purple -> accent for
+  directories, cyan, green, pink -> magenta, red, yellow -> ANSI; comment -> fg_dim).
+  fish: generated conf.d/hypr_colors.fish sets syntax and pager colours, the kawasaki prompt's
+  theme_color_* (its own are only defaults), FZF_DEFAULT_OPTS (bg -1) and LS_COLORS; the
+  hard-coded Rose Pine FZF line and the dircolors eval left config.fish, the universal
+  FZF_DEFAULT_OPTS was erased. Open shells: an --on-variable hypr_palette_stamp handler;
+  wallpaper-apply sets that universal (tested: a shell re-applied on the change). Both cava
+  configs, old and new, abort without a terminal (double free): not the template's doing.
+  Peaclock (AUR, owner installed it 2026-10-17): palette/templates/peaclock -> ~/.peaclock/config
+  (stowed), `style` commands with #rrggbb (from `peaclock --help`): lit blocks and colon in the
+  accent, unlit blocks surface_selected, background clear, date fg_muted. Read at start only.
 - **Entrance animation** (owner, 2026-10-17, works: login and unlock): at login and after
   unlocking. `Entrance.qml` (singleton, `run` counter; IPC `entrance play`); `EntranceCover.qml`
   per screen: a Theme.bg sheet on layer Bottom (above the wallpaper, under windows and bar;

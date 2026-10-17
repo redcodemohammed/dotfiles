@@ -28,6 +28,14 @@ Item {
             window.visible = false
     }
 
+    Connections {
+        target: Panels
+        function onCurrentChanged() {
+            if (Panels.current !== reveal && reveal.window.visible)
+                reveal.close()
+        }
+    }
+
     HyprlandFocusGrab {
         windows: [reveal.window]
         active: reveal.window.visible
@@ -41,6 +49,7 @@ Item {
                 hide.stop()
                 return
             }
+            Panels.claim(reveal) // any other open panel closes
             if (Settings.look.animations) {
                 show.restart()
             } else {

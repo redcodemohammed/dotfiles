@@ -45,6 +45,10 @@ PanelWindow {
         bar: bar
         block: phoneBlock
     }
+    Inbox { // drops from the bell (Notifs.inboxOpen); a slim bar has no bell: from the power block
+        bar: bar
+        block: bellBlock.visible ? bellBlock : toolsBlock
+    }
     ToolsPanel { // drops from the power block at the far right; SUPER + X (Tools.qml)
         id: toolsPanel
         bar: bar
@@ -197,6 +201,7 @@ PanelWindow {
             }
         }
         BarBlock {
+            id: bellBlock
             visible: bar.full
             NotificationCount {}
         }

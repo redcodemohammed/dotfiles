@@ -4,33 +4,57 @@ import Quickshell.Hyprland
 import Quickshell.Wayland
 import Quickshell.Widgets
 
-// Notification inbox. Same look as the island card: 360px wide, top-right, 6px below
-// the bar and 6px from the right edge. Rows scroll when the list is long.
-// SUPER + I or a left click on the bar's bell toggles it; Escape, Clear all and dismissing the
-// last one close it (owner, 2026-10-16). Opening clears the unread count. (Closing on a click
-// outside was tried with HyprlandFocusGrab: it never cleared on this layer surface; dropped.)
+// Notification inbox. Same look as the island card: 360px wide. A drop-down under the bar's bell
+// like the other panels (owner, 2026-10-17; it was its own layer surface with exclusive keyboard
+// focus, which on Hyprland also swallows every click elsewhere: the bell couldn't close it and
+// nothing else opened). Reveal gives it the panels' slide, focus grab (keyboard, close on an
+// outside click) and one-panel-at-a-time. Rows scroll when the list is long.
+// SUPER + I or a left click on the bell toggles it (Notifs.inboxOpen; the focused screen's bar
+// shows it); Escape, Clear all and dismissing the last one close it. Opening clears the unread
+// count.
 // J/K or arrows move, Enter runs the default action, X dismisses. Letters by keycode.
 // Notifications with more than one action (screenshots, recordings) show them as buttons under
 // the body (ActionRow); a click runs one and closes the inbox.
-PanelWindow {
+PopupWindow {
     id: root
-    required property var modelData
-    screen: modelData
-    readonly property var monitor: Hyprland.monitorFor(modelData)
+    required property var bar
+    required property var block
+    readonly property var monitor: Hyprland.monitorFor(bar.screen)
 
-    visible: Notifs.inboxOpen && monitor && monitor.focused
-    anchors {
-        top: true
-        right: true
-    }
-    // 6px below the floating bar and from the right edge, like every other gap.
-    margins.top: 6
-    margins.right: 6
-    exclusiveZone: 0
+    anchor.window: bar
+    anchor.item: block
+    anchor.rect.x: block.width - implicitWidth
+    anchor.rect.y: block.height + 4
+    grabFocus: false // Reveal's focus grab
+    visible: false
     color: "transparent"
+
+    // Notifs.inboxOpen drives it: the focused screen's inbox opens; closing by any other way
+    // (outside click, another panel) sets it back.
+    property double closedAt: 0
+    Connections {
+        target: Notifs
+        function onInboxOpenChanged() {
+            if (Notifs.inboxOpen && root.monitor && root.monitor.focused && !root.visible) {
+                if (Date.now() - root.closedAt < 300) // the click that closed it, landing on the bell
+                    Notifs.inboxOpen = false
+                else
+                    root.visible = true
+            } else if (!Notifs.inboxOpen && root.visible) {
+                reveal.close()
+            }
+        }
+    }
+    onVisibleChanged: {
+        if (!visible) {
+            closedAt = Date.now()
+            if (Notifs.inboxOpen)
+                Notifs.setInbox(false)
+        }
+    }
     // 360 as designed; wider when a notification's actions (ActionRow) need it for one line:
     // 12 + 24 icon + 12 left, 12 right, 2 + 2 frame.
-    implicitWidth: Math.min(Math.max(360, widestActions + 64), modelData.width - 12)
+    implicitWidth: Math.min(Math.max(360, widestActions + 64), bar.screen.width - 12)
     readonly property real widestActions: {
         let widest = 0
         for (const child of list.contentItem.children)
@@ -38,12 +62,14 @@ PanelWindow {
                 widest = Math.max(widest, child.actionsWidth)
         return widest
     }
-    implicitHeight: Math.min(frame.implicitHeight, modelData.height - 38 - 12) // bar reserves 38; 6px gap above and below
-    WlrLayershell.keyboardFocus: visible ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.None
+    implicitHeight: Math.min(frame.implicitHeight, bar.screen.height - 38 - 12) // bar reserves 38; 6px gap above and below
+
+    Reveal { id: reveal; window: root; target: frame } // slides in and out like a window
 
     Rectangle {
         id: frame
-        anchors.fill: parent
+        width: parent.width
+        height: parent.height
         implicitHeight: Math.max(list.contentHeight, 44) + 4 + footer.height
         color: Theme.surface
         border.width: 2

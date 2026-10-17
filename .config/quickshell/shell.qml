@@ -10,10 +10,6 @@ ShellRoot {
         Bar {}
     }
 
-    Variants {
-        model: Quickshell.screens
-        Inbox {}
-    }
 
     Variants {
         model: Quickshell.screens

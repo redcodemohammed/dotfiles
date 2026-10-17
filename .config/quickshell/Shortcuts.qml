@@ -167,6 +167,7 @@ PanelWindow {
                     root.desktopGroups = {}
                 }
                 root.visible = true
+                Panels.claim(root) // one panel at a time: others close
             }
         }
     }
@@ -176,6 +177,14 @@ PanelWindow {
         command: ["sh", "-c", "for t in root prefix copy-mode; do tmux list-keys -N -P '' -T $t 2>/dev/null | sed \"s/^/$t /\"; done"]
         stdout: StdioCollector {
             onStreamFinished: root.tmuxGroups = root.collect(root.tmuxEntries(text))
+        }
+    }
+
+    Connections {
+        target: Panels
+        function onCurrentChanged() {
+            if (Panels.current !== root && root.visible)
+                root.visible = false
         }
     }
 
