@@ -1,5 +1,6 @@
 import QtQuick
 import Quickshell
+import Quickshell.Services.SystemTray
 
 // Top bar, one per screen: 32px tall, floating 6px from the screen's top and sides. The bar is
 // transparent; each widget sits on its own block in the bar colour, 6px apart, so the widgets
@@ -144,104 +145,168 @@ PanelWindow {
         }
     }
 
-    // Right zone: one block per status item, 6px apart.
+    // Right zone (owner, 2026-10-17: 13 blocks became 5): related items share one block, each a
+    // BarCell with its own click and hover; a cell's panel drops under it. Groups: the tray behind
+    // a chevron, layout and clock, phone / Pomodoro / record / capture, sound / network /
+    // Bluetooth / battery, notifications and power. A group hides when all its cells do (its
+    // conditions, not its cells' visible: a child of a hidden block reads as hidden).
+    property bool trayOpen: false
     Row {
         anchors.right: parent.right
         height: parent.height
         spacing: 6
 
-        BarBlock {
-            visible: bar.full && tray.width > 0 // main bar only (spec)
-            Tray {
-                id: tray
-                window: bar
+        BarBlock { // the tray behind a chevron (main bar only, spec): a click unfolds it inline
+            visible: bar.full && SystemTray.items.values.length > 0
+            padding: 2
+            Row {
+                Item { // unfolds on the window spring, folds on it reversed (owner: animate it)
+                    height: 28
+                    width: bar.trayOpen ? trayCell.implicitWidth : 0
+                    visible: width > 0
+                    clip: true
+                    Behavior on width {
+                        enabled: Settings.look.animations
+                        NumberAnimation {
+                            duration: 300
+                            easing.type: Easing.BezierSpline
+                            easing.bezierCurve: bar.trayOpen ? [0.34, 1.3, 0.64, 1, 1, 1] // hyprland.lua "spring"
+                                : [0.36, 0, 0.66, -0.3, 1, 1] // "springBack"
+                        }
+                    }
+                    BarCell {
+                        id: trayCell
+                        anchors.right: parent.right // revealed from the chevron outwards
+                        opacity: bar.trayOpen ? 1 : 0
+                        Behavior on opacity {
+                            enabled: Settings.look.animations
+                            NumberAnimation { duration: 150 }
+                        }
+                        Tray {
+                            window: bar
+                        }
+                    }
+                }
+                BarCell {
+                    clickable: true
+                    onClicked: bar.trayOpen = !bar.trayOpen
+                    Text {
+                        text: bar.trayOpen ? Icons.caretRight : Icons.caretLeft
+                        font.family: Icons.regular
+                        font.pixelSize: 16
+                        color: Theme.fgMuted
+                    }
+                }
             }
         }
-        BarBlock { // between the tray and the status icons; the bar centre belongs to the island
-            Clock {}
-        }
-        BarBlock {
-            visible: bar.full && keyboardLayout.keymap !== "" // its condition, not its visible: a child of a hidden block reads as hidden
-            KeyboardLayout {
-                id: keyboardLayout
+
+        BarBlock { // keyboard layout and the clock
+            padding: 2
+            Row {
+                BarCell {
+                    visible: bar.full && keyboardLayout.keymap !== ""
+                    KeyboardLayout {
+                        id: keyboardLayout
+                    }
+                }
+                BarCell {
+                    Clock {}
+                }
             }
         }
-        BarBlock { // the phone bridge (owner's design): while a phone is paired; click: its panel
-            id: phoneBlock
-            visible: bar.full && Phone.paired
-            clickable: true
-            onClicked: phonePanel.toggle()
-            PhoneStatus {}
-        }
-        BarBlock { // Pomodoro (owner, 2026-10-17): glyph and time left; click: its panel
-            id: pomodoroBlock
+
+        BarBlock { // phone, Pomodoro, recording, and mic / camera while live
             visible: bar.full
-            clickable: true
-            onClicked: pomodoroPanel.toggle()
-            PomodoroStatus {}
-        }
-        BarBlock { // screen recording: muted when idle, red while recording; click: its panel
-            id: recordBlock
-            visible: bar.full
-            clickable: true
-            onClicked: recordPanel.toggle()
-            Text {
-                text: Icons.record
-                font.family: Recording.active ? Icons.fill : Icons.regular
-                font.pixelSize: 16
-                color: Recording.active ? Theme.alert : Theme.fgMuted
+            padding: 2
+            Row {
+                BarCell { // the phone bridge (owner's design): while a phone is paired
+                    id: phoneBlock
+                    visible: Phone.paired
+                    clickable: true
+                    onClicked: phonePanel.toggle()
+                    PhoneStatus {}
+                }
+                BarCell { // Pomodoro: glyph and time left
+                    id: pomodoroBlock
+                    clickable: true
+                    onClicked: pomodoroPanel.toggle()
+                    PomodoroStatus {}
+                }
+                BarCell { // screen recording: muted when idle, red while recording
+                    id: recordBlock
+                    clickable: true
+                    onClicked: recordPanel.toggle()
+                    Text {
+                        text: Icons.record
+                        font.family: Recording.active ? Icons.fill : Icons.regular
+                        font.pixelSize: 16
+                        color: Recording.active ? Theme.alert : Theme.fgMuted
+                    }
+                }
+                BarCell { // mic and camera: red, only while something captures (spec)
+                    visible: capture.live
+                    CaptureIndicator {
+                        id: capture
+                    }
+                }
             }
         }
-        BarBlock { // mic and camera: red, only while something captures (spec)
-            visible: bar.full && capture.live // its condition, not its visible: a child of a hidden block reads as hidden
-            CaptureIndicator {
-                id: capture
-            }
-        }
-        BarBlock { // click: the sound panel with the device lists
-            id: volumeBlock
-            visible: bar.full && volume.sink !== null
-            clickable: true
-            onClicked: soundPanel.toggle()
-            Volume {
-                id: volume
-            }
-        }
-        BarBlock { // click: the network panel
+
+        BarBlock { // sound, network, Bluetooth, battery
             visible: bar.full || bar.laptop
-            clickable: true
-            onClicked: networkPanel.toggle()
-            Network {}
-        }
-        BarBlock { // hidden without an adapter; click: the Bluetooth panel (it replaced bluetui)
-            id: bluetoothBlock
-            visible: bar.full && bluetooth.adapter !== null
-            clickable: true
-            onClicked: bluetoothPanel.toggle()
-            BluetoothStatus {
-                id: bluetooth
+            padding: 2
+            Row {
+                BarCell {
+                    id: volumeBlock
+                    visible: bar.full && volume.sink !== null
+                    clickable: true
+                    onClicked: soundPanel.toggle()
+                    Volume {
+                        id: volume
+                    }
+                }
+                BarCell {
+                    clickable: true
+                    onClicked: networkPanel.toggle()
+                    Network {}
+                }
+                BarCell { // hidden without an adapter
+                    id: bluetoothBlock
+                    visible: bar.full && bluetooth.adapter !== null
+                    clickable: true
+                    onClicked: bluetoothPanel.toggle()
+                    BluetoothStatus {
+                        id: bluetooth
+                    }
+                }
+                BarCell { // laptop only: hidden without a laptop battery
+                    visible: battery.device.ready && battery.device.isLaptopBattery
+                    Battery {
+                        id: battery
+                    }
+                }
             }
         }
-        BarBlock { // laptop only: hidden without a laptop battery
-            visible: (bar.full || bar.laptop) && battery.device.ready && battery.device.isLaptopBattery
-            Battery {
-                id: battery
-            }
-        }
-        BarBlock {
-            id: bellBlock
-            visible: bar.full
-            NotificationCount {}
-        }
-        BarBlock { // tools panel (owner, 2026-10-17): power options, tools, settings
-            id: toolsBlock
-            clickable: true
-            onClicked: toolsPanel.toggle()
-            Text { // accent while Keep awake holds the idle chain
-                text: Icons.power
-                font.family: Tools.keepAwake ? Icons.fill : Icons.regular
-                font.pixelSize: 16
-                color: Tools.keepAwake ? Theme.accent : Theme.fgMuted
+
+        BarBlock { // notifications and power
+            padding: 2
+            Row {
+                BarCell {
+                    id: bellBlock
+                    visible: bar.full
+                    NotificationCount {}
+                }
+                BarCell { // tools panel (owner, 2026-10-17): power options, tools, settings
+                    id: toolsBlock
+                    clickable: true
+                    onClicked: toolsPanel.toggle()
+                    Text { // accent while Keep awake holds the idle chain
+                        text: Icons.power
+                        font.family: Tools.keepAwake ? Icons.fill : Icons.regular
+                        font.pixelSize: 16
+                        color: Tools.keepAwake ? Theme.accent : Theme.fgMuted
+                    }
+                }
             }
         }
     }

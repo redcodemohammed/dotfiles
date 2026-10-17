@@ -709,6 +709,15 @@ Done (section 4):
   documented as writable) and pairing. No agent runs (bluetui brings its own; adapter Pairable:
   no), and Quickshell has none: a small Python agent (python-dbus and python-gobject are
   installed) that tells the panel what a device asks (confirm a code, show a passkey).
+- **Grouped bar** (owner, 2026-10-17: "clean this mess"; works): the
+  right zone went from 13 blocks to 5: [tray behind a chevron] [layout, clock] [phone, Pomodoro,
+  record, mic/camera] [sound, network, Bluetooth, battery] [notifications, power]. BarCell.qml:
+  an item inside a block (padding 2), 28 tall, 6px sides, its own click and hover; panels anchor
+  to cells (ids kept: phoneBlock, pomodoroBlock, ...), so each drops under its icon. The tray
+  unfolds inline to the chevron's left (bar.trayOpen), caretLeft/caretRight added (e138/e13a,
+  checked in Phosphor.ttf). Slim bars keep only what they had.
+  The tray unfolds on an animated width (clip; 300 ms "spring" opening, "springBack" closing,
+  icons fade 150 ms), off with Settings > Look > Animations (owner asked for it).
 - **Per-app sound** (owner, 2026-10-17, works): the sound panel has
   tabs Devices (the old view) and Apps. Apps: every PipeWire stream (Sound.qml: Pipewire.nodes,
   isStream with audio, split by media.class Stream/Output (Playing) and Stream/Input
