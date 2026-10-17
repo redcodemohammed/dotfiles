@@ -665,9 +665,11 @@ Done (section 4):
 - **tmux status bar** (owner, 2026-10-17, works): `surface_selected`
   instead of `bg` (generate.py), so the bar stands out from the terminal.
 - **Animations, step 1: Hyprland** (owner, 2026-10-17, overriding the spec's minimal motion;
-  NOT yet confirmed, uncommitted): curve "out" (0.16,1 / 0.3,1); windowsIn popin 90% 250 ms,
-  windowsOut popin 150 ms, windowsMove 250 ms, workspaces slide 250 ms, layers fade 150 ms, fades
-  150 ms; border stays instant. `style` is accepted by hl.animation (checked with `hyprctl
+  works, owner: "I love it"): curves "out" (0.16,1 / 0.3,1) and "spring" (0.34,1.3 /
+  0.64,1: overshoots about 3%, then settles). windowsIn slide on spring 300 ms, windowsOut slide
+  150 ms, windowsMove spring 300 ms, workspaces slidefade 20% 250 ms (first try was popin 90% and
+  a full slide: "fine", owner asked for springier, sliding windows, a shorter workspace slide),
+  layers fade 150 ms, fades 150 ms; border stays instant. `style` is accepted by hl.animation (checked with `hyprctl
   animations`; the stubs don't type it). Settings > Look "Window fade" renamed "Animations" (it is
   animations.enabled). Next: step 2, the shell's panels (Quickshell, Behavior/NumberAnimation).
 - **Legion keyboard RGB** (owner, 2026-10-17, planned): the Legion 5 16IRX9's own keyboard

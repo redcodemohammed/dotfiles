@@ -235,15 +235,22 @@ hl.config({
 })
 
 -- Animations: https://wiki.hypr.land/Configuring/Advanced-and-Cool/Animations/
--- Motion: minimal. Workspace switches, window moves, border color and shell layers
--- are instant. The one motion left is a 120ms linear fade when windows open or close.
+-- Snappy motion (owner, 2026-10-17, replacing the spec's "minimal": only a fade before): windows
+-- slide in from the nearest edge and glide when tiling moves them, both on a spring that
+-- overshoots a little and settles; workspaces slide 20% while cross-fading. 150-300 ms.
+-- speed is in deciseconds. Border colour changes stay instant. Off: Settings > Look > Window fade
+-- (animations.enabled).
+hl.curve("out", { type = "bezier", points = { {0.16, 1}, {0.3, 1} } })        -- quick start, soft stop
+hl.curve("spring", { type = "bezier", points = { {0.34, 1.3}, {0.64, 1} } }) -- past the end, then back
 hl.curve("linear", { type = "bezier", points = { {0, 0}, {1, 1} } })
-hl.animation({ leaf = "workspaces", enabled = false })
-hl.animation({ leaf = "windows",    enabled = false })
-hl.animation({ leaf = "border",     enabled = false })
-hl.animation({ leaf = "layers",     enabled = false })
-hl.animation({ leaf = "fade",       enabled = true,  speed = 1.2, bezier = "linear" })
-hl.animation({ leaf = "fadeLayers", enabled = false })
+hl.animation({ leaf = "windowsIn",   enabled = true, speed = 3,   bezier = "spring", style = "slide" })
+hl.animation({ leaf = "windowsOut",  enabled = true, speed = 1.5, bezier = "out",    style = "slide" })
+hl.animation({ leaf = "windowsMove", enabled = true, speed = 3,   bezier = "spring" })
+hl.animation({ leaf = "workspaces",  enabled = true, speed = 2.5, bezier = "out",    style = "slidefade 20%" })
+hl.animation({ leaf = "border",      enabled = false })
+hl.animation({ leaf = "layers",      enabled = true, speed = 1.5, bezier = "out", style = "fade" })
+hl.animation({ leaf = "fade",        enabled = true, speed = 1.5, bezier = "out" })
+hl.animation({ leaf = "fadeLayers",  enabled = true, speed = 1.5, bezier = "out" })
 
 -- Ref https://wiki.hypr.land/Configuring/Basics/Workspace-Rules/
 -- "Smart gaps" / "No gaps when only"

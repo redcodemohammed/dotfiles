@@ -179,7 +179,7 @@ PopupWindow {
                 onPicked: (v) => Settings.look.terminalOpacity = v
             }
             Toggle {
-                label: "Window fade"
+                label: "Animations"
                 on: Settings.look.animations
                 onPicked: (on) => Settings.look.animations = on
             }
