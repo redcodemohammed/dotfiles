@@ -1,0 +1,119 @@
+#!/usr/bin/env python3
+"""clip-tool <action>: web dev helpers on the clipboard (owner, 2026-10-17; the tools panel).
+
+Transforms read the clipboard and copy the result back:
+  json   format JSON (2 spaces)          jwt    decode a JWT's header and payload (not verified)
+  b64e   base64 encode                   b64d   base64 decode (also URL-safe, missing padding)
+  urle   URL-encode                      urld   URL-decode
+Generators copy something new:
+  uuid   a random UUID (v4)              iso    the time now, ISO 8601 with offset
+  unix   seconds since 1970              lorem  a paragraph of lorem ipsum
+Prints one line saying what was copied; on bad input prints why on stderr, exits 1, and leaves
+the clipboard alone. --stdout: read stdin and print the result instead (no clipboard), for
+pipelines (`curl ... | clip-tool json --stdout`) and tests.
+"""
+import base64
+import datetime
+import json
+import subprocess
+import sys
+import time
+import urllib.parse
+import uuid
+
+LOREM = ("Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor "
+         "incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud "
+         "exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.")
+
+
+STDOUT = "--stdout" in sys.argv[2:]
+
+
+def paste() -> str:
+    if STDOUT:
+        text = sys.stdin.read().strip()
+        if not text:
+            sys.exit("Nothing on stdin")
+        return text
+    out = subprocess.run(["wl-paste", "-n"], capture_output=True, text=True)
+    if out.returncode != 0 or not out.stdout.strip():
+        sys.exit("The clipboard is empty")
+    return out.stdout.strip()
+
+
+def b64decode(text: str) -> bytes:
+    text = "".join(text.split())
+    text += "=" * (-len(text) % 4)
+    return base64.urlsafe_b64decode(text.replace("+", "-").replace("/", "_"))
+
+
+def utf8(data: bytes) -> str:
+    try:
+        return data.decode("utf-8")
+    except UnicodeDecodeError:
+        sys.exit("That decodes to binary, not text")
+
+
+def run(action: str) -> tuple[str, str]:
+    if action == "json":
+        try:
+            value = json.loads(paste())
+        except json.JSONDecodeError as err:
+            sys.exit(f"Not JSON: {err.msg} (line {err.lineno})")
+        out = json.dumps(value, indent=2, ensure_ascii=False)
+        return out, f"Formatted JSON ({out.count(chr(10)) + 1} lines)"
+    if action == "jwt":
+        parts = paste().split(".")
+        if len(parts) != 3:
+            sys.exit("Not a JWT (expected header.payload.signature)")
+        try:
+            header, payload = (json.loads(utf8(b64decode(p))) for p in parts[:2])
+        except (ValueError, json.JSONDecodeError):
+            sys.exit("Not a JWT: its parts aren't base64 JSON")
+        note = ""
+        if isinstance(payload.get("exp"), (int, float)):
+            exp = datetime.datetime.fromtimestamp(payload["exp"]).astimezone()
+            note = (" · expired " if exp.timestamp() < time.time() else " · expires ") + exp.strftime("%Y-%m-%d %H:%M")
+        out = json.dumps({"header": header, "payload": payload}, indent=2, ensure_ascii=False)
+        return out, "Decoded JWT (signature not checked)" + note
+    if action == "b64e":
+        return base64.b64encode(paste().encode()).decode(), "Base64 encoded"
+    if action == "b64d":
+        try:
+            return utf8(b64decode(paste())), "Base64 decoded"
+        except ValueError:
+            sys.exit("Not base64")
+    if action == "urle":
+        return urllib.parse.quote(paste(), safe=""), "URL encoded"
+    if action == "urld":
+        return urllib.parse.unquote(paste()), "URL decoded"
+    if action == "uuid":
+        value = str(uuid.uuid4())
+        return value, f"UUID {value[:8]}…"
+    if action == "iso":
+        value = datetime.datetime.now().astimezone().isoformat(timespec="seconds")
+        return value, value
+    if action == "unix":
+        value = str(int(time.time()))
+        return value, f"Unix time {value}"
+    if action == "lorem":
+        return LOREM, "Lorem ipsum (1 paragraph)"
+    sys.exit(__doc__)
+
+
+def main():
+    if len(sys.argv) not in (2, 3) or (len(sys.argv) == 3 and not STDOUT):
+        sys.exit(__doc__)
+    text, message = run(sys.argv[1])
+    if STDOUT:
+        print(text)
+        return
+    # wl-copy stays behind to serve the clipboard: it must not hold our stdout, or whoever reads
+    # this line (the panel, a $(...)) waits for it forever.
+    subprocess.run(["wl-copy"], input=text, text=True, check=True,
+                   stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    print("Copied: " + message)
+
+
+if __name__ == "__main__":
+    main()

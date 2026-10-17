@@ -517,10 +517,10 @@ Done (section 4):
   of the alert red's hue are lit at OKLCH L 0.72 instead of 0.78 (at 0.78 red turns coral), alert
   stays #e5484d (rose wallhaven-2k726x.jpg: #fd7279, contrast 7.1). Images with under 1% vivid pixels
   (black and white) used to keep the default amber, which looked like the picker failing; they
-  now get a light gray accent #bebebe (ANSI yellow stays the default then). Works. Open: soft
-  colourful images (all pixels under chroma 0.06, e.g. "wallpaperflare.com_wallpaper (1).jpg",
-  blue dusk + small sunset) also fall to gray; owner to choose warm highlight vs most colourful
-  area before a relative threshold is built.
+  now get a light gray accent #bebebe (ANSI yellow stays the default then). Works. Soft
+  colourful images (all pixels under chroma 0.06, e.g. the blue dusk "wallpaperflare.com_wallpaper
+  (1).jpg") use pixels from chroma 0.035, warm hues first when they cover 0.5% of the image (owner
+  chose warm highlight, 2026-10-17): dusk gets #dc8a92. Works.
 - **VS Code theme "Hypr"** (owner, 2026-10-17): `generate.py` writes
   `vscode/hypr-theme/themes/hypr-color-theme.json` (206 UI colours, TextMate token rules,
   semantic tokens; syntax as in nvim's `colors/hypr.lua`, accent = focus, red = errors, warnings
@@ -580,10 +580,32 @@ Done (section 4):
   accent; hypridle honours it), Text from screen (`.local/bin/screen-ocr`: slurp, `grim -s 2`,
   `tesseract -l eng+ara`, wl-copy). Packages: hyprpicker, tesseract, tesseract-data-eng/-ara.
   QML gotcha: a property named `on` breaks an inline component ("X is not a type"), and
-  Quickshell kept failing for a few reloads after the rename. Planned next: step 3 clipboard
-  transforms, generators (UUID, timestamps, lorem), localhost QR; step 4 settings panel
+  Quickshell kept failing for a few reloads after the rename.
+  Step 3 (2026-10-17, works): Web section.
+  `.local/bin/clip-tool <json|jwt|b64e|b64d|urle|urld|uuid|iso|unix|lorem> [--stdout]`
+  (Python; clipboard in/out, or stdin/stdout for pipes and tests; JWT not verified, shows exp;
+  wl-copy runs with stdout/stderr to /dev/null: it stays behind serving the clipboard and would
+  hold any reader's pipe open forever, which hung the first test). `.local/bin/dev-ports`
+  (own listening TCP ports from `ss -ltnpH`, desktop apps skipped, `lan` false for 127.0.0.1 /
+  ::1), `.local/bin/lan-qr <port>` (qrencode PNG of http://<LAN IP>:<port>, black on white).
+  Panel: Chip buttons, ports listed on open, LAN ones show the QR + URL + Copy, local ones
+  "local only" (start with --host). `qs ipc call tools qr <port>` shows a QR (used for testing).
+  Tested: every clip-tool action via --stdout, one real clipboard call, QR with a throwaway
+  `python -m http.server --bind 0.0.0.0`. The first test overwrote the owner's clipboard (the
+  backup came out empty); tests now use --stdout.
+  Quickshell quirk (seen twice: ToolTile, Chip): a reload that adds a new inline component AND
+  uses it can fail with "X is not a type"; a further reload after any other change loads it.
+  Planned next: step 4 settings panel
   (one settings file `~/.config/hypr-settings.json`, read by Quickshell live and by hyprland.lua
   at load, changes applied live with hyprctl): Look, Bar and island, Input, Displays and power.
+- **Blur behind see-through apps** (owner, 2026-10-17, overriding the spec / CLAUDE.md "no
+  transparency, no blur"; 2026-10-17, works): `hyprland.lua`
+  decoration.blur enabled, size 6, passes 2 (only affects windows with alpha); Alacritty
+  `window.opacity = 0.9` (confirmed see-through in a screenshot); Vicinae
+  `launcher_window.opacity = 0.9` in `vicinae/hypr.jsonc` (material stays "none") plus
+  `hl.layer_rule({ match = { namespace = "vicinae" }, blur = true, ignore_alpha = 0 })` (namespace
+  checked with `hyprctl layers`; Vicinae restarted); whether Vicinae actually shows see-through
+  is unverified (screenshots too dark to tell). Bar, island and panels stay solid.
 - **Claude desktop tray icon: works** (checked 2026-10-15). Chromium offers its icon two ways:
   pixels only (`IconPixmap`, normal start) or, when it thinks it runs on GNOME
   (`GNOME_DESKTOP_SESSION_ID`, set session-wide by `env-hyprland`), a named icon in a temp folder

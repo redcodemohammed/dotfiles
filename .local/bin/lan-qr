@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+# lan-qr <port>: a QR code for http://<this laptop's LAN address>:<port>, to open a dev server on
+# the phone (owner, 2026-10-17; the tools panel). Prints "<url>\t<png>". Black on white with a
+# quiet zone, so phone cameras read it; the panel shows the PNG.
+set -euo pipefail
+port=${1:?usage: lan-qr <port>}
+ip=$(ip -4 -o route get 1.1.1.1 2>/dev/null | grep -oE 'src [0-9.]+' | cut -d' ' -f2) || ip=""
+[ -n "$ip" ] || { echo "No network" >&2; exit 1; }
+url="http://$ip:$port"
+png="${XDG_RUNTIME_DIR:-/tmp}/lan-qr-$port.png"
+qrencode -s 8 -m 2 -o "$png" "$url"
+printf '%s\t%s\n' "$url" "$png"

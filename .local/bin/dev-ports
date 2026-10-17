@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+# dev-ports: the TCP ports your own processes listen on, as JSON lines for the tools panel's
+# Localhost QR (owner, 2026-10-17): {port, name, pid, folder, lan}. lan is false for servers bound
+# to 127.0.0.1 / ::1 only: the phone can't reach those (start the dev server with --host /
+# 0.0.0.0). Desktop apps that listen for their own reasons are skipped.
+set -euo pipefail
+skip='^(spotify|syncthing|openrgb|kcd|chrome|zen|firefox|claude|electron|code|steam|obs|discord|telegram)'
+ss -ltnpH 2>/dev/null | while read -r _ _ _ local _ users; do
+    [[ "$users" =~ \(\(\"([^\"]+)\",pid=([0-9]+) ]] || continue # only our own processes show users
+    name=${BASH_REMATCH[1]} pid=${BASH_REMATCH[2]}
+    [[ "${name,,}" =~ $skip ]] && continue
+    port=${local##*:}
+    addr=${local%:*}
+    lan=true
+    case "$addr" in 127.*|"[::1]"|::1) lan=false ;; esac
+    folder=$(basename "$(readlink "/proc/$pid/cwd" 2>/dev/null || echo "?")")
+    jq -cn --argjson port "$port" --arg name "$name" --argjson pid "$pid" --arg folder "$folder" \
+        --argjson lan "$lan" '{port: $port, name: $name, pid: $pid, folder: $folder, lan: $lan}'
+done | sort -u | jq -sc 'group_by(.port) | map(.[0] + {lan: (map(.lan) | any)}) | sort_by(.port)'

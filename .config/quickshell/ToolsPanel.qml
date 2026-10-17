@@ -8,7 +8,11 @@ import Quickshell
 // within 3 s (the button turns primary and reads "Again?"). The actions are .local/bin/power-action.
 // Tools (step 2): Pick colour (the panel closes, hyprpicker; recent colours below as swatches, a
 // click copies one), Keep awake (on/off; pauses the idle chain), Text from screen (OCR).
-// Next steps add the web dev tools and a Settings button.
+// Web (step 3): Clipboard (format JSON, decode JWT, base64 and URL encode/decode: the clipboard
+// in, the result back), Generate (UUID, ISO and Unix time, lorem ipsum: copied) and Localhost QR
+// (your dev servers' ports; a LAN one shows a QR of http://<LAN address>:<port> for the phone,
+// a localhost-only one says to start it with --host). The note line reports each result.
+// Next step adds a Settings button.
 PopupWindow {
     id: panel
     required property var bar
@@ -36,6 +40,9 @@ PopupWindow {
             closedAt = Date.now()
             armed = ""
             note = ""
+            Tools.hideQr()
+        } else {
+            Tools.readPorts()
         }
     }
 
@@ -46,6 +53,37 @@ PopupWindow {
         id: noteTimer
         interval: 2000
         onTriggered: panel.note = ""
+    }
+
+    Connections {
+        target: Tools
+        function onClipDone(message) { panel.note = message }
+    }
+
+    // A small text button for the Web section.
+    component Chip: Rectangle {
+        id: chip
+        property string label
+        signal clicked
+        width: chipText.implicitWidth + 16
+        height: 28
+        color: chipHover.containsMouse ? Theme.surfaceSelected : Theme.bg
+        border.width: 2
+        border.color: Theme.border
+        Text {
+            id: chipText
+            anchors.centerIn: parent
+            text: chip.label
+            font.family: "JetBrainsMono Nerd Font"
+            font.pixelSize: 12
+            color: Theme.fg
+        }
+        MouseArea {
+            id: chipHover
+            anchors.fill: parent
+            hoverEnabled: true
+            onClicked: chip.clicked()
+        }
     }
 
     // The action waiting for its confirming click.
@@ -229,7 +267,7 @@ PopupWindow {
                 ToolTile {
                     width: parent.cell
                     glyph: Icons.textT
-                    label: "Text from screen"
+                    label: "Read text"
                     onClicked: {
                         panel.visible = false
                         Tools.readText()
@@ -263,7 +301,125 @@ PopupWindow {
             }
 
             Text {
+                topPadding: 4
+                text: "Web"
+                font.family: "JetBrainsMono Nerd Font"
+                font.pixelSize: 12
+                color: Theme.fgMuted
+            }
+
+            Flow { // the clipboard in, the result back
+                width: parent.width
+                spacing: 4
+                Repeater {
+                    model: [
+                        { a: "json", t: "Format JSON" }, { a: "jwt", t: "Decode JWT" },
+                        { a: "b64e", t: "Base64 →" }, { a: "b64d", t: "Base64 ←" },
+                        { a: "urle", t: "URL →" }, { a: "urld", t: "URL ←" },
+                    ]
+                    Chip {
+                        required property var modelData
+                        label: modelData.t
+                        onClicked: Tools.clip(modelData.a)
+                    }
+                }
+            }
+
+            Flow { // copied fresh
+                width: parent.width
+                spacing: 4
+                Repeater {
+                    model: [
+                        { a: "uuid", t: "UUID" }, { a: "iso", t: "ISO time" },
+                        { a: "unix", t: "Unix time" }, { a: "lorem", t: "Lorem ipsum" },
+                    ]
+                    Chip {
+                        required property var modelData
+                        label: modelData.t
+                        onClicked: Tools.clip(modelData.a)
+                    }
+                }
+            }
+
+            Text {
+                text: Tools.ports.length > 0 ? "Localhost QR · open on the phone" : "Localhost QR · no dev servers running"
+                font.family: "JetBrainsMono Nerd Font"
+                font.pixelSize: 12
+                color: Theme.fgDim
+            }
+
+            Repeater { // one row per dev server port
+                model: Tools.ports
+                Rectangle {
+                    required property var modelData
+                    width: column.width
+                    height: 28
+                    color: portHover.containsMouse && modelData.lan ? Theme.surfaceSelected : "transparent"
+                    Text {
+                        x: 8
+                        anchors.verticalCenter: parent.verticalCenter
+                        width: parent.width - 16 - hint.implicitWidth
+                        elide: Text.ElideRight
+                        text: ":" + modelData.port + "  " + modelData.name + " · " + modelData.folder
+                        font.family: "JetBrainsMono Nerd Font"
+                        font.pixelSize: 12
+                        color: modelData.lan ? Theme.fg : Theme.fgMuted
+                    }
+                    Text {
+                        id: hint
+                        anchors.right: parent.right
+                        anchors.rightMargin: 8
+                        anchors.verticalCenter: parent.verticalCenter
+                        text: modelData.lan ? "QR" : "local only" // bound to 127.0.0.1: start it with --host to reach it
+                        font.family: "JetBrainsMono Nerd Font"
+                        font.pixelSize: 12
+                        color: modelData.lan ? Theme.accent : Theme.fgDim
+                    }
+                    MouseArea {
+                        id: portHover
+                        anchors.fill: parent
+                        hoverEnabled: true
+                        enabled: parent.modelData.lan
+                        onClicked: Tools.showQr(parent.modelData.port)
+                    }
+                }
+            }
+
+            Column { // the QR for the chosen port, with its address
+                visible: Tools.qrImage !== ""
+                width: parent.width
+                spacing: 4
+                Image {
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    width: 160
+                    height: 160
+                    smooth: false // crisp modules: a scaled QR must stay readable
+                    source: Tools.qrImage
+                }
+                Row {
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    spacing: 8
+                    Text {
+                        anchors.verticalCenter: parent.verticalCenter
+                        text: Tools.qrUrl
+                        font.family: "JetBrainsMono Nerd Font"
+                        font.pixelSize: 12
+                        color: Theme.fg
+                    }
+                    Chip {
+                        label: "Copy"
+                        onClicked: {
+                            Tools.copy(Tools.qrUrl)
+                            panel.note = "Copied " + Tools.qrUrl
+                        }
+                    }
+                }
+            }
+
+            Text {
                 visible: panel.note !== ""
+                width: parent.width
+                wrapMode: Text.Wrap
                 text: panel.note
                 font.family: "JetBrainsMono Nerd Font"
                 font.pixelSize: 12
