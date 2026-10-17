@@ -700,6 +700,15 @@ Done (section 4):
   drives it (SUPER + I, the bell): the focused screen's bar opens; closing any other way sets it
   back; a reopen within 300 ms of closing is the closing click landing on the bell, ignored.
   Tested via IPC: opens under the bell, settings replaces it, toggle closes it.
+- **Bluetooth panel, step 5a** (owner, 2026-10-17, works): the
+  Bluetooth block opens BluetoothPanel.qml (Reveal; IPC `panel toggle bluetooth`) instead of
+  bluetui (owner: drop it). Quickshell.Bluetooth only: an on/off switch (adapter.enabled), paired
+  devices, connected first, with the device's icon (Quickshell.iconPath(dev.icon)), battery %
+  when reported and Connected / Connecting / Disconnecting / Paired; a click opens the row:
+  Connect or Disconnect, Forget (second click within 3 s). Next, 5b: Scan (adapter.discovering,
+  documented as writable) and pairing. No agent runs (bluetui brings its own; adapter Pairable:
+  no), and Quickshell has none: a small Python agent (python-dbus and python-gobject are
+  installed) that tells the panel what a device asks (confirm a code, show a passkey).
 - **Record and sound panels** (owner, 2026-10-17, works): the record and volume blocks open
   drop-downs (RecordPanel.qml, SoundPanel.qml, on Reveal) in place of the island views; they reuse
   IslandRecord (setup 340x324 while idle, the recording view 340x172 while recording) and

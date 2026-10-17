@@ -79,6 +79,11 @@ PanelWindow {
         bar: bar
         block: recordBlock
     }
+    BluetoothPanel { // drops from the Bluetooth block
+        id: bluetoothPanel
+        bar: bar
+        block: bluetoothBlock
+    }
     SoundPanel { // drops from the volume block
         id: soundPanel
         bar: bar
@@ -91,6 +96,7 @@ PanelWindow {
                 return
             if (name === "record") recordPanel.toggle()
             else if (name === "sound") soundPanel.toggle()
+            else if (name === "bluetooth") bluetoothPanel.toggle()
         }
     }
     PomodoroPanel { // drops from the Pomodoro block
@@ -207,10 +213,11 @@ PanelWindow {
             onClicked: networkPanel.toggle()
             Network {}
         }
-        BarBlock { // hidden without an adapter; click: bluetui in a terminal (owner's choice)
+        BarBlock { // hidden without an adapter; click: the Bluetooth panel (it replaced bluetui)
+            id: bluetoothBlock
             visible: bar.full && bluetooth.adapter !== null
             clickable: true
-            onClicked: Quickshell.execDetached(["alacritty", "--class", "bluetui", "-e", "bluetui"])
+            onClicked: bluetoothPanel.toggle()
             BluetoothStatus {
                 id: bluetooth
             }

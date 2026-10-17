@@ -8,7 +8,7 @@ import Quickshell.Io
 // any other open one sees `current` change and closes (bar panels slide away through Reveal,
 // the shortcuts overlay just closes). Covers every bar panel and the inbox (all on Reveal.qml)
 // and the shortcuts overlay. The island is not a panel.
-// `qs ipc call panel toggle <record|sound>` opens one on the focused screen (Bar.qml listens).
+// `qs ipc call panel toggle <record|sound|bluetooth>` opens one on the focused screen (Bar.qml listens).
 Singleton {
     id: root
     property var current: null
