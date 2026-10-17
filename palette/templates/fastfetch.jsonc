@@ -1,0 +1,130 @@
+//@ Template for ~/.config/fastfetch/config.jsonc: palette/generate.py fills the double-brace colours.
+//@ Key groups: distro in the accent, WM, system and the last group in wallpaper colours 2, 4, 6.
+
+{
+"$schema": "https://github.com/fastfetch-cli/fastfetch/raw/dev/doc/json_schema.json",
+"logo": {
+"padding": {
+"top": 1
+}
+},
+"display": {
+"separator": " 󰑃  "
+},
+"modules": [
+    "break",
+    {
+    "type": "os",
+    "key": " DISTRO",
+    "keyColor": "{{ui.accent}}"
+    },
+    {
+    "type": "kernel",
+    "key": "│ ├",
+    "keyColor": "{{ui.accent}}"
+    },
+    {
+    "type": "packages",
+    "key": "│ ├󰏖",
+    "keyColor": "{{ui.accent}}"
+    },
+    {
+    "type": "shell",
+    "key": "│ └",
+    "keyColor": "{{ui.accent}}"
+    },
+    {
+    "type": "wm",
+    "key": " DE/WM",
+    "keyColor": "{{wallpaper.c2}}"
+    },
+    {
+    "type": "wmtheme",
+    "key": "│ ├󰉼",
+    "keyColor": "{{wallpaper.c2}}"
+    },
+    {
+    "type": "icons",
+    "key": "│ ├󰀻",
+    "keyColor": "{{wallpaper.c2}}"
+    },
+    {
+        "type": "cursor",
+        "key": "│ ├",
+        "keyColor": "{{wallpaper.c2}}",
+    },
+    {
+        "type": "terminalfont",
+        "key": "│ ├",
+        "keyColor": "{{wallpaper.c2}}",
+    },
+    {
+    "type": "terminal",
+    "key": "│ └",
+    "keyColor": "{{wallpaper.c2}}"
+    },
+    {
+    "type": "host",
+    "key": "󰌢 SYSTEM",
+    "keyColor": "{{wallpaper.c4}}"
+    },
+    {
+    "type": "cpu",
+    "key": "│ ├󰻠",
+    "keyColor": "{{wallpaper.c4}}"
+    },
+    {
+    "type": "gpu",
+    "key": "│ ├󰻑",
+    "format": "{2}",
+    "keyColor": "{{wallpaper.c4}}"
+    },
+    {
+            "type": "display",
+    "key": "│ ├󰍹",
+    "keyColor": "{{wallpaper.c4}}",
+    "compactType": "original-with-refresh-rate"
+    },
+    {
+    "type": "memory",
+    "key": "│ ├󰾆",
+    "keyColor": "{{wallpaper.c4}}"
+    },
+    {
+    "type": "swap",
+    "key": "│ ├󰓡",
+    "keyColor": "{{wallpaper.c4}}"
+    },
+    {
+    "type": "uptime",
+    "key": "│ ├󰅐",
+    "keyColor": "{{wallpaper.c4}}"
+    },
+    {
+    "type": "display",
+    "key": "│ └󰍹",
+    "keyColor": "{{wallpaper.c4}}"
+    },
+    {
+    "type": "sound",
+    "key": " AUDIO",
+    "format": "{2}",
+    "keyColor": "{{wallpaper.c6}}"
+    },
+    {
+    "type": "player",
+    "key": "│ ├󰥠",
+    "keyColor": "{{wallpaper.c6}}"
+    },
+    {
+    "type": "media",
+    "key": "│ └󰝚",
+    "keyColor": "{{wallpaper.c6}}"
+    },
+    {
+    "type": "custom",
+    "format": "\u001b[90m  \u001b[31m  \u001b[32m  \u001b[33m  \u001b[34m  \u001b[35m  \u001b[36m  \u001b[37m  \u001b[38m  \u001b[39m  \u001b[39m    \u001b[38m  \u001b[37m  \u001b[36m  \u001b[35m  \u001b[34m  \u001b[33m  \u001b[32m  \u001b[31m  \u001b[90m "
+    },
+    "break",
+    ]
+}

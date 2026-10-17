@@ -1,0 +1,16 @@
+#@ Template for ~/.peaclock/config: palette/generate.py fills the double-brace colours. Edit this,
+#@ not the generated file. Other peaclock commands (view, set seconds on, ...) can go here too.
+# Lit blocks in the accent, unlit ones barely there, no background of its own (the see-through
+# terminal shows behind it).
+style active-fg {{ui.accent}}
+style active-bg {{ui.accent}}
+style inactive-fg {{ui.surface_selected}}
+style inactive-bg {{ui.surface_selected}}
+style colon-fg {{ui.accent}}
+style colon-bg {{ui.accent}}
+style background clear
+style date {{ui.fg_muted}}
+style text {{ui.fg}}
+style prompt {{ui.accent}}
+style success {{ansi.normal.green}}
+style error {{ui.alert}}

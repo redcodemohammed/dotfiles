@@ -38,6 +38,7 @@ RED_L = 0.72                  # their lightness: still red, lighter than alert (
 GRAY_ACCENT = "#bebebe"       # no colour: OKLCH L 0.80, no chroma (contrast 10 on bg)
 SOFT_C = 0.035                # a soft image's coloured pixels: at least this chroma
 WARM_SHARE = 0.005            # warm soft pixels needed for the warm highlight to win (0.5%)
+SPECTRUM_L = 0.74             # lightness of the [wallpaper] colours (cava's bars, owner 2026-10-17)
 
 
 def is_warm(h):
@@ -158,6 +159,39 @@ def analyse(path):
     return base_hue, avg_chroma, accent_hue, accent_chroma
 
 
+def spectrum(path, accent_hue):
+    """Six colours of the image for cava's gradient ([wallpaper] c1-c6): the hue bands (20
+    degrees) with the most colour, each at SPECTRUM_L with its band's typical chroma, in hue
+    order from the accent. Fewer than six bands: the strongest ones repeat lighter. A gray image:
+    six grays, dark to light."""
+    img = Image.open(path).convert("RGB")
+    img.thumbnail((96, 96))
+    data = img.get_flattened_data() if hasattr(img, "get_flattened_data") else img.getdata()
+    coloured = [p for p in (rgb_oklch(tuple(c / 255 for c in px)) for px in data)
+                if p[1] >= SOFT_C and 0.2 <= p[0] <= 0.95]
+    bins = {}
+    for L, C, h in coloured:
+        bins.setdefault(int(h // 20), []).append((C, h))
+    bands = sorted(bins.values(), key=lambda b: -sum(C * C for C, _ in b))
+    bands = [b for b in bands if len(b) >= len(coloured) * 0.02][:6] if coloured else []
+    if not bands:
+        return [oklch_hex(0.45 + 0.08 * i, 0, 0) for i in range(6)]
+    picked = []
+    for b in bands:
+        hues = sorted(h for _, h in b)
+        chroma = sorted(C for C, _ in b)[len(b) // 2]
+        picked.append((hues[len(hues) // 2], max(0.06, min(0.16, chroma))))
+    start = accent_hue if accent_hue is not None else picked[0][0]
+    picked.sort(key=lambda hc: (hc[0] - start) % 360)
+    colours = [oklch_hex(SPECTRUM_L, C, h) for h, C in picked]
+    i = 0
+    while len(colours) < 6:  # repeat, a step lighter each round
+        h, C = picked[i % len(picked)]
+        colours.append(oklch_hex(min(0.92, SPECTRUM_L + 0.06 * (1 + i // len(picked))), C, h))
+        i += 1
+    return colours
+
+
 # --- building the palette ---
 
 def build(path):
@@ -204,10 +238,11 @@ def build(path):
     bright["white"] = ui["fg"]
     L, _, _ = rgb_oklch(hex_rgb(default["ansi"]["normal"]["white"]))
     normal["white"] = oklch_hex(L, rgb_oklch(hex_rgb(ui["fg"]))[1], base_hue or 0)
-    return ui, normal, bright
+    wallpaper = {f"c{i + 1}": c for i, c in enumerate(spectrum(path, accent_hue))}
+    return ui, normal, bright, wallpaper
 
 
-def write(path, ui, normal, bright):
+def write(path, ui, normal, bright, wallpaper):
     def table(name, values, note=""):
         rows = "\n".join(f'{k:<16} = "{v}"' for k, v in values.items())
         return f"[{name}]{note}\n{rows}\n"
@@ -221,7 +256,8 @@ def write(path, ui, normal, bright):
         f"{checks}\n\n"
         + table("ui", ui) + "\n"
         + table("ansi.normal", normal) + "\n"
-        + table("ansi.bright", bright))
+        + table("ansi.bright", bright) + "\n"
+        + table("wallpaper", wallpaper, "  # the image's own colours, in hue order (cava)"))
 
 
 def main():
@@ -231,8 +267,8 @@ def main():
         TARGET.write_text(DEFAULT.read_text())
         print("palette.toml restored from palette-default.toml")
         return
-    ui, normal, bright = build(sys.argv[1])
-    write(sys.argv[1], ui, normal, bright)
+    ui, normal, bright, wallpaper = build(sys.argv[1])
+    write(sys.argv[1], ui, normal, bright, wallpaper)
     print(f"accent {ui['accent']}  bg {ui['bg']}  fg {ui['fg']}  "
           f"(accent contrast {contrast(ui['accent'], ui['bg']):.1f})")
 

@@ -1,0 +1,261 @@
+#@ Template for ~/.dircolors: palette/generate.py fills the double-brace colours. Edit this, not .dircolors.
+#@ Was Dracula; its colours map to: purple -> accent (directories), cyan, green, pink -> magenta, red,
+#@ yellow -> ANSI, comment -> fg_dim, fg/bg -> fg/bg.
+# Configuration file for dircolors, a utility to help you set the
+# LS_COLORS environment variable used by GNU ls with the --color option.
+
+# Copyright (C) 1996-2024 Free Software Foundation, Inc.
+# Copying and distribution of this file, with or without modification,
+# are permitted provided the copyright notice and this notice are preserved.
+
+#
+# The keywords COLOR, OPTIONS, and EIGHTBIT (honored by the
+# slackware version of dircolors) are recognized but ignored.
+
+# Global config options can be specified before TERM or COLORTERM entries
+
+# ===================================================================
+# Terminal filters
+# ===================================================================
+# Below are TERM or COLORTERM entries, which can be glob patterns, which
+# restrict following config to systems with matching environment variables.
+COLORTERM ?*
+TERM Eterm
+TERM ansi
+TERM *color*
+TERM con[0-9]*x[0-9]*
+TERM cons25
+TERM console
+TERM cygwin
+TERM *direct*
+TERM dtterm
+TERM gnome
+TERM hurd
+TERM jfbterm
+TERM konsole
+TERM kterm
+TERM linux
+TERM linux-c
+TERM mlterm
+TERM putty
+TERM rxvt*
+TERM screen*
+TERM st
+TERM terminator
+TERM tmux*
+TERM vt48;2;{{rgb:ui.fg_dim}}
+TERM xterm*
+
+# ===================================================================
+# Basic file attributes
+# ===================================================================
+# Below are the color init strings for the basic file types.
+# One can use codes for 256 or more colors supported by modern terminals.
+# The default color codes use the capabilities of an 8 color terminal
+# with some additional attributes as per the following codes:
+# Attribute codes:
+# 00=none 01=bold 04=underscore 05=blink 07=reverse 08=concealed
+# Text color codes:
+# 38;2;33;34;44=black 38;2;255;85;85=red 38;2;80;250;123=green 38;2;241;250;140=yellow 38;2;189;147;249=blue 38;2;255;121;198=magenta 38;2;139;233;253=cyan 38;2;248;248;242=white
+# Background color codes:
+# 48;2;33;34;44=black 48;2;255;85;85=red 48;2;80;250;123=green 48;2;241;250;140=yellow 48;2;189;147;249=blue 48;2;255;121;198=magenta 48;2;139;233;253=cyan 48;2;248;248;242=white
+#NORMAL 00	# no color code at all
+#FILE 00	# regular file: use no color at all
+RESET 0		# reset to "normal" color
+DIR 01;38;2;{{rgb:ui.accent}}	# directory
+LINK 01;38;2;{{rgb:ansi.normal.cyan}}	# symbolic link.  (If you set this to 'target' instead of a
+                # numerical value, the color is as for the file pointed to.)
+MULTIHARDLINK 00	# regular file with more than one link
+FIFO 48;2;{{rgb:ui.bg}};38;2;{{rgb:ansi.normal.yellow}}	# pipe
+SOCK 01;38;2;{{rgb:ansi.normal.magenta}}	# socket
+DOOR 01;38;2;{{rgb:ansi.normal.magenta}}	# door
+BLK 48;2;{{rgb:ui.bg}};38;2;{{rgb:ansi.normal.yellow}};01	# block device driver
+CHR 48;2;{{rgb:ui.bg}};38;2;{{rgb:ansi.normal.yellow}};01	# character device driver
+ORPHAN 48;2;{{rgb:ui.bg}};38;2;{{rgb:ansi.normal.red}};01 # symlink to nonexistent file, or non-stat'able file ...
+MISSING 00      # ... and the files they point to
+SETUID 38;2;{{rgb:ui.fg}};48;2;{{rgb:ansi.normal.red}}	# file that is setuid (u+s)
+SETGID 38;2;{{rgb:ui.bg}};48;2;{{rgb:ansi.normal.yellow}}	# file that is setgid (g+s)
+CAPABILITY 00	# file with capability (very expensive to lookup)
+STICKY_OTHER_WRITABLE 38;2;{{rgb:ui.bg}};48;2;{{rgb:ansi.normal.green}} # dir that is sticky and other-writable (+t,o+w)
+OTHER_WRITABLE 38;2;{{rgb:ui.accent}};48;2;{{rgb:ansi.normal.green}} # dir that is other-writable (o+w) and not sticky
+STICKY 38;2;{{rgb:ui.fg}};48;2;{{rgb:ui.accent}}	# dir with the sticky bit set (+t) and not other-writable
+
+# This is for files with execute permission:
+EXEC 01;38;2;{{rgb:ansi.normal.green}}
+
+# ===================================================================
+# File extension attributes
+# ===================================================================
+# List any file extensions like '.gz' or '.tar' that you would like ls
+# to color below. Put the suffix, a space, and the color init string.
+# (and any comments you want to add after a '#').
+# Suffixes are matched case insensitively, but if you define different
+# init strings for separate cases, those will be honored.
+#
+
+# If you use DOS-style suffixes, you may want to uncomment the following:
+#.cmd 01;38;2;80;250;123 # executables (bright green)
+#.exe 01;38;2;80;250;123
+#.com 01;38;2;80;250;123
+#.btm 01;38;2;80;250;123
+#.bat 01;38;2;80;250;123
+# Or if you want to color scripts even if they do not have the
+# executable bit actually set.
+#.sh  01;38;2;80;250;123
+#.csh 01;38;2;80;250;123
+
+# archives or compressed (bright red)
+.7z  01;38;2;{{rgb:ansi.normal.red}}
+.ace 01;38;2;{{rgb:ansi.normal.red}}
+.alz 01;38;2;{{rgb:ansi.normal.red}}
+.apk 01;38;2;{{rgb:ansi.normal.red}}
+.arc 01;38;2;{{rgb:ansi.normal.red}}
+.arj 01;38;2;{{rgb:ansi.normal.red}}
+.bz  01;38;2;{{rgb:ansi.normal.red}}
+.bz2 01;38;2;{{rgb:ansi.normal.red}}
+.cab 01;38;2;{{rgb:ansi.normal.red}}
+.cpio 01;38;2;{{rgb:ansi.normal.red}}
+.crate 01;38;2;{{rgb:ansi.normal.red}}
+.deb 01;38;2;{{rgb:ansi.normal.red}}
+.drpm 01;38;2;{{rgb:ansi.normal.red}}
+.dwm 01;38;2;{{rgb:ansi.normal.red}}
+.dz  01;38;2;{{rgb:ansi.normal.red}}
+.ear 01;38;2;{{rgb:ansi.normal.red}}
+.egg 01;38;2;{{rgb:ansi.normal.red}}
+.esd 01;38;2;{{rgb:ansi.normal.red}}
+.gz  01;38;2;{{rgb:ansi.normal.red}}
+.jar 01;38;2;{{rgb:ansi.normal.red}}
+.lha 01;38;2;{{rgb:ansi.normal.red}}
+.lrz 01;38;2;{{rgb:ansi.normal.red}}
+.lz  01;38;2;{{rgb:ansi.normal.red}}
+.lz4 01;38;2;{{rgb:ansi.normal.red}}
+.lzh 01;38;2;{{rgb:ansi.normal.red}}
+.lzma 01;38;2;{{rgb:ansi.normal.red}}
+.lzo 01;38;2;{{rgb:ansi.normal.red}}
+.pyz 01;38;2;{{rgb:ansi.normal.red}}
+.rar 01;38;2;{{rgb:ansi.normal.red}}
+.rpm 01;38;2;{{rgb:ansi.normal.red}}
+.rz  01;38;2;{{rgb:ansi.normal.red}}
+.sar 01;38;2;{{rgb:ansi.normal.red}}
+.swm 01;38;2;{{rgb:ansi.normal.red}}
+.t7z 01;38;2;{{rgb:ansi.normal.red}}
+.tar 01;38;2;{{rgb:ansi.normal.red}}
+.taz 01;38;2;{{rgb:ansi.normal.red}}
+.tbz 01;38;2;{{rgb:ansi.normal.red}}
+.tbz2 01;38;2;{{rgb:ansi.normal.red}}
+.tgz 01;38;2;{{rgb:ansi.normal.red}}
+.tlz 01;38;2;{{rgb:ansi.normal.red}}
+.txz 01;38;2;{{rgb:ansi.normal.red}}
+.tz  01;38;2;{{rgb:ansi.normal.red}}
+.tzo 01;38;2;{{rgb:ansi.normal.red}}
+.tzst 01;38;2;{{rgb:ansi.normal.red}}
+.udeb 01;38;2;{{rgb:ansi.normal.red}}
+.war 01;38;2;{{rgb:ansi.normal.red}}
+.whl 01;38;2;{{rgb:ansi.normal.red}}
+.wim 01;38;2;{{rgb:ansi.normal.red}}
+.xz  01;38;2;{{rgb:ansi.normal.red}}
+.z   01;38;2;{{rgb:ansi.normal.red}}
+.zip 01;38;2;{{rgb:ansi.normal.red}}
+.zoo 01;38;2;{{rgb:ansi.normal.red}}
+.zst 01;38;2;{{rgb:ansi.normal.red}}
+
+# image formats
+.avif 01;38;2;{{rgb:ansi.normal.magenta}}
+.jpg 01;38;2;{{rgb:ansi.normal.magenta}}
+.jpeg 01;38;2;{{rgb:ansi.normal.magenta}}
+.mjpg 01;38;2;{{rgb:ansi.normal.magenta}}
+.mjpeg 01;38;2;{{rgb:ansi.normal.magenta}}
+.gif 01;38;2;{{rgb:ansi.normal.magenta}}
+.bmp 01;38;2;{{rgb:ansi.normal.magenta}}
+.pbm 01;38;2;{{rgb:ansi.normal.magenta}}
+.pgm 01;38;2;{{rgb:ansi.normal.magenta}}
+.ppm 01;38;2;{{rgb:ansi.normal.magenta}}
+.tga 01;38;2;{{rgb:ansi.normal.magenta}}
+.xbm 01;38;2;{{rgb:ansi.normal.magenta}}
+.xpm 01;38;2;{{rgb:ansi.normal.magenta}}
+.tif 01;38;2;{{rgb:ansi.normal.magenta}}
+.tiff 01;38;2;{{rgb:ansi.normal.magenta}}
+.png 01;38;2;{{rgb:ansi.normal.magenta}}
+.svg 01;38;2;{{rgb:ansi.normal.magenta}}
+.svgz 01;38;2;{{rgb:ansi.normal.magenta}}
+.mng 01;38;2;{{rgb:ansi.normal.magenta}}
+.pcx 01;38;2;{{rgb:ansi.normal.magenta}}
+.mov 01;38;2;{{rgb:ansi.normal.magenta}}
+.mpg 01;38;2;{{rgb:ansi.normal.magenta}}
+.mpeg 01;38;2;{{rgb:ansi.normal.magenta}}
+.m2v 01;38;2;{{rgb:ansi.normal.magenta}}
+.mkv 01;38;2;{{rgb:ansi.normal.magenta}}
+.webm 01;38;2;{{rgb:ansi.normal.magenta}}
+.webp 01;38;2;{{rgb:ansi.normal.magenta}}
+.ogm 01;38;2;{{rgb:ansi.normal.magenta}}
+.mp4 01;38;2;{{rgb:ansi.normal.magenta}}
+.m4v 01;38;2;{{rgb:ansi.normal.magenta}}
+.mp4v 01;38;2;{{rgb:ansi.normal.magenta}}
+.vob 01;38;2;{{rgb:ansi.normal.magenta}}
+.qt  01;38;2;{{rgb:ansi.normal.magenta}}
+.nuv 01;38;2;{{rgb:ansi.normal.magenta}}
+.wmv 01;38;2;{{rgb:ansi.normal.magenta}}
+.asf 01;38;2;{{rgb:ansi.normal.magenta}}
+.rm  01;38;2;{{rgb:ansi.normal.magenta}}
+.rmvb 01;38;2;{{rgb:ansi.normal.magenta}}
+.flc 01;38;2;{{rgb:ansi.normal.magenta}}
+.avi 01;38;2;{{rgb:ansi.normal.magenta}}
+.fli 01;38;2;{{rgb:ansi.normal.magenta}}
+.flv 01;38;2;{{rgb:ansi.normal.magenta}}
+.gl 01;38;2;{{rgb:ansi.normal.magenta}}
+.dl 01;38;2;{{rgb:ansi.normal.magenta}}
+.xcf 01;38;2;{{rgb:ansi.normal.magenta}}
+.xwd 01;38;2;{{rgb:ansi.normal.magenta}}
+.yuv 01;38;2;{{rgb:ansi.normal.magenta}}
+.cgm 01;38;2;{{rgb:ansi.normal.magenta}}
+.emf 01;38;2;{{rgb:ansi.normal.magenta}}
+
+# https://wiki.xiph.org/MIME_Types_and_File_Extensions
+.ogv 01;38;2;{{rgb:ansi.normal.magenta}}
+.ogx 01;38;2;{{rgb:ansi.normal.magenta}}
+
+# audio formats
+.aac 00;38;2;{{rgb:ansi.normal.cyan}}
+.au 00;38;2;{{rgb:ansi.normal.cyan}}
+.flac 00;38;2;{{rgb:ansi.normal.cyan}}
+.m4a 00;38;2;{{rgb:ansi.normal.cyan}}
+.mid 00;38;2;{{rgb:ansi.normal.cyan}}
+.midi 00;38;2;{{rgb:ansi.normal.cyan}}
+.mka 00;38;2;{{rgb:ansi.normal.cyan}}
+.mp3 00;38;2;{{rgb:ansi.normal.cyan}}
+.mpc 00;38;2;{{rgb:ansi.normal.cyan}}
+.ogg 00;38;2;{{rgb:ansi.normal.cyan}}
+.ra 00;38;2;{{rgb:ansi.normal.cyan}}
+.wav 00;38;2;{{rgb:ansi.normal.cyan}}
+
+# https://wiki.xiph.org/MIME_Types_and_File_Extensions
+.oga 00;38;2;{{rgb:ansi.normal.cyan}}
+.opus 00;38;2;{{rgb:ansi.normal.cyan}}
+.spx 00;38;2;{{rgb:ansi.normal.cyan}}
+.xspf 00;38;2;{{rgb:ansi.normal.cyan}}
+
+# backup files
+*~ 00;38;2;{{rgb:ui.fg_dim}}
+*# 00;38;2;{{rgb:ui.fg_dim}}
+.bak 00;38;2;{{rgb:ui.fg_dim}}
+.crdownload 00;38;2;{{rgb:ui.fg_dim}}
+.dpkg-dist 00;38;2;{{rgb:ui.fg_dim}}
+.dpkg-new 00;38;2;{{rgb:ui.fg_dim}}
+.dpkg-old 00;38;2;{{rgb:ui.fg_dim}}
+.dpkg-tmp 00;38;2;{{rgb:ui.fg_dim}}
+.old 00;38;2;{{rgb:ui.fg_dim}}
+.orig 00;38;2;{{rgb:ui.fg_dim}}
+.part 00;38;2;{{rgb:ui.fg_dim}}
+.rej 00;38;2;{{rgb:ui.fg_dim}}
+.rpmnew 00;38;2;{{rgb:ui.fg_dim}}
+.rpmorig 00;38;2;{{rgb:ui.fg_dim}}
+.rpmsave 00;38;2;{{rgb:ui.fg_dim}}
+.swp 00;38;2;{{rgb:ui.fg_dim}}
+.tmp 00;38;2;{{rgb:ui.fg_dim}}
+.ucf-dist 00;38;2;{{rgb:ui.fg_dim}}
+.ucf-new 00;38;2;{{rgb:ui.fg_dim}}
+.ucf-old 00;38;2;{{rgb:ui.fg_dim}}
+
+#
+# Subsequent TERM or COLORTERM entries, can be used to add / override
+# config specific to those matching environment variables.

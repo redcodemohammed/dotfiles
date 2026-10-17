@@ -51,6 +51,8 @@ for sock in "${XDG_RUNTIME_DIR:-/run/user/$UID}"/nvim.*.0; do # every running Ne
         'execute("lua package.loaded.hypr_palette = nil; vim.cmd.colorscheme(\"hypr\")")' >/dev/null 2>&1 || true
 done
 vicinae theme set hypr >/dev/null 2>&1 || true
+fish -c 'set -U hypr_palette_stamp (date +%s%N)' >/dev/null 2>&1 || true # open fish shells re-read hypr_colors.fish
+pkill -USR2 -x cava >/dev/null 2>&1 || true                    # cava: SIGUSR2 reloads its colours
 systemctl --user try-restart openrgb-kb.service >/dev/null 2>&1 || true  # keyboard RGB (color.env)
 systemctl --user try-restart legion-kb.service >/dev/null 2>&1 || true   # the laptop's keyboard, same colour
 notify-send -a Wallpaper "Wallpaper" "$what" >/dev/null 2>&1 || true

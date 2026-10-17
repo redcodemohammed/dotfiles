@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Generate app color files from palette.toml. Rerun after editing the palette."""
 import json
+import re
 import tomllib
 from pathlib import Path
 
@@ -411,8 +412,96 @@ def gtk4_css(palette):
     )
 
 
+def wallpaper_colours(palette):
+    # [wallpaper] c1-c6 (from-wallpaper.py); the hand-made default has none: its ANSI colours.
+    if "wallpaper" in palette:
+        return palette["wallpaper"]
+    n = palette["ansi"]["normal"]
+    return {f"c{i + 1}": n[k] for i, k in enumerate(["green", "cyan", "blue", "magenta", "red", "yellow"])}
+
+
+def lookup(palette, key):
+    # "ui.accent", "ansi.normal.red", "wallpaper.c1"
+    if key.startswith("wallpaper."):
+        return wallpaper_colours(palette)[key.split(".", 1)[1]]
+    node = palette
+    for part in key.split("."):
+        node = node[part]
+    return node
+
+
+def template(name, comment):
+    # palette/templates/<name>: {{role}} becomes "#rrggbb", {{rgb:role}} "r;g;b" (dircolors);
+    # its "<comment>@" lines (notes about the template) are dropped.
+    def render(palette):
+        def fill(m):
+            form, _, key = m.group(1).rpartition(":")
+            value = lookup(palette, key)
+            if form == "rgb":
+                return ";".join(str(int(value[i:i + 2], 16)) for i in (1, 3, 5))
+            return value
+        lines = (ROOT / "palette/templates" / name).read_text().split("\n")
+        body = "\n".join(line for line in lines if not line.startswith(comment + "@"))
+        return f"{comment} {HEADER} Template: palette/templates/{name}.\n" + re.sub(r"\{\{([^}]+)\}\}", fill, body)
+    return render
+
+
+def fish_colors(palette):
+    # Sourced by every fish (conf.d) and again in open shells when wallpaper-apply bumps the
+    # universal hypr_palette_stamp. Syntax colours, the kawasaki prompt (its theme_color_* are
+    # only defaults: set first, these win), fzf and LS_COLORS (.dircolors, generated too).
+    ui, n, b = palette["ui"], palette["ansi"]["normal"], palette["ansi"]["bright"]
+    h = lambda c: c[1:]
+    syntax = {
+        "fish_color_normal": h(ui["fg"]), "fish_color_command": h(ui["accent"]),
+        "fish_color_keyword": h(n["magenta"]), "fish_color_quote": h(n["green"]),
+        "fish_color_redirection": h(n["cyan"]), "fish_color_end": h(n["cyan"]),
+        "fish_color_error": h(ui["alert"]), "fish_color_param": h(ui["fg"]),
+        "fish_color_option": h(b["blue"]), "fish_color_comment": h(ui["fg_muted"]),
+        "fish_color_operator": h(n["cyan"]), "fish_color_escape": h(n["magenta"]),
+        "fish_color_autosuggestion": h(ui["fg_dim"]), "fish_color_valid_path": "--underline",
+        "fish_color_cwd": h(ui["accent"]), "fish_color_cwd_root": h(ui["alert"]),
+        "fish_color_user": h(ui["accent"]), "fish_color_host": h(ui["fg_muted"]),
+        "fish_color_host_remote": h(n["yellow"]), "fish_color_cancel": h(ui["alert"]),
+        "fish_color_selection": f"--background={h(ui['surface_selected'])}",
+        "fish_color_search_match": f"--background={h(ui['surface_selected'])}",
+        "fish_color_history_current": "--bold",
+        "fish_pager_color_prefix": f"{h(ui['accent'])} --bold", "fish_pager_color_completion": h(ui["fg"]),
+        "fish_pager_color_description": h(ui["fg_muted"]), "fish_pager_color_progress": h(ui["fg_muted"]),
+        "fish_pager_color_selected_background": f"--background={h(ui['surface_selected'])}",
+    }
+    prompt = {
+        "error": ui["alert"], "superuser": ui["alert"], "user": ui["fg"], "group": ui["fg_dim"],
+        "host": ui["accent"], "separator": ui["fg_dim"], "bracket": ui["fg_muted"], "time": ui["fg_dim"],
+        "path": ui["fg"], "prompt": ui["accent"], "virtualenv": n["yellow"],
+        "status_prefix": ui["fg_muted"], "status_jobs": ui["accent"], "status_rw": ui["fg"],
+        "batt_icon": ui["fg"], "batt_charging": n["green"], "batt_discharging": ui["alert"],
+        "batt_0": ui["alert"], "batt_25": ui["alert"], "batt_50": n["yellow"], "batt_75": n["yellow"],
+        "batt_100": n["green"],
+    }
+    fzf = (f"--color=fg:{ui['fg_muted']},bg:-1,hl:{ui['accent']},fg+:{ui['fg']},bg+:{ui['surface_selected']},"
+           f"hl+:{ui['accent']},border:{ui['border']},header:{ui['fg_muted']},gutter:-1,spinner:{ui['accent']},"
+           f"info:{ui['fg_muted']},pointer:{ui['accent']},marker:{ui['accent']},prompt:{ui['accent']}")
+    lines = [f"# {HEADER}", "function __hypr_colors"]
+    lines += [f"    set -g {k} {v}" for k, v in syntax.items()]
+    lines += [f"    set -g theme_color_{k} {h(v)}" for k, v in prompt.items()]
+    lines += [f'    set -gx FZF_DEFAULT_OPTS "{fzf}"',
+              "    test -r ~/.dircolors; and eval (dircolors -c ~/.dircolors)",
+              "end",
+              "__hypr_colors",
+              "function __hypr_colors_reload --on-variable hypr_palette_stamp",
+              "    __hypr_colors",
+              "end"]
+    return "\n".join(lines) + "\n"
+
+
 # Paths are relative to the repo root, which mirrors $HOME (stow layout).
 OUTPUTS = {
+    ".config/fish/conf.d/hypr_colors.fish": fish_colors,
+    ".dircolors": template("dircolors", "#"),
+    ".config/cava/config": template("cava", "#"),
+    ".config/fastfetch/config.jsonc": template("fastfetch.jsonc", "//"),
+    ".peaclock/config": template("peaclock", "#"),  # read at start: reopen peaclock
     ".config/gtk-3.0/gtk.css": gtk3_css,
     ".config/gtk-4.0/gtk.css": gtk4_css,
     ".config/hypr/hypr_palette.lua": hypr_palette,
@@ -432,6 +521,9 @@ OUTPUTS = {
 # Spotifast documents it; Strata is unverified, copied to be safe.
 # Written only when the content differs, so setup/check.sh changes nothing when up to date.
 COPIES = {
+    # Flatpak GTK apps read gtk.css from their own sandboxed config, and can't follow the symlink
+    # into ~/dotfiles: a real copy there. Chorus (lyrics, owner 2026-10-17).
+    ".config/gtk-4.0/gtk.css": "~/.var/app/space.f1nn.chorus/config/gtk-4.0/gtk.css",
     "spotifast/Hypr.json": "~/.config/spotifast/themes/Hypr.json",
     "strata/hypr.toml": "~/.config/strata/themes/hypr.toml",
     # VS Code: a local extension, a real folder (it may skip symlinked extensions). package.json

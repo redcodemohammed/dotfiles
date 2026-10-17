@@ -34,3 +34,11 @@ blue             = "#7da5ce"
 magenta          = "#be98bf"
 cyan             = "#7cbcb9"
 white            = "#e6e6e6"
+
+[wallpaper]  # the image's own colours, in hue order (cava)
+c1               = "#555555"
+c2               = "#6c6c6c"
+c3               = "#838383"
+c4               = "#9b9b9b"
+c5               = "#b4b4b4"
+c6               = "#cecece"
