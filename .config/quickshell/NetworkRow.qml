@@ -5,7 +5,8 @@ import Quickshell.Networking
 // signal bars, name, a lock when secured, and a tag (Connected, Saved, else the band). Clicked, it
 // opens on the surface colour with a border: security, band, signal and bit rate; a password field
 // for a new secured network (Enter connects); "Wrong password" (red) or "Connecting"; then Connect
-// (accent), Disconnect and Forget. The password lives in the panel, so a re-sort keeps it. The
+// (accent), Disconnect and Forget, then for a saved network its own settings (NetworkProfile.qml:
+// Share network (QR); Auto-connect, Metered and DNS are on the Settings tab's card). The password lives in the panel, so a re-sort keeps it. The
 // keyboard's row (search focused, arrows) has an accent border.
 Rectangle {
     id: row
@@ -267,6 +268,16 @@ Rectangle {
                         row.panel.sel = ""
                     }
                 }
+            }
+
+            NetworkProfile { // a saved network: Share network (QR) only; its Auto-connect, Metered
+                visible: row.expanded && row.net.known && shareable // and DNS are on the Settings
+                showDns: false                                     // tab's card (owner)
+                showSwitches: false
+                ssid: row.net.name
+                device: row.panel.wifi ? row.panel.wifi.name : ""
+                active: row.net.connected
+                shareable: ["Open", "Open (encrypted)", "WPA", "WPA2", "WPA3"].indexOf(row.panel.securityLabel(row.net)) >= 0
             }
         }
     }

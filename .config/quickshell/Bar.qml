@@ -102,6 +102,7 @@ PanelWindow {
             if (name === "record") recordPanel.toggle()
             else if (name === "sound") soundPanel.toggle()
             else if (name === "bluetooth") bluetoothPanel.toggle()
+            else if (name === "network") networkPanel.toggle()
         }
     }
     PomodoroPanel { // drops from the Pomodoro block

@@ -284,58 +284,25 @@ PopupWindow {
             width: parent.width - 28
             spacing: 8
 
-            Item { // Wi-Fi, rescan, on/off
-                width: parent.width
+            Text { // the panel's title; Wi-Fi's own switch is in the Wi-Fi tab (owner, 2026-10-17)
                 height: 24
-                Text {
-                    anchors.verticalCenter: parent.verticalCenter
-                    text: "Wi-Fi"
-                    font.family: "JetBrainsMono Nerd Font"
-                    font.pixelSize: 14
-                    color: Theme.fg
-                }
-                Row {
-                    anchors.right: parent.right
-                    spacing: 8
-                    Item {
-                        width: 24
-                        height: 24
-                        Text {
-                            anchors.centerIn: parent
-                            text: Icons.arrowClockwise
-                            font.family: Icons.regular
-                            font.pixelSize: 16
-                            color: rescanArea.containsMouse ? Theme.fg : Theme.fgMuted
-                        }
-                        MouseArea {
-                            id: rescanArea
-                            anchors.fill: parent
-                            hoverEnabled: true
-                            onClicked: panel.scan(true)
-                        }
-                    }
-                    PanelSwitch {
-                        on: panel.wifiOn && !panel.airplane
-                        onToggled: {
-                            if (panel.airplane)
-                                panel.setAirplane(false)
-                            else
-                                Networking.wifiEnabled = !Networking.wifiEnabled
-                        }
-                    }
-                }
+                verticalAlignment: Text.AlignVCenter
+                text: "Network"
+                font.family: "JetBrainsMono Nerd Font"
+                font.pixelSize: 14
+                color: Theme.fg
             }
 
             Row { // tabs
                 width: parent.width
                 spacing: 4
                 Repeater {
-                    model: [{ id: "nets", label: "Networks" }, { id: "vpn", label: "VPN" }, { id: "settings", label: "Settings" }]
+                    model: [{ id: "nets", label: "Wi-Fi" }, { id: "vpn", label: "VPN" }, { id: "hotspot", label: "Hotspot" }, { id: "settings", label: "Settings" }]
                     Rectangle {
                         id: tabButton
                         required property var modelData
                         readonly property bool on: panel.tab === modelData.id
-                        width: (parent.width - 8) / 3
+                        width: (parent.width - 12) / 4
                         height: 32
                         color: on ? Theme.accent : Theme.bg
                         border.width: 2
@@ -396,6 +363,49 @@ PopupWindow {
                             reveal.close()
                         }
                         NetState.check()
+                    }
+                }
+            }
+
+            Item { // Wi-Fi tab: on/off and rescan, above the list they affect
+                visible: panel.tab === "nets"
+                width: parent.width
+                height: 24
+                Text {
+                    anchors.verticalCenter: parent.verticalCenter
+                    text: "Wi-Fi"
+                    font.family: "JetBrainsMono Nerd Font"
+                    font.pixelSize: 13
+                    color: Theme.fg
+                }
+                Row {
+                    anchors.right: parent.right
+                    spacing: 8
+                    Item {
+                        width: 24
+                        height: 24
+                        Text {
+                            anchors.centerIn: parent
+                            text: Icons.arrowClockwise
+                            font.family: Icons.regular
+                            font.pixelSize: 16
+                            color: rescanArea.containsMouse ? Theme.fg : Theme.fgMuted
+                        }
+                        MouseArea {
+                            id: rescanArea
+                            anchors.fill: parent
+                            hoverEnabled: true
+                            onClicked: panel.scan(true)
+                        }
+                    }
+                    PanelSwitch {
+                        on: panel.wifiOn && !panel.airplane
+                        onToggled: {
+                            if (panel.airplane)
+                                panel.setAirplane(false)
+                            else
+                                Networking.wifiEnabled = !Networking.wifiEnabled
+                        }
                     }
                 }
             }
@@ -575,6 +585,12 @@ PopupWindow {
 
             NetworkSettings {
                 visible: panel.tab === "settings"
+                width: parent.width
+                panel: content.owner
+            }
+
+            NetworkHotspot {
+                visible: panel.tab === "hotspot"
                 width: parent.width
                 panel: content.owner
             }
