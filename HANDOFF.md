@@ -709,6 +709,17 @@ Done (section 4):
   documented as writable) and pairing. No agent runs (bluetui brings its own; adapter Pairable:
   no), and Quickshell has none: a small Python agent (python-dbus and python-gobject are
   installed) that tells the panel what a device asks (confirm a code, show a passkey).
+- **Bluetooth panel, step 5b** (owner, 2026-10-17, works): Scan
+  (adapter.discovering; writable, BlueZ confirms it a moment later; tested with a throwaway qs
+  instance: 4 unpaired devices in 10 s, stopping works) lists nearby named, unpaired devices;
+  a click pairs, then trusts and connects (a 500 ms Timer follows `paired`; "Couldn't pair" when
+  pairing stops without it or after 60 s). Closing the panel stops the scan and answers any open
+  question no. Pairing agent: `.local/bin/bt-agent` (python-dbus + GLib; Agent1 at
+  /hypr/bt_agent, KeyboardDisplay, default agent; AuthorizeService accepted; one line per
+  request out, the answer in) run by `BtAgent.qml` for the whole session (restarted after 5 s if
+  it exits); a question while the panel is closed is answered no. The panel shows "Does X show
+  123456?", "Type 123456 on X", or a code field for passkey and PIN. Pairing confirmed by the
+  owner.
 - **Record and sound panels** (owner, 2026-10-17, works): the record and volume blocks open
   drop-downs (RecordPanel.qml, SoundPanel.qml, on Reveal) in place of the island views; they reuse
   IslandRecord (setup 340x324 while idle, the recording view 340x172 while recording) and

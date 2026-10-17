@@ -7,7 +7,9 @@ import Quickshell.Widgets
 // 340 wide. Bluetooth on/off, then the paired devices, connected first: each row has the device's
 // icon, its name and the battery level when it reports one, and Connected / Connecting / Paired.
 // A click opens the row: Connect or Disconnect, and Forget (a second click within 3 s, like
-// Reboot). Step 5a; next: Scan and pair new devices (a pairing agent).
+// Reboot). Scan (step 5b) lists nearby devices that aren't paired; a click pairs, trusts and
+// connects one. Questions during pairing (does this code match, type this code) come from
+// BtAgent.qml (.local/bin/bt-agent) and show at the top. Closing the panel stops the scan.
 // All of it is Quickshell.Bluetooth (BlueZ over D-Bus).
 PopupWindow {
     id: panel
@@ -30,6 +32,36 @@ PopupWindow {
         .sort((a, b) => (b.connected - a.connected) || a.name.localeCompare(b.name)) : []
     property string sel: ""    // the open row (address)
     property string armed: ""  // the row whose Forget waits for its second click
+    readonly property var nearby: on && adapter.discovering ? Bluetooth.devices.values
+        .filter(d => !d.paired && (d.name || d.deviceName)).sort((a, b) => a.name.localeCompare(b.name)) : []
+    property string pairingWith: "" // address being paired: trusted and connected once paired
+    property string pairError: ""
+
+    function pair(dev) {
+        pairError = ""
+        pairingWith = dev.address
+        dev.pair()
+    }
+    Timer { // follows the pairing: done, or given up after 60 s
+        interval: 500
+        repeat: true
+        running: panel.pairingWith !== ""
+        property int ticks: 0
+        onRunningChanged: ticks = 0
+        onTriggered: {
+            const dev = Bluetooth.devices.values.find(d => d.address === panel.pairingWith)
+            if (dev && dev.paired) {
+                dev.trusted = true
+                dev.connect()
+                panel.pairingWith = ""
+                BtAgent.shown = null
+            } else if (!dev || (!dev.pairing && ++ticks > 4) || ticks > 120) {
+                panel.pairError = "Couldn't pair " + (dev ? (dev.name || dev.address) : "the device")
+                panel.pairingWith = ""
+                BtAgent.shown = null
+            }
+        }
+    }
 
     property double closedAt: 0
     function toggle() {
@@ -39,10 +71,15 @@ PopupWindow {
             visible = true
     }
     onVisibleChanged: {
+        BtAgent.panelOpen = visible
         if (!visible) {
             closedAt = Date.now()
             sel = ""
             armed = ""
+            pairError = ""
+            if (adapter && adapter.discovering)
+                adapter.discovering = false
+            BtAgent.answer("no")
         }
     }
     Timer {
@@ -114,6 +151,73 @@ PopupWindow {
                     on: panel.on
                     onToggled: panel.adapter.enabled = !panel.on
                 }
+            }
+
+            Rectangle { // the agent's question, or the code to type
+                visible: BtAgent.request !== null || BtAgent.shown !== null
+                width: parent.width
+                height: visible ? promptColumn.implicitHeight + 24 : 0
+                color: Theme.bg
+                border.width: 2
+                border.color: Theme.accent
+                Column {
+                    id: promptColumn
+                    x: 12
+                    y: 12
+                    width: parent.width - 24
+                    spacing: 8
+                    readonly property var req: BtAgent.request
+                    Label {
+                        width: parent.width
+                        wrapMode: Text.Wrap
+                        text: {
+                            const q = promptColumn.req
+                            if (q === null)
+                                return BtAgent.shown ? "Type " + BtAgent.shown.code + " on "
+                                    + BtAgent.nameOf(BtAgent.shown.address) + ", then Enter" : ""
+                            const name = BtAgent.nameOf(q.address)
+                            return q.kind === "confirm" ? "Does " + name + " show " + q.code + "?"
+                                : q.kind === "authorize" ? "Pair with " + name + "?"
+                                : q.kind === "passkey" ? "Type the code " + name + " shows"
+                                : "PIN for " + name + " (often 0000)"
+                        }
+                    }
+                    PanelInput {
+                        id: codeField
+                        visible: promptColumn.req !== null && (promptColumn.req.kind === "passkey" || promptColumn.req.kind === "pin")
+                        width: parent.width
+                        placeholder: "Code"
+                        onAccepted: { BtAgent.answer(text); text = "" }
+                        onVisibleChanged: if (visible) focusInput()
+                    }
+                    Row {
+                        visible: promptColumn.req !== null
+                        spacing: 4
+                        Action {
+                            label: promptColumn.req && promptColumn.req.kind === "confirm" ? "Yes, pair" : promptColumn.req && promptColumn.req.kind === "authorize" ? "Pair" : "OK"
+                            primary: true
+                            onClicked: {
+                                const k = promptColumn.req.kind
+                                BtAgent.answer(k === "passkey" || k === "pin" ? codeField.text : "yes")
+                                codeField.text = ""
+                            }
+                        }
+                        Action {
+                            label: "Cancel"
+                            onClicked: BtAgent.answer("no")
+                        }
+                    }
+                }
+            }
+
+            Text {
+                visible: panel.pairError !== ""
+                width: parent.width
+                wrapMode: Text.Wrap
+                text: panel.pairError
+                font.family: "JetBrainsMono Nerd Font"
+                font.pixelSize: 12
+                color: Theme.alert
             }
 
             Text {
@@ -209,6 +313,74 @@ PopupWindow {
                                 }
                             }
                         }
+                    }
+                }
+            }
+
+            Item { // Scan, then what it finds
+                visible: panel.on
+                width: parent.width
+                height: 36
+                Text {
+                    anchors.bottom: parent.bottom
+                    anchors.bottomMargin: 4
+                    text: panel.adapter && panel.adapter.discovering ? "Nearby" : "Pair a new device"
+                    font.family: "JetBrainsMono Nerd Font"
+                    font.pixelSize: 12
+                    color: Theme.fgMuted
+                }
+                Action {
+                    anchors.right: parent.right
+                    anchors.bottom: parent.bottom
+                    label: panel.adapter && panel.adapter.discovering ? "Stop" : "Scan"
+                    onClicked: panel.adapter.discovering = !panel.adapter.discovering
+                }
+            }
+
+            Text {
+                visible: panel.on && panel.adapter.discovering && panel.nearby.length === 0
+                text: "Looking… put the device in pairing mode"
+                font.family: "JetBrainsMono Nerd Font"
+                font.pixelSize: 12
+                color: Theme.fgDim
+            }
+
+            Repeater {
+                model: panel.nearby
+                Rectangle {
+                    id: near
+                    required property var modelData
+                    readonly property bool pairing: panel.pairingWith === modelData.address
+                    width: column.width
+                    height: 40
+                    color: nearHover.containsMouse ? Theme.surfaceSelected : "transparent"
+                    IconImage {
+                        x: 10
+                        anchors.verticalCenter: parent.verticalCenter
+                        implicitSize: 20
+                        source: Quickshell.iconPath(near.modelData.icon || "bluetooth", "bluetooth")
+                    }
+                    Label {
+                        x: 38
+                        anchors.verticalCenter: parent.verticalCenter
+                        width: parent.width - 38 - nearTag.implicitWidth - 20
+                        elide: Text.ElideRight
+                        text: near.modelData.name || near.modelData.deviceName
+                    }
+                    Label {
+                        id: nearTag
+                        anchors.right: parent.right
+                        anchors.rightMargin: 10
+                        anchors.verticalCenter: parent.verticalCenter
+                        text: near.pairing ? "Pairing…" : "Pair"
+                        color: near.pairing ? Theme.accent : Theme.fgDim
+                    }
+                    MouseArea {
+                        id: nearHover
+                        anchors.fill: parent
+                        hoverEnabled: true
+                        enabled: panel.pairingWith === ""
+                        onClicked: panel.pair(near.modelData)
                     }
                 }
             }

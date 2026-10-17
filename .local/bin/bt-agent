@@ -1,0 +1,131 @@
+#!/usr/bin/env python3
+"""bt-agent: the Bluetooth pairing agent for the shell's Bluetooth panel (owner, 2026-10-17).
+
+BlueZ asks an agent whenever pairing needs the user: confirm a code, show or type a passkey or a
+PIN. Quickshell (Bluetooth.qml) runs this and talks to it in lines:
+  out: confirm <addr> <code>    in: yes | no        (numeric comparison)
+  out: authorize <addr>         in: yes | no        (pairing with no code: "Just Works")
+  out: passkey <addr>           in: <digits> | no   (type the code shown on the device)
+  out: pin <addr>               in: <text> | no     (old devices)
+  out: show <addr> <code>                           (type this code on the device)
+  out: cancel                                       (BlueZ gave up on the request)
+  out: ready                                        (registered as the default agent)
+Capability KeyboardDisplay, so every pairing method is possible. Services of a device being
+connected are authorized without asking (BlueZ only asks for devices that aren't trusted yet).
+"""
+import sys
+
+import dbus
+import dbus.service
+from dbus.mainloop.glib import DBusGMainLoop
+from gi.repository import GLib
+
+AGENT_PATH = "/hypr/bt_agent"
+pending = None  # (kind, reply, error) of the request waiting for a line on stdin
+
+
+class Rejected(dbus.DBusException):
+    _dbus_error_name = "org.bluez.Error.Rejected"
+
+
+def address(path):
+    return str(path).rsplit("/", 1)[-1].removeprefix("dev_").replace("_", ":")
+
+
+def say(*words):
+    print(*words, flush=True)
+
+
+def ask(kind, device, reply, error, *extra):
+    global pending
+    if pending is not None:  # one at a time: the older one is answered no
+        pending[2](Rejected("Superseded"))
+    pending = (kind, reply, error)
+    say(kind, address(device), *extra)
+
+
+def on_line(source, condition):
+    global pending
+    line = sys.stdin.readline()
+    if not line:  # Quickshell went away
+        loop.quit()
+        return False
+    answer = line.strip()
+    if pending is None:
+        return True
+    kind, reply, error = pending
+    pending = None
+    if answer in ("", "no"):
+        error(Rejected("Rejected by the user"))
+    elif kind in ("confirm", "authorize"):
+        reply()
+    elif kind == "passkey":
+        if answer.isdigit():
+            reply(dbus.UInt32(int(answer)))
+        else:
+            error(Rejected("Not a number"))
+    else:  # pin
+        reply(answer)
+    return True
+
+
+class Agent(dbus.service.Object):
+    @dbus.service.method("org.bluez.Agent1", in_signature="", out_signature="")
+    def Release(self):
+        loop.quit()
+
+    @dbus.service.method("org.bluez.Agent1", in_signature="os", out_signature="")
+    def AuthorizeService(self, device, uuid):
+        return
+
+    @dbus.service.method("org.bluez.Agent1", in_signature="o", out_signature="s",
+                         async_callbacks=("reply", "error"))
+    def RequestPinCode(self, device, reply, error):
+        ask("pin", device, reply, error)
+
+    @dbus.service.method("org.bluez.Agent1", in_signature="o", out_signature="u",
+                         async_callbacks=("reply", "error"))
+    def RequestPasskey(self, device, reply, error):
+        ask("passkey", device, reply, error)
+
+    @dbus.service.method("org.bluez.Agent1", in_signature="ouq", out_signature="")
+    def DisplayPasskey(self, device, passkey, entered):
+        say("show", address(device), f"{int(passkey):06d}")
+
+    @dbus.service.method("org.bluez.Agent1", in_signature="os", out_signature="")
+    def DisplayPinCode(self, device, pincode):
+        say("show", address(device), str(pincode))
+
+    @dbus.service.method("org.bluez.Agent1", in_signature="ou", out_signature="",
+                         async_callbacks=("reply", "error"))
+    def RequestConfirmation(self, device, passkey, reply, error):
+        ask("confirm", device, reply, error, f"{int(passkey):06d}")
+
+    @dbus.service.method("org.bluez.Agent1", in_signature="o", out_signature="",
+                         async_callbacks=("reply", "error"))
+    def RequestAuthorization(self, device, reply, error):
+        ask("authorize", device, reply, error)
+
+    @dbus.service.method("org.bluez.Agent1", in_signature="", out_signature="")
+    def Cancel(self):
+        global pending
+        pending = None
+        say("cancel")
+
+
+DBusGMainLoop(set_as_default=True)
+bus = dbus.SystemBus()
+agent = Agent(bus, AGENT_PATH)
+manager = dbus.Interface(bus.get_object("org.bluez", "/org/bluez"), "org.bluez.AgentManager1")
+manager.RegisterAgent(AGENT_PATH, "KeyboardDisplay")
+manager.RequestDefaultAgent(AGENT_PATH)
+say("ready")
+loop = GLib.MainLoop()
+GLib.io_add_watch(sys.stdin, GLib.IO_IN | GLib.IO_HUP, on_line)
+try:
+    loop.run()
+finally:
+    try:
+        manager.UnregisterAgent(AGENT_PATH)
+    except dbus.DBusException:
+        pass
