@@ -1,11 +1,12 @@
 import QtQuick
+import Quickshell
 import Quickshell.Hyprland
 
 // Workspaces 1 to 5, each its number and an icon per window (WorkspaceSquare.qml; owner,
 // 2026-10-17: icons instead of bare numbers). Active: amber number square on a lighter group.
 // A click goes to a workspace; the wheel over the block steps through the existing ones.
 // hyprsplit gives each monitor its own ID range by its priority (hyprland.lua:
-// hs.monitor_priority; G5 1-5, laptop 6-10, LF24 11-15), so a monitor shows the workspaces of its
+// hs.monitor_priority, from monitors.lua's workspace_order: 1-5, 6-10, 11-15), so a monitor shows the workspaces of its
 // range in slots 1 to 5. A screen that goes away (lid shut) leaves its workspaces on a survivor:
 // they show after the five, behind the glyph of the screen they belong to (laptop or monitor),
 // numbered as on that screen; a click goes there (owner, 2026-10-15). When the screen comes back,
@@ -14,7 +15,9 @@ Row {
     id: root
     required property var screen
     readonly property var monitor: Hyprland.monitorFor(screen)
-    readonly property var priority: ["HDMI-A-1", "eDP-1", "DP-2"] // as hs.monitor_priority
+    // monitors.lua's workspace_order (hyprsplit's priority), passed by hyprland.lua; unset: no ranges
+    readonly property var priority: (Quickshell.env("DESKTOP_WORKSPACE_ORDER") ?? "").split(",").filter(n => n !== "")
+    readonly property string laptopOutput: Quickshell.env("DESKTOP_LAPTOP_OUTPUT") ?? ""
     readonly property bool known: monitor !== null && priority.indexOf(monitor.name) >= 0
     readonly property int base: known ? priority.indexOf(monitor.name) * 5 : 0
     function own(ws) {
@@ -64,7 +67,7 @@ Row {
 
             Text {
                 anchors.verticalCenter: parent.verticalCenter
-                text: group.modelData.home.startsWith("eDP") ? Icons.laptop : Icons.monitor
+                text: group.modelData.home === root.laptopOutput ? Icons.laptop : Icons.monitor
                 font.family: Icons.regular
                 font.pixelSize: 16
                 color: Theme.fgMuted

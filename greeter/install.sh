@@ -8,10 +8,17 @@ src=$(cd "$(dirname "$0")" && pwd)
 dots=$(dirname "$src")
 
 install -d -m 755 /etc/greetd/quickshell-greeter
-install -m 644 "$src/shell.qml" "$src/GreeterContent.qml" /etc/greetd/quickshell-greeter/
+# The login user: whoever runs this with sudo (the greeter shows one user, no user list).
+user=${SUDO_USER:-${GREETER_USER:-}}
+[ -n "$user" ] && [ "$user" != root ] || { echo "run with sudo as the user who logs in (or set GREETER_USER)" >&2; exit 1; }
+sed "s|@USER@|$user|" "$src/shell.qml" >/tmp/greeter-shell.qml.$$
+install -m 644 /tmp/greeter-shell.qml.$$ /etc/greetd/quickshell-greeter/shell.qml
+rm -f /tmp/greeter-shell.qml.$$
+install -m 644 "$src/GreeterContent.qml" /etc/greetd/quickshell-greeter/
 install -m 644 "$dots/.config/quickshell/Theme.qml" "$dots/.config/quickshell/Icons.qml" /etc/greetd/quickshell-greeter/
 install -m 644 "$src/hyprland.lua" /etc/greetd/hyprland-greeter.lua
 install -m 644 "$dots/.config/hypr/hypr_palette.lua" /etc/greetd/hypr_palette.lua
+install -m 644 "$dots/.config/hypr/monitors.lua" /etc/greetd/monitors.lua
 python3 -I "$dots/palette/cursors.py" --dest /usr/share/icons/hypr-cursors
 install -m 644 "$src/greetd.toml" /etc/greetd/quickshell-greeter.toml
 install -m 644 "$src/greetd-test.toml" /etc/greetd/quickshell-greeter-test.toml

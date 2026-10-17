@@ -2,13 +2,18 @@
 -- user (/etc/greetd/quickshell-greeter.toml); it shows the Quickshell greeter and exits when the
 -- greeter quits, so greetd can start the chosen session. Installed to /etc/greetd by
 -- greeter/install.sh, with hypr_palette.lua beside it (the greeter user can't read ~).
--- Monitors: the same as ~/.config/hypr/hyprland.lua (keep them in sync).
+-- Monitors: monitors.lua, the same file as the session's (install.sh copies it beside this one).
 
 local palette = require("hypr_palette")
+local screens = require("monitors")
 
-hl.monitor({ output = "eDP-1", mode = "2560x1600@165.04", position = "0x101", scale = 4 / 3 })
-hl.monitor({ output = "desc:Samsung Electric Company Odyssey G5", mode = "2560x1440@144", position = "1920x0", scale = 1 })
-hl.monitor({ output = "desc:Samsung Electric Company LF24T35", mode = "1920x1080@74.97", position = "4480x161", scale = 1 })
+if screens.laptop then
+    local l = screens.laptop
+    hl.monitor({ output = l.output, mode = l.mode, position = l.position, scale = l.scale })
+end
+for _, s in ipairs(screens.screens) do
+    hl.monitor({ output = s.output, mode = s.mode, position = s.position, scale = s.scale })
+end
 hl.monitor({ output = "", mode = "preferred", position = "auto", scale = "auto" }) -- catch-all, never remove
 
 hl.env("XCURSOR_SIZE", "24")

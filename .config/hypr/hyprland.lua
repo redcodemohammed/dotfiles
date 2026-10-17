@@ -22,9 +22,18 @@
 ------------------
 
 -- See https://wiki.hypr.land/Configuring/Basics/Monitors/
--- Layout copied from COSMIC: laptop left, main centre, right external.
--- Positions are logical pixels (after scale). Externals match by description
--- (make + model), so a port change doesn't matter.
+-- The screens themselves: monitors.lua (the one file to edit for another machine).
+local screens = require("monitors")
+local laptop = screens.laptop
+local main_model = nil
+for _, s in ipairs(screens.screens) do
+    if s.main then main_model = s.model end
+end
+-- The bar (Quickshell, started from here) reads these: which screen gets the full bar, which one
+-- is the laptop's, and the workspace ranges.
+hl.env("DESKTOP_MAIN_MODEL", main_model or "")
+hl.env("DESKTOP_LAPTOP_OUTPUT", laptop and laptop.output or "")
+hl.env("DESKTOP_WORKSPACE_ORDER", table.concat(screens.workspace_order or {}, ","))
 
 -- Lid (spec: "Lid closed: its workspaces land on the survivor"; lid close with externals must
 -- not suspend). With the lid shut and another screen attached, the laptop screen is disabled and
@@ -43,39 +52,25 @@ local function lid_closed()
 end
 local function other_screens()
     for _, m in ipairs(hl.get_monitors()) do
-        if m.name ~= "eDP-1" then
+        if laptop == nil or m.name ~= laptop.output then
             return true
         end
     end
     return false
 end
 
--- Laptop (left), scale 4/3 (owner, 2026-10-15; was 1.6, 1 was too small): 2560x1600 / (4/3) =
--- 1920x1200 logical. y keeps its middle level where it was at 1.6 (701), so the mouse crosses to
--- the G5 at the same height. Off while the lid is shut and another screen is attached (above).
-hl.monitor({
-    output   = "eDP-1",
-    mode     = "2560x1600@165.04",
-    position = "0x101",
-    scale    = 4 / 3,
-    disabled = lid_closed() and other_screens(),
-})
-
--- Main (centre): Samsung Odyssey G5.
-hl.monitor({
-    output   = "desc:Samsung Electric Company Odyssey G5",
-    mode     = "2560x1440@144",
-    position = "1920x0",
-    scale    = 1,
-})
-
--- Right: Samsung LF24T35.
-hl.monitor({
-    output   = "desc:Samsung Electric Company LF24T35",
-    mode     = "1920x1080@74.97",
-    position = "4480x161",
-    scale    = 1,
-})
+if laptop ~= nil then
+    hl.monitor({
+        output   = laptop.output,
+        mode     = laptop.mode,
+        position = laptop.position,
+        scale    = laptop.scale,
+        disabled = lid_closed() and other_screens(),
+    })
+end
+for _, s in ipairs(screens.screens) do
+    hl.monitor({ output = s.output, mode = s.mode, position = s.position, scale = s.scale })
+end
 
 -- Catch-all fallback: any unmatched screen still lights up. Never remove.
 hl.monitor({
@@ -417,17 +412,17 @@ end, "Windows: Float / tile")
 hl.bind("switch:on:Lid Switch", hl.dsp.exec_cmd("hyprctl reload"), { locked = true })
 hl.bind("switch:off:Lid Switch", hl.dsp.exec_cmd("hyprctl reload"), { locked = true })
 hl.on("monitor.added", function(m)
-    if m ~= nil and m.name ~= "eDP-1" and lid_closed() then
+    if m ~= nil and laptop ~= nil and m.name ~= laptop.output and lid_closed() then
         hl.exec_cmd("hyprctl reload")
     end
 end)
--- The laptop screen gone (lid shut): its workspaces (hyprsplit's 6-10) go to the main screen, the
--- G5, not wherever Hyprland put them (owner, 2026-10-15). The G5 keeps showing what it showed; they
+-- The laptop screen gone (lid shut): its workspaces (hyprsplit's 6-10) go to the main screen
+-- (monitors.lua), not wherever Hyprland put them (owner, 2026-10-15). The G5 keeps showing what it showed; they
 -- appear on its bar after its own five. hyprsplit moves them home when the screen comes back.
 local function laptop_workspaces_to_main()
     local main = nil
     for _, m in ipairs(hl.get_monitors()) do
-        if m.description ~= nil and m.description:find("Odyssey G5", 1, true) then
+        if main_model ~= nil and m.description ~= nil and m.description:find(main_model, 1, true) then
             main = m
         end
     end
@@ -445,7 +440,7 @@ local function laptop_workspaces_to_main()
     end
 end
 hl.on("monitor.removed", function(m)
-    if m ~= nil and m.name == "eDP-1" then
+    if m ~= nil and laptop ~= nil and m.name == laptop.output then
         laptop_workspaces_to_main()
     end
     if lid_closed() and not other_screens() then
@@ -485,9 +480,9 @@ bind(mainMod .. " + SHIFT + code:60", hl.dsp.window.move({ monitor = "r", follow
 -- Native fallback: swap hs.dsp.* back to hl.dsp.* and drop the require.
 local hs = require("hyprsplit")
 hs.config({ num_workspaces = 5 })
--- Fixed ID ranges per screen: main 1-5, laptop 6-10, right 11-15.
+-- Fixed ID ranges per screen, five each, in monitors.lua's workspace_order.
 -- hyprsplit compares name or description exactly (no prefix match like hl.monitor).
-hs.monitor_priority({ "HDMI-A-1", "eDP-1", "DP-2" })
+hs.monitor_priority(screens.workspace_order)
 for i = 1, 5 do
     local key = "code:" .. (i + 9)
     bind(mainMod .. " + " .. key,             hs.dsp.focus({ workspace = i }), "Workspaces: Go to 1-5")

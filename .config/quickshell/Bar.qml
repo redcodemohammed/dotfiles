@@ -5,7 +5,7 @@ import Quickshell.Services.SystemTray
 // Top bar, one per screen: 32px tall, floating 6px from the screen's top and sides. The bar is
 // transparent; each widget sits on its own block in the bar colour, 6px apart, so the widgets
 // float (owner, 2026-10-15). The bar centre belongs to the island, a notch from the top edge.
-// Profiles (spec, "Monitors and bars"): the main screen (the G5) gets the full bar, the others a
+// Profiles (spec, "Monitors and bars"): the main screen (monitors.lua's `main`) gets the full bar, the others a
 // slim one (workspaces, window title, clock; the laptop's adds network and battery). A screen on
 // its own gets the full bar, and so does the laptop when the G5 is away. Screens are matched by
 // model, like the Hyprland rules match by description. Quickshell makes and drops a bar per screen
@@ -16,9 +16,13 @@ PanelWindow {
     required property var modelData
     screen: modelData
 
-    readonly property bool laptop: modelData.name.startsWith("eDP")
-    readonly property bool mainPresent: [...Quickshell.screens].some(s => s.model === "Odyssey G5")
-    readonly property bool full: Quickshell.screens.length === 1 || modelData.model === "Odyssey G5"
+    // From hyprland.lua (monitors.lua), through the environment. Unset (started elsewhere, or no
+    // main screen named): every screen gets the full bar.
+    readonly property string mainModel: Quickshell.env("DESKTOP_MAIN_MODEL") ?? ""
+    readonly property string laptopOutput: Quickshell.env("DESKTOP_LAPTOP_OUTPUT") ?? ""
+    readonly property bool laptop: laptopOutput !== "" && modelData.name === laptopOutput
+    readonly property bool mainPresent: mainModel !== "" && [...Quickshell.screens].some(s => s.model === mainModel)
+    readonly property bool full: Quickshell.screens.length === 1 || mainModel === "" || modelData.model === mainModel
         || (laptop && !mainPresent)
     // The settings panel can hide the slim bars (Bar & island, "Bars on other screens").
     visible: full || Settings.bar.otherScreens

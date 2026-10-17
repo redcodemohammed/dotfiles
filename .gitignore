@@ -33,3 +33,4 @@
 # Machine state, kept local
 /.config/fish/fish_variables
 /.peaclock/history
+/.config/atuin/atuin-receipt.json

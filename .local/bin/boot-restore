@@ -32,7 +32,7 @@ sed -i -E 's|^command = .*|command = "agreety --cmd start-hyprland"|' /etc/greet
 systemctl enable greetd.service
 rm -rf /etc/greetd/quickshell-greeter /etc/greetd/quickshell-greeter.toml \
     /etc/greetd/quickshell-greeter-test.toml /etc/greetd/hyprland-greeter.lua \
-    /etc/greetd/hypr_palette.lua /var/lib/quickshell-greeter
+    /etc/greetd/hypr_palette.lua /etc/greetd/monitors.lua /var/lib/quickshell-greeter
 
 step="Boot splash"
 echo; echo "== $step: off"

@@ -7,14 +7,14 @@ import Quickshell.Services.Greetd
 
 // Login screen (owner's choice, 2026-10-15): the lock screen's look on greetd. Runs as the greeter
 // user inside a greeter-only Hyprland (/etc/greetd/hyprland-greeter.lua); installed to
-// /etc/greetd/quickshell-greeter by greeter/install.sh. One user (mohammed), a session picker
+// /etc/greetd/quickshell-greeter by greeter/install.sh. One user (the one who ran install.sh), a session picker
 // (/usr/share/wayland-sessions; the last one used is kept in $HOME = /var/lib/quickshell-greeter),
 // Restart and Shut down. Session-lock surfaces cover every screen and take the keyboard on the
 // focused one, like the lock. GREETER_TEST=1 (the test config, terminal 7): after a correct
 // password it launches `true`, so login is proven without starting a second desktop.
 ShellRoot {
     id: root
-    readonly property string user: "mohammed"
+    readonly property string user: "@USER@" // install.sh writes the installing user ($SUDO_USER) here
     readonly property bool test: Quickshell.env("GREETER_TEST") === "1"
     readonly property string lastPath: Quickshell.env("HOME") + "/last-session"
 

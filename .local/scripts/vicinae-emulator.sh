@@ -1,5 +1,5 @@
 #!/bin/bash
-SDK_PATH="/home/mohammed/Android/Sdk/emulator"
+SDK_PATH="${ANDROID_HOME:-$HOME/Android/Sdk}/emulator"
 
 avd_list=$("$SDK_PATH"/emulator -list-avds)
 
