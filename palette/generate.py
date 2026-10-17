@@ -447,8 +447,9 @@ def template(name, comment):
 
 
 def fish_colors(palette):
-    # Sourced by every fish (conf.d) and again in open shells when wallpaper-apply bumps the
-    # universal hypr_palette_stamp. Syntax colours, the kawasaki prompt (its theme_color_* are
+    # Sourced by every fish (conf.d); open shells re-source it at their next prompt once
+    # wallpaper-apply touches ~/.cache/hypr/palette-stamp (its mtime; no universal variable, so
+    # fish_variables in the repo stays unchanged). Syntax colours, the kawasaki prompt (its theme_color_* are
     # only defaults: set first, these win), fzf and LS_COLORS (.dircolors, generated too).
     ui, n, b = palette["ui"], palette["ansi"]["normal"], palette["ansi"]["bright"]
     h = lambda c: c[1:]
@@ -489,7 +490,11 @@ def fish_colors(palette):
               "    test -r ~/.dircolors; and eval (dircolors -c ~/.dircolors)",
               "end",
               "__hypr_colors",
-              "function __hypr_colors_reload --on-variable hypr_palette_stamp",
+              "set -g __hypr_colors_seen (path mtime ~/.cache/hypr/palette-stamp 2>/dev/null)",
+              "function __hypr_colors_reload --on-event fish_prompt",
+              "    set -l m (path mtime ~/.cache/hypr/palette-stamp 2>/dev/null)",
+              "    test \"$m\" = \"$__hypr_colors_seen\"; and return",
+              "    set -g __hypr_colors_seen $m",
               "    __hypr_colors",
               "end"]
     return "\n".join(lines) + "\n"
@@ -535,7 +540,12 @@ COPIES = {
 
 
 def main():
-    palette = tomllib.loads((ROOT / "palette/palette.toml").read_text())
+    # palette.toml is this machine's (from the wallpaper, not in git); a fresh clone has only
+    # the hand-made default.
+    source = ROOT / "palette/palette.toml"
+    if not source.exists():
+        source = ROOT / "palette/palette-default.toml"
+    palette = tomllib.loads(source.read_text())
     for path, render in OUTPUTS.items():
         out = ROOT / path
         out.parent.mkdir(parents=True, exist_ok=True)

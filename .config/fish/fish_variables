@@ -11,7 +11,6 @@ SETUVAR budspencer_pwdstyle:short\x1elong\x1enone
 SETUVAR budspencer_sessions_active:\x1d
 SETUVAR budspencer_sessions_active_pid:\x1d
 SETUVAR fish_user_paths:/home/mohammed/\x2emaestro/bin\x1e/home/mohammed/flutter/flutter/bin\x1e/home/mohammed/go/bin\x1e/home/mohammed/\x2efly/bin\x1e/home/mohammed/\x2emeteor\x1e/home/mohammed/\x2elocal/bin\x1e/home/mohammed/\x2elocal/scripts\x1e/home/mohammed/\x2espicetify\x1e/home/mohammed/Android/Sdk/emulator\x1e/home/mohammed/Android/Sdk/cmdline\x2dtools
-SETUVAR hypr_palette_stamp:test1
 SETUVAR pure_begin_prompt_with_current_directory:true
 SETUVAR pure_check_for_new_release:false
 SETUVAR pure_color_at_sign:pure_color_mute

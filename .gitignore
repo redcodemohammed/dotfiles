@@ -4,3 +4,26 @@
 .config/hypr/hypr_settings.lua
 .config/alacritty/settings.toml
 .config/hypr/hypridle-settings.conf
+
+# Generated from the wallpaper (palette/generate.py, wallpaper-apply): this machine's state, so a
+# wallpaper change leaves git clean. A fresh clone: python3 palette/generate.py (or pick a wallpaper).
+/palette/palette.toml
+/.config/hypr/hyprpaper-wallpaper.conf
+/.config/fish/conf.d/hypr_colors.fish
+/.dircolors
+/.config/cava/config
+/.config/fastfetch/config.jsonc
+/.peaclock/config
+/.config/gtk-3.0/gtk.css
+/.config/gtk-4.0/gtk.css
+/.config/hypr/hypr_palette.lua
+/.config/satty/config.toml
+/.local/share/vicinae/themes/hypr.toml
+/.config/tmux/colors.conf
+/.config/quickshell/Theme.qml
+/.config/alacritty/colors.toml
+/.config/nvim/lua/hypr_palette.lua
+/.config/openrgb-kb/color.env
+/spotifast/Hypr.json
+/strata/hypr.toml
+/vscode/hypr-theme/themes/hypr-color-theme.json

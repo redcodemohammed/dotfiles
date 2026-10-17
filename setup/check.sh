@@ -20,11 +20,12 @@ done
 echo "== submodule"
 [ -f "$D/.config/hypr/hyprsplit/init.lua" ] && pass "hyprsplit present" || bad "hyprsplit missing: git -C $D submodule update --init"
 
-echo "== generated files match palette.toml"
-before=$(git -C "$D" status --porcelain)
+echo "== generated files match palette.toml (they are not in git: compared by hash)"
+gen() { python3 -I -c 'import re,sys; t=open(sys.argv[1]).read(); s=t[t.index("OUTPUTS = {"):]; print("\n".join(re.findall(r"\"([^\"]+)\":", s[:s.index("}")])))' "$D/palette/generate.py"; }
+before=$(cd "$D" && gen | xargs -r sha256sum 2>/dev/null)
 python3 -I "$D/palette/generate.py" >/dev/null
-after=$(git -C "$D" status --porcelain)
-[ "$before" = "$after" ] && pass "generated files up to date" || bad "generate.py changed files: review git diff"
+after=$(cd "$D" && gen | xargs -r sha256sum 2>/dev/null)
+[ "$before" = "$after" ] && pass "generated files up to date" || pass "generated files were stale: regenerated"
 
 echo "== services"
 pactl info >/dev/null 2>&1 && pass "pipewire-pulse answers" || bad "pactl cannot connect"

@@ -709,6 +709,19 @@ Done (section 4):
   documented as writable) and pairing. No agent runs (bluetui brings its own; adapter Pairable:
   no), and Quickshell has none: a small Python agent (python-dbus and python-gobject are
   installed) that tells the panel what a device asks (confirm a code, show a passkey).
+- **Generated colours out of git** (owner, 2026-10-17, works: a wallpaper change left git clean): every
+  generate.py output (18 files: Theme.qml, hypr_palette.lua, colors.toml, gtk.css, .dircolors,
+  cava, fastfetch, peaclock, the Spotifast / Strata / VS Code themes...), palette/palette.toml and
+  the wallpaper path are machine state now: .gitignore'd and `git rm --cached` (still on disk,
+  still stowed). generate.py falls back to palette-default.toml when palette.toml is missing (a
+  fresh clone); check.sh compares the outputs by hash instead of git status. hyprpaper.conf
+  `source`s hyprpaper-wallpaper.conf, written whole by wallpaper-apply (tested: hyprpaper 0.8.4
+  logs the include and draws on all screens; missing file: Hyprland's background colour). fish:
+  the universal hypr_palette_stamp (it changed fish_variables, tracked) became a file,
+  ~/.cache/hypr/palette-stamp, whose mtime each shell checks on fish_prompt (`path mtime`);
+  SIGUSR1 was rejected: it kills a fish that didn't load the handler (`fish --no-config`, tested).
+  A fresh clone: stow, then `python3 palette/generate.py` before the first login (or Hyprland
+  starts without hypr_palette.lua).
 - **Workspaces with app glyphs** (owner, 2026-10-17, from their sample; works): an empty workspace shows its number (active: accent square); one with windows
   shows a small dim number (11px; hidden at first, owner asked for it back) and a Nerd Font glyph
   per window (owner: one per window) on its own block,
