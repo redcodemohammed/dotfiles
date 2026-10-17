@@ -10,6 +10,9 @@ import Quickshell.Wayland
 // config: hyprland.lua's bind() puts "Group: what it does<TAB>keys" in each bind's description
 // (keys too, since keycode binds come back with an empty key). Binds that share a description
 // share a row; a bind without one is left out.
+// Tabs (Tab key or a click): Desktop, and tmux (step 2): `tmux list-keys -N` for the root, prefix
+// and copy-mode tables, keeping the notes written "Group: what it does" (tmux.conf's -N notes;
+// tmux's own notes have no group and are left out). Needs a running tmux server.
 PanelWindow {
     id: root
     visible: false
@@ -31,14 +34,25 @@ PanelWindow {
         function toggle(): void {
             if (root.visible)
                 root.visible = false
-            else
+            else {
+                tmuxReader.running = true
                 reader.running = true // shows itself once the binds are in
+            }
         }
     }
 
-    // Which column each group goes in; a group not listed joins the last column.
-    readonly property var columns: [["Windows", "Workspaces"], ["Apps", "Shell", "Session"], ["Capture", "Media"]]
-    property var groups: ({}) // name -> [{ text, keys }]
+    // Per tab: which column each group goes in (a group not listed joins the last column), and
+    // the groups read in: name -> [{ text, keys }].
+    property string tab: "desktop"
+    readonly property var tabs: ["desktop", "tmux"]
+    readonly property var layouts: ({
+        desktop: [["Windows", "Workspaces"], ["Apps", "Shell", "Session"], ["Capture", "Media"]],
+        tmux: [["Panes"], ["Windows"], ["Sessions", "Copy"]],
+    })
+    property var desktopGroups: ({})
+    property var tmuxGroups: ({})
+    readonly property var columns: layouts[tab]
+    readonly property var groups: tab === "desktop" ? desktopGroups : tmuxGroups
 
     // Key names as the config writes them -> what is printed on the key.
     readonly property var names: ({
@@ -65,23 +79,52 @@ PanelWindow {
         return names[k] ?? k
     }
 
-    function build(binds) {
-        const rows = {}  // description -> { group, text, combos: mods -> [keys] }
-        const order = []
+    // Hyprland: "Group: text<TAB>SUPER + SHIFT + code:46" in each described bind.
+    function desktopEntries(binds) {
+        const entries = []
         for (const b of binds) {
             const tab = b.description.indexOf("\t")
             if (tab < 0)
                 continue
-            const desc = b.description.slice(0, tab)
             const parts = b.description.slice(tab + 1).split(" + ")
-            const mods = parts.slice(0, -1).map(keyName).join(" ")
+            entries.push({ desc: b.description.slice(0, tab), mods: parts.slice(0, -1).map(keyName).join(" "),
+                key: keyName(parts[parts.length - 1]) })
+        }
+        return entries
+    }
+    // tmux: lines "<table> <key>   <note>"; C-, M-, S- become Ctrl, Alt, Shift.
+    function tmuxEntries(text) {
+        const tables = { root: "", prefix: "Prefix", "copy-mode": "Copy mode" }
+        const mods = { C: "Ctrl", M: "Alt", S: "Shift" }
+        const entries = []
+        for (const line of text.split("\n")) {
+            const m = line.match(/^(\S+)\s+(\S+)\s+([A-Z][A-Za-z ]*): (.+)$/)
+            if (!m)
+                continue
+            let key = m[2]
+            const words = tables[m[1]] ? [tables[m[1]]] : []
+            while (/^[CMS]-./.test(key)) {
+                words.push(mods[key[0]])
+                key = key.slice(2)
+            }
+            entries.push({ desc: m[3] + ": " + m[4], mods: words.join(" "), key: names[key.toLowerCase()] ?? key })
+        }
+        return entries
+    }
+
+    function collect(entries) {
+        const rows = {}  // description -> { group, text, combos: mods -> [keys] }
+        const order = []
+        for (const e of entries) {
+            const desc = e.desc
+            const mods = e.mods
             if (!rows[desc]) {
                 const colon = desc.indexOf(": ")
                 rows[desc] = { group: desc.slice(0, colon), text: desc.slice(colon + 2), combos: {} }
                 order.push(desc)
             }
             const combos = rows[desc].combos
-            const key = keyName(parts[parts.length - 1])
+            const key = e.key
             if (!combos[mods])
                 combos[mods] = []
             if (!combos[mods].includes(key))
@@ -101,7 +144,7 @@ PanelWindow {
                 out[r.group] = []
             out[r.group].push({ text: r.text, keys: keys })
         }
-        groups = out
+        return out
     }
     function groupsIn(column) {
         const listed = [].concat(...columns)
@@ -119,12 +162,20 @@ PanelWindow {
         stdout: StdioCollector {
             onStreamFinished: {
                 try {
-                    root.build(JSON.parse(text))
+                    root.desktopGroups = root.collect(root.desktopEntries(JSON.parse(text)))
                 } catch (err) {
-                    root.groups = {}
+                    root.desktopGroups = {}
                 }
                 root.visible = true
             }
+        }
+    }
+
+    Process {
+        id: tmuxReader
+        command: ["sh", "-c", "for t in root prefix copy-mode; do tmux list-keys -N -P '' -T $t 2>/dev/null | sed \"s/^/$t /\"; done"]
+        stdout: StdioCollector {
+            onStreamFinished: root.tmuxGroups = root.collect(root.tmuxEntries(text))
         }
     }
 
@@ -144,6 +195,11 @@ PanelWindow {
 
         focus: root.visible
         Keys.onEscapePressed: root.visible = false
+        Keys.onTabPressed: root.tab = root.tabs[(root.tabs.indexOf(root.tab) + 1) % root.tabs.length]
+
+        MouseArea { // clicks on the card itself don't close it
+            anchors.fill: parent
+        }
 
         Column {
             id: content
@@ -153,18 +209,25 @@ PanelWindow {
 
             Item {
                 width: parent.width
-                height: 20
+                height: 28
                 Text {
+                    anchors.verticalCenter: parent.verticalCenter
                     text: "Shortcuts"
                     font.family: "JetBrainsMono Nerd Font"
                     font.pixelSize: 15
                     font.bold: true
                     color: Theme.fg
                 }
+                Row {
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    SettingsTab { width: 120; tab: root.tab; label: "Desktop"; section: "desktop"; onChosen: root.tab = section }
+                    SettingsTab { width: 120; tab: root.tab; label: "tmux"; section: "tmux"; onChosen: root.tab = section }
+                }
                 Text {
                     anchors.right: parent.right
                     anchors.verticalCenter: parent.verticalCenter
-                    text: "Esc closes"
+                    text: root.tab === "tmux" ? (Object.keys(root.tmuxGroups).length ? "Prefix: Ctrl + Space · Tab · Esc" : "tmux isn't running · Tab · Esc")
+                        : "Tab: tmux · Esc closes"
                     font.family: "JetBrainsMono Nerd Font"
                     font.pixelSize: 12
                     color: Theme.fgDim

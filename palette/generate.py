@@ -72,8 +72,9 @@ def tmux_colors(palette):
         "red": n["red"], "blue": n["blue"], "cyan": n["cyan"], "magenta": n["magenta"],
     }
     styles = {
-        "status-style": f"fg={ui['fg_muted']},bg={ui['bg']}",
-        "window-status-style": f"fg={ui['fg_muted']},bg={ui['bg']}",
+        # The bar a step lighter than the terminal (owner, 2026-10-17: always visible).
+        "status-style": f"fg={ui['fg_muted']},bg={ui['surface_selected']}",
+        "window-status-style": f"fg={ui['fg_muted']},bg={ui['surface_selected']}",
         # Active window: amber fill, dark text, like the active workspace.
         "window-status-current-style": f"fg={ui['on_accent']},bg={ui['accent']}",
         "pane-border-style": f"fg={ui['border']}",

@@ -651,7 +651,19 @@ Done (section 4):
   stable, so the index breaks ties) and lays the groups in three columns (Windows + Workspaces;
   Apps + Shell + Session; Capture + Media; an unknown group joins the last). A bind with no
   description (the lid switch) is left out. Lua binds show in `hyprctl binds` as dispatcher
-  `__lua` with an id. Next: step 2 tmux, step 3 Neovim (owner's own mappings).
+  `__lua` with an id.
+  Step 2 (2026-10-17, works): tabs Desktop / tmux (Tab key or a click;
+  clicks on the card no longer close it). tmux: `tmux list-keys -N -P '' -T <table>` for root,
+  prefix and copy-mode (mode-keys is emacs), keeping notes written "Group: what it does" (tmux's
+  own notes have no group, so they stay out); -P '' still leaves a leading space. tmux.conf: -N
+  notes on the owner's binds, then after tpm note-only lines (`bind -N note key` with no command
+  sets just the note, tested on a `-L test` server) for detach, sessions, rename, close window,
+  1-9, zoom, copy mode, copy (y), the URL picker (prefix x: tmux-fzf-url took x, so there is no
+  "close pane" key) and vim-tmux-navigator's Ctrl+h/j/k/l. tpm now runs in the foreground (`run`,
+  as its README has it), so no plugin binds over a note. Without a tmux server the tab says so.
+  Next: step 3 Neovim (owner's own mappings).
+- **tmux status bar** (owner, 2026-10-17, works): `surface_selected`
+  instead of `bg` (generate.py), so the bar stands out from the terminal.
 - **Blur behind see-through apps** (owner, 2026-10-17, overriding the spec / CLAUDE.md "no
   transparency, no blur"; 2026-10-17, works): `hyprland.lua`
   decoration.blur enabled, size 6, passes 2 (only affects windows with alpha); Alacritty
