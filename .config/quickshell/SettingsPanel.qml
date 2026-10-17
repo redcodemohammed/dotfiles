@@ -4,7 +4,7 @@ import Quickshell
 // Settings panel (owner, 2026-10-17): opened from the tools panel's Settings button (or
 // `qs ipc call settings toggle`), it drops from the same power block, 360 wide. Values live in
 // Settings.qml; a change is saved at once and reaches Hyprland and Alacritty 300 ms later.
-// Step 4a: Look. Next: Input, Bar & island, Displays & power.
+// Tabs: Look (4a), Input (4b). Next: Bar & island, Displays & power.
 PopupWindow {
     id: panel
     required property var bar
@@ -28,6 +28,7 @@ PopupWindow {
             visible = true
     }
     onVisibleChanged: if (!visible) closedAt = Date.now()
+    property string tab: "look" // stays on the last one between openings
 
     component Label: Text {
         font.family: "JetBrainsMono Nerd Font"
@@ -44,6 +45,7 @@ PopupWindow {
         property int high
         property int step: 1
         property string unit: ""
+        property int divisor: 1 // 10: the value is in tenths, shown as 0.3
         property bool available: true
         signal picked(int value)
         width: parent.width
@@ -62,7 +64,7 @@ PopupWindow {
                 height: 28
                 horizontalAlignment: Text.AlignHCenter
                 verticalAlignment: Text.AlignVCenter
-                text: stepper.value + stepper.unit
+                text: (stepper.divisor === 1 ? stepper.value : (stepper.value / stepper.divisor).toFixed(1)) + stepper.unit
             }
             StepButton { text: "+"; enabled: stepper.available && stepper.value < stepper.high; onClicked: stepper.picked(Math.min(stepper.high, stepper.value + stepper.step)) }
         }
@@ -126,14 +128,18 @@ PopupWindow {
             width: parent.width - 24
             spacing: 4
 
-            Text {
-                text: "Look"
-                bottomPadding: 4
-                font.family: "JetBrainsMono Nerd Font"
-                font.pixelSize: 12
-                color: Theme.fgMuted
+            Row {
+                width: parent.width
+                readonly property real cell: width / 2
+                SettingsTab { width: parent.cell; tab: panel.tab; label: "Look"; section: "look"; onChosen: panel.tab = section }
+                SettingsTab { width: parent.cell; tab: panel.tab; label: "Input"; section: "input"; onChosen: panel.tab = section }
             }
+            Item { width: 1; height: 4 }
 
+            Column {
+            visible: panel.tab === "look"
+            width: parent.width
+            spacing: 4
             Stepper {
                 label: "Gap between windows"
                 value: Settings.look.gapsBetween
@@ -174,6 +180,41 @@ PopupWindow {
                 label: "Window fade"
                 on: Settings.look.animations
                 onPicked: (on) => Settings.look.animations = on
+            }
+            }
+
+            Column {
+            visible: panel.tab === "input"
+            width: parent.width
+            spacing: 4
+            Stepper {
+                label: "Key repeat delay"
+                value: Settings.input.repeatDelay
+                low: 200; high: 600; step: 50; unit: " ms"
+                onPicked: (v) => Settings.input.repeatDelay = v
+            }
+            Stepper {
+                label: "Key repeat rate"
+                value: Settings.input.repeatRate
+                low: 20; high: 50; step: 5; unit: "/s"
+                onPicked: (v) => Settings.input.repeatRate = v
+            }
+            Stepper {
+                label: "Pointer speed"
+                value: Settings.input.pointerSpeed
+                low: -10; high: 10; divisor: 10 // every mouse and touchpad alike
+                onPicked: (v) => Settings.input.pointerSpeed = v
+            }
+            Toggle {
+                label: "Natural scrolling (touchpad)"
+                on: Settings.input.naturalScroll
+                onPicked: (on) => Settings.input.naturalScroll = on
+            }
+            Toggle {
+                label: "Tap to click"
+                on: Settings.input.tapToClick
+                onPicked: (on) => Settings.input.tapToClick = on
+            }
             }
         }
     }

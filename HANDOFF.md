@@ -610,8 +610,15 @@ Done (section 4):
   fade on/off (animations.enabled). No accent override (owner). Steppers, not sliders: exact
   values, one write per click. Editing the JSON by hand updates the shell but not Hyprland or
   Alacritty (only panel changes regenerate). QML gotcha: `from` and `set` can't be property or
-  signal names (parse error "Expected token `:'"). Next: 4b Input (repeat delay 200-600 ms, rate
-  20-50/s, touchpad natural scroll, tap to click, speed -1..1, mouse speed -1..1), 4c Bar & island
+  signal names (parse error "Expected token `:'").
+  Step 4b (2026-10-17, works): tabs (SettingsTab.qml; as an inline
+  component it stayed "is not a type" through renames and reloads, though qmllint was clean: a
+  separate file loaded) and Input: key repeat delay 200-600 step 50 (600 now), rate 20-50 step 5
+  (25), pointer speed -1.0 to 1.0 step 0.1 stored as tenths (input.sensitivity: one value for
+  every mouse and touchpad; a separate touchpad speed would need per-device rules by name),
+  natural scrolling, tap to click. Lua key is `tap_to_click` (`["tap-to-click"]` is "unknown config
+  key"; tested both ways). The template's `hl.device({ name = "epic-mouse-v1", sensitivity = -0.5 })`
+  matches no device, so it does nothing. Next: 4c Bar & island
   (24/12 h, seconds, bar on all screens or main only, media, lyrics, Pomodoro 15-60 / 3-15 /
   10-30 min), 4d Displays & power (lock 2-30 min, screen off 1-10 min after lock, sleep 10-120 min
   or never; scale left out: a wrong scale needs a revert countdown, its own step).
