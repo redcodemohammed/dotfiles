@@ -664,6 +664,25 @@ Done (section 4):
   Next: step 3 Neovim (owner's own mappings).
 - **tmux status bar** (owner, 2026-10-17, works): `surface_selected`
   instead of `bg` (generate.py), so the bar stands out from the terminal.
+- **Animations, step 1: Hyprland** (owner, 2026-10-17, overriding the spec's minimal motion;
+  NOT yet confirmed, uncommitted): curve "out" (0.16,1 / 0.3,1); windowsIn popin 90% 250 ms,
+  windowsOut popin 150 ms, windowsMove 250 ms, workspaces slide 250 ms, layers fade 150 ms, fades
+  150 ms; border stays instant. `style` is accepted by hl.animation (checked with `hyprctl
+  animations`; the stubs don't type it). Settings > Look "Window fade" renamed "Animations" (it is
+  animations.enabled). Next: step 2, the shell's panels (Quickshell, Behavior/NumberAnimation).
+- **Legion keyboard RGB** (owner, 2026-10-17, planned): the Legion 5 16IRX9's own keyboard
+  (ITE 048d:c994 / c992) in the accent like the AULA F87; lit only by Fn + Space so far. OpenRGB
+  `--list-devices` printed nothing here (the openrgb-kb server holds the devices?): which tool
+  drives it is unverified.
+- **COSMIC removed** (owner, 2026-10-17, done): the owner ran `pacman -D --asexplicit adw-gtk-theme
+  alsa-utils` then `pacman -Rns` on every cosmic-* and xdg-desktop-portal-cosmic (plus what only
+  they needed: pop-launcher, geoclue, acpid, switcheroo-control, icon packs). ~/.config/cosmic*,
+  ~/.cache/cosmic-*, ~/.local/state/cosmic*, ~/.config/gtk-4.0/cosmic deleted. GTK now stowed
+  (.stow-local-ignore lines gone; COSMIC's light-mode settings.ini files are in the session
+  scratchpad). Hyprland is the only desktop: recovery is a TTY or boot-restore. Default apps moved off COSMIC first: text
+  types to `nvim-alacritty.desktop` (dotfiles, symlinked; Exec=alacritty -e nvim %F), the 68 COSMIC
+  Player types to Clapper (`xdg-mime default`; old mimeapps.list in the session scratchpad).
+  boot-restore's fallback login is now greetd's agreety starting Hyprland (was cosmic-greeter).
 - **Blur behind see-through apps** (owner, 2026-10-17, overriding the spec / CLAUDE.md "no
   transparency, no blur"; 2026-10-17, works): `hyprland.lua`
   decoration.blur enabled, size 6, passes 2 (only affects windows with alpha); Alacritty

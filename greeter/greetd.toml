@@ -1,6 +1,6 @@
 # greetd with the Quickshell greeter (owner's choice, 2026-10-15). Installed as
 # /etc/greetd/quickshell-greeter.toml by greeter/install.sh; greetd.service uses it through the
-# drop-in greetd-dropin.conf (cosmic-greeter.service stays installed as the fallback).
+# drop-in greetd-dropin.conf. Fallback (COSMIC removed 2026-10-17): boot-restore switches to agreety.
 # HOME: the greeter's own writable folder (it remembers the last session there).
 
 [terminal]

@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # boot-restore [--yes]: the safety net for boot-colours (owner, 2026-10-16). Puts the boot screens
-# back as they were before this setup: COSMIC's login screen (cosmic-greeter), no boot splash and
-# the GRUB theme from before (Catppuccin). Works from a text console (Ctrl+Alt+F2, log in) and
+# back as they were before this setup: greetd's own text login (agreety, which starts Hyprland; it
+# was COSMIC's login screen until COSMIC was removed, 2026-10-17), no boot splash and the GRUB
+# theme from before (Catppuccin). Works from a text console (Ctrl+Alt+F2, log in) and
 # needs only system tools. It undoes only what the installers added, so other edits to these
 # files stay; their backups (*.pre-hypr-theme, *.pre-plymouth) are left in place. GRUB's
 # "EFI BootNext" entries stay hidden. Asks before starting and before rebooting (--yes: no
@@ -13,7 +14,7 @@ yes=0
 [ "$(id -u)" -eq 0 ] || exec sudo "$self" "$@"
 
 if [ "$yes" = 0 ]; then
-    echo "This puts back COSMIC's login screen, removes the boot splash and restores the old GRUB theme."
+    echo "This puts back a plain text login, removes the boot splash and restores the old GRUB theme."
     read -r -p "Continue? [y/N] " answer
     case "$answer" in y | Y) ;; *) exit 1 ;; esac
 fi
@@ -22,12 +23,13 @@ step=""
 trap 'echo; echo "Stopped: $step failed; the rest is unchanged. Fix it and run boot-restore again." >&2' ERR
 
 step="Login screen"
-echo "== $step: cosmic-greeter"
-systemctl disable greetd.service
-systemctl enable cosmic-greeter.service
+echo "== $step: greetd's text login (agreety), then Hyprland"
 rm -f /etc/systemd/system/greetd.service.d/quickshell-greeter.conf
 rmdir --ignore-fail-on-non-empty /etc/systemd/system/greetd.service.d 2>/dev/null || true
 systemctl daemon-reload
+# The package's config.toml: one default_session command (agreety --cmd /bin/sh as shipped).
+sed -i -E 's|^command = .*|command = "agreety --cmd start-hyprland"|' /etc/greetd/config.toml
+systemctl enable greetd.service
 rm -rf /etc/greetd/quickshell-greeter /etc/greetd/quickshell-greeter.toml \
     /etc/greetd/quickshell-greeter-test.toml /etc/greetd/hyprland-greeter.lua \
     /etc/greetd/hypr_palette.lua /var/lib/quickshell-greeter

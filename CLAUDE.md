@@ -14,7 +14,7 @@ Owner: Mohammed Wisam. Arch Linux, fish, tmux (prefix Ctrl+Space), Neovim. Three
 
 ## Safety rules (real machine)
 1. First: `pacman -Qqe > pkglist-before.txt`. If root is btrfs, snapshot before starting.
-2. Keep the current desktop installed and selectable at login. No autologin into Hyprland until stable.
+2. COSMIC was removed (owner, 2026-10-17): Hyprland is the only desktop. If it won't start: Ctrl+Alt+F2, log in, fix, or run `boot-restore` (a plain text login that starts Hyprland). No autologin.
 3. Monitor config always keeps a catch-all fallback line so no screen goes black. Get real names from `hyprctl monitors`.
 4. Never edit existing files in `/etc/pam.d`. The Quickshell lock screen gets its own new PAM file.
 5. Lock screen is built LAST. Before every test: a second TTY already logged in, short timeout, work saved. `hyprlock` stays installed until the Quickshell lock is proven.

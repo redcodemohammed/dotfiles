@@ -69,8 +69,8 @@ chmod 644 "$state/palette.sha256"
 echo
 if [ -e "$state/off" ]; then
     rm -f "$state/off"
-    echo "Done. COSMIC's login screen is still the one in use (boot-restore chose it); to switch back:"
-    echo "  sudo systemctl disable cosmic-greeter.service && sudo systemctl enable greetd.service, then reboot"
+    echo "Done. The plain text login is still the one in use (boot-restore chose it); to switch back:"
+    echo "  sudo $dots/greeter/install.sh, then reboot"
 else
     echo "Done: the boot screens have the current colours (you see them at the next boot)."
 fi

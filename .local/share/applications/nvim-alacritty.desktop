@@ -1,0 +1,11 @@
+[Desktop Entry]
+# Text files open in Neovim inside Alacritty (owner, 2026-10-17, replacing COSMIC Text Editor).
+# Not Neovim's own nvim.desktop: it says Terminal=true and leaves the terminal to the launcher,
+# which GIO picks from a fixed list. NoDisplay: Vicinae already lists Neovim.
+Type=Application
+Name=Neovim (Alacritty)
+Exec=alacritty -e nvim %F
+Icon=nvim
+Terminal=false
+NoDisplay=true
+MimeType=text/english;text/plain;text/x-makefile;text/x-c++hdr;text/x-c++src;text/x-chdr;text/x-csrc;text/x-java;text/x-moc;text/x-pascal;text/x-tcl;text/x-tex;application/x-shellscript;text/x-c;text/x-c++;
