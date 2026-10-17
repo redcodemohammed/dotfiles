@@ -16,6 +16,21 @@ ShellRoot {
     // Set it back above 0 before experimenting with this file.
     readonly property int failsafeSeconds: 0
 
+    // The bar shell's entrance sheet (Entrance.qml) goes up first and the lock follows 150 ms
+    // later: while locked, Hyprland lets hidden surfaces draw nothing, so a sheet asked for under
+    // the lock was only drawn after the unlock and the wallpaper flashed (owner, 2026-10-17). The
+    // desktop dims to the background colour, then the lock appears. Fire and forget: a missing
+    // bar shell only means no sheet.
+    Component.onCompleted: {
+        Quickshell.execDetached(["qs", "ipc", "call", "entrance", "cover"])
+        lockDelay.start()
+    }
+    Timer {
+        id: lockDelay
+        interval: 150
+        onTriggered: lock.locked = true
+    }
+
     property string password: ""
     property bool checking: false
     property bool wrong: false
@@ -37,13 +52,17 @@ ShellRoot {
     }
 
     function unlock() {
+        // The bar shell's entrance (wallpaper fade, bars drop in; its sheet went up when this
+        // locked, Component.onCompleted above). Fire and forget: if the bar shell is down, nothing
+        // changes here.
+        Quickshell.execDetached(["qs", "ipc", "call", "entrance", "play"])
         lock.locked = false
         quitTimer.start() // let the compositor see the unlock before the process exits
     }
 
     WlSessionLock {
         id: lock
-        locked: true
+        locked: false // set by lockDelay, after the entrance sheet is drawn
 
         WlSessionLockSurface {
             color: Theme.bg

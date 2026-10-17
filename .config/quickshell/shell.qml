@@ -20,6 +20,12 @@ ShellRoot {
         Island {}
     }
 
+    // The entrance at login and after unlocking: the wallpaper fades up (Entrance.qml).
+    Variants {
+        model: Quickshell.screens
+        EntranceCover {}
+    }
+
     // SUPER + F1: every Hyprland shortcut, on the focused screen (one window that follows focus).
     Shortcuts {}
 }

@@ -15,6 +15,33 @@ Rectangle {
     property bool clickable: false
     signal clicked()
 
+    // The entrance (Entrance.qml): drops in from above the screen on the window spring, a little
+    // later the further right it sits, so the bar fills in left to right. Twice the windows'
+    // pace (owner: slower): 600 ms, spread over 480 ms.
+    transform: Translate { id: shift; y: Entrance.covered ? -48 : 0 } // hidden above while the sheet waits
+    Connections {
+        target: Entrance
+        function onRunChanged() {
+            const screenWidth = block.Window.window ? block.Window.window.width : 1920
+            drop.delay = Math.round(block.mapToItem(null, 0, 0).x / screenWidth * 480)
+            shift.y = -48
+            drop.restart()
+        }
+    }
+    SequentialAnimation {
+        id: drop
+        property int delay: 0
+        PauseAnimation { duration: drop.delay }
+        NumberAnimation {
+            target: shift
+            property: "y"
+            to: 0
+            duration: 600
+            easing.type: Easing.BezierSpline
+            easing.bezierCurve: [0.34, 1.3, 0.64, 1, 1, 1] // hyprland.lua "spring"
+        }
+    }
+
     MouseArea { // under the content, so a widget's own mouse areas still win
         anchors.fill: parent
         enabled: block.clickable

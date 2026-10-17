@@ -686,6 +686,38 @@ Done (section 4):
   the focus grab works (owner checked Escape and typing). The island's width/height: the same spline, 300 ms (was 120 ms linear).
   Both follow Settings > Look > Animations. The inbox and the shortcuts overlay are layer
   surfaces: Hyprland's layers fade already covers them.
+- **Entrance animation** (owner, 2026-10-17, works: login and unlock): at login and after
+  unlocking. `Entrance.qml` (singleton, `run` counter; IPC `entrance play`); `EntranceCover.qml`
+  per screen: a Theme.bg sheet on layer Bottom (above the wallpaper, under windows and bar;
+  namespace "entrance", empty input mask), opaque at once (hyprland.lua layer rule no_anim, accepted
+  without config errors), fades out 600 ms InOutCubic after 100 ms. `BarBlock.qml`: a Translate
+  from -48 to 0 on the "spring" spline, 600 ms, delayed by the block's x / screen width x 480 ms
+  (cover fade 1200 ms; first 300 / 240 / 600: owner asked for slower, twice the pace).
+  Plays once per Quickshell process: PersistentProperties (reloadableId "entrance") keeps `played`
+  across reloads, so editing the shell doesn't replay it. The lock calls `qs ipc call entrance
+  cover` in Component.onCompleted and only locks 150 ms later (WlSessionLock `locked: false`, a
+  Timer sets it): while locked, Hyprland lets hidden surfaces draw nothing, so a sheet asked for
+  under the lock was drawn only after the unlock. unlock() calls `entrance play`; play() starts
+  the fade before dropping `covered` (the other order hid the sheet's window for an instant and
+  it came back undrawn). Both execDetached: a missing bar shell changes nothing for the lock.
+  Three rounds of "the wallpaper flashes" (owner) before this. Tested with the lock's
+  failsafeSeconds at 4 (set back to 0) and a screenshot burst: lock, then dark with the bars
+  dropping, then the wallpaper fading up; frames 280 ms apart. Unlock: works (owner).
+  Login: hyprpaper, started by Hyprland next to Quickshell, showed first (with the layers fade),
+  then the sheet came (black), then the entrance (owner: "only when I first login"). Now
+  Entrance starts hyprpaper itself at login: `covered` at once (BarBlock's Translate starts at
+  -48 while covered, so the bars wait above), 150 ms, `pgrep -x hyprpaper || setsid hyprpaper`,
+  then `hyprctl layers` every 100 ms until namespace hyprpaper is there (3 s cap), then play.
+  hyprland.lua only starts hyprpaper after 5 s if it isn't running (Quickshell broken). Tested by
+  stopping qs and hyprpaper and starting qs through `hyprctl dispatch 'hl.dsp.exec_cmd("qs")'`
+  (an `env -i` restart from a copied environment failed and left the bar down for a minute),
+  recorded with gpu-screen-recorder: dark until hyprpaper is up, one fade, bars dropping left to
+  right. The island's volume OSD pops up at every Quickshell start (seen in the recording). While
+  covered, every 2 s a check looks for a running `qs` whose command line has quickshell-lock
+  (`pgrep -f` matched shells and editors with the path); none: play, so the wallpaper can't stay
+  hidden (tested: cover with no lock faded by itself). Not yet seen at a real login.
+  Same round: windowsOut is the open reversed, curve "springBack" (0.36,0 / 0.66,-0.3), 300 ms
+  (was 150 ms "out": closing the last window looked too fast, owner).
 - **Legion keyboard RGB** (owner, 2026-10-17, works: colour changed): the Legion 5
   16IRX9's own 4-zone keyboard (ITE 048d:c994; OpenRGB 1.0 only knows the Legion 7 Gen 9,
   c997/c998) in the same colour as the AULA. Tool: legion-kb-rgb from AUR l5p-keyboard-rgb-bin

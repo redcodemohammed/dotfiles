@@ -117,7 +117,10 @@ hl.on("hyprland.start", function ()
     hl.exec_cmd("qs")           -- Quickshell: bar, notifications, OSD
     hl.exec_cmd("hypridle")       -- idle chain: lock 5 min, screens off 6 min, suspend 30 min on battery
     hl.exec_cmd("hyprsunset")     -- night light, 21:00 to 06:30 (hypr/hyprsunset.conf)
-    hl.exec_cmd("hyprpaper")      -- wallpaper image (hypr/hyprpaper.conf); background_color stays below it
+    -- Wallpaper image (hypr/hyprpaper.conf): Quickshell starts hyprpaper at login under its
+    -- entrance sheet (quickshell/Entrance.qml), so the image never shows before the fade. This
+    -- only starts it when that didn't happen (Quickshell broken). background_color stays below.
+    hl.exec_cmd("sh -c 'sleep 5; pgrep -x hyprpaper >/dev/null || exec hyprpaper'")
     -- Boot screens still on an older palette: a reminder once the bar (notifications) is up.
     hl.exec_cmd("sleep 15 && ~/.local/bin/boot-colours --remind")
 end)
@@ -242,9 +245,10 @@ hl.config({
 -- (animations.enabled).
 hl.curve("out", { type = "bezier", points = { {0.16, 1}, {0.3, 1} } })        -- quick start, soft stop
 hl.curve("spring", { type = "bezier", points = { {0.34, 1.3}, {0.64, 1} } }) -- past the end, then back
+hl.curve("springBack", { type = "bezier", points = { {0.36, 0}, {0.66, -0.3} } }) -- "spring" played backwards
 hl.curve("linear", { type = "bezier", points = { {0, 0}, {1, 1} } })
 hl.animation({ leaf = "windowsIn",   enabled = true, speed = 3,   bezier = "spring", style = "slide" })
-hl.animation({ leaf = "windowsOut",  enabled = true, speed = 1.5, bezier = "out",    style = "slide" })
+hl.animation({ leaf = "windowsOut",  enabled = true, speed = 3,   bezier = "springBack", style = "slide" }) -- the open, reversed (owner)
 hl.animation({ leaf = "windowsMove", enabled = true, speed = 3,   bezier = "spring" })
 hl.animation({ leaf = "workspaces",  enabled = true, speed = 2.5, bezier = "out",    style = "slidefade 20%" })
 hl.animation({ leaf = "border",      enabled = false })
@@ -555,6 +559,10 @@ hl.window_rule({
 -- Vicinae's launcher is a layer surface: window blur doesn't reach it, this rule does
 -- (docs.vicinae.com/quickstart/hyprland-lua). ignore_alpha 0: blur behind every pixel that isn't
 -- fully clear. Its opacity is launcher_window.opacity in vicinae/hypr.jsonc.
+-- The shell's entrance cover (quickshell/EntranceCover.qml) must be there at once, opaque, for
+-- the wallpaper to fade up from it: no fade-in of its own.
+hl.layer_rule({ name = "entrance-no-anim", match = { namespace = "entrance" }, no_anim = true })
+
 hl.layer_rule({
     name  = "vicinae-blur",
     match = { namespace = "vicinae" },
