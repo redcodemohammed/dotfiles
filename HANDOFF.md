@@ -686,10 +686,15 @@ Done (section 4):
   the focus grab works (owner checked Escape and typing). The island's width/height: the same spline, 300 ms (was 120 ms linear).
   Both follow Settings > Look > Animations. The inbox and the shortcuts overlay are layer
   surfaces: Hyprland's layers fade already covers them.
-- **Legion keyboard RGB** (owner, 2026-10-17, planned): the Legion 5 16IRX9's own keyboard
-  (ITE 048d:c994 / c992) in the accent like the AULA F87; lit only by Fn + Space so far. OpenRGB
-  `--list-devices` printed nothing here (the openrgb-kb server holds the devices?): which tool
-  drives it is unverified.
+- **Legion keyboard RGB** (owner, 2026-10-17, works: colour changed): the Legion 5
+  16IRX9's own 4-zone keyboard (ITE 048d:c994; OpenRGB 1.0 only knows the Legion 7 Gen 9,
+  c997/c998) in the same colour as the AULA. Tool: legion-kb-rgb from AUR l5p-keyboard-rgb-bin
+  0.20.8 (4JX/L5P-Keyboard-RGB, lists c994 as "2024 regular"); its udev rule is MODE 0666 (any
+  user may set the lights; uaccess would be tighter). It sets and exits (0.2 s); the keyboard keeps
+  the colour. `legion-kb.service` (user, oneshot, RemainAfterExit so wallpaper-apply's
+  try-restart re-runs it; ConditionPathExists on the binary) runs `legion-kb-rgb set -e Static -b
+  High -c ${KB_ZONES}`; generate.py writes KB_ZONES (4 decimal triplets of KB_COLOR) into
+  openrgb-kb/color.env. Unverified: whether the colour survives suspend and reboot on its own.
 - **COSMIC removed** (owner, 2026-10-17, done): the owner ran `pacman -D --asexplicit adw-gtk-theme
   alsa-utils` then `pacman -Rns` on every cosmic-* and xdg-desktop-portal-cosmic (plus what only
   they needed: pop-launcher, geoclue, acpid, switcheroo-control, icon packs). ~/.config/cosmic*,

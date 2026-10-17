@@ -174,8 +174,11 @@ def keyboard_env(palette):
     # so the accent is scaled until its brightest channel is 255: same hue, full light.
     rgb = [int(palette["ui"]["accent"][i:i + 2], 16) for i in (1, 3, 5)]
     peak = max(rgb) or 1
-    color = "".join(f"{round(c * 255 / peak):02X}" for c in rgb)
-    return f"# {HEADER}\nKB_COLOR={color}\n"
+    full = [round(c * 255 / peak) for c in rgb]
+    color = "".join(f"{c:02X}" for c in full)
+    # legion-kb.service (the laptop's own 4-zone keyboard) wants decimal triplets, one per zone.
+    zones = ",".join([",".join(str(c) for c in full)] * 4)
+    return f"# {HEADER}\nKB_COLOR={color}\nKB_ZONES={zones}\n"
 
 
 def gtk_roles(palette):

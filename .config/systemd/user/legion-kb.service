@@ -1,0 +1,18 @@
+[Unit]
+Description=Laptop keyboard RGB in the theme accent (Legion 5 16IRX9, 4 zones, legion-kb-rgb)
+# legion-kb-rgb (AUR l5p-keyboard-rgb-bin, owner 2026-10-17) sets the colour and exits; the
+# keyboard keeps it. KB_ZONES (4 x R,G,B, the same colour as openrgb-kb's KB_COLOR) comes from
+# palette/generate.py. RemainAfterExit: the unit stays active, so wallpaper-apply's try-restart
+# re-runs it. Brightness High here; Fn + Space still changes it.
+PartOf=graphical-session.target
+After=graphical-session.target
+ConditionPathExists=/usr/bin/legion-kb-rgb
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+EnvironmentFile=%h/.config/openrgb-kb/color.env
+ExecStart=/usr/bin/legion-kb-rgb set -e Static -b High -c ${KB_ZONES}
+
+[Install]
+WantedBy=graphical-session.target
