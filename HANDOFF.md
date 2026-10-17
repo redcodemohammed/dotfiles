@@ -671,7 +671,21 @@ Done (section 4):
   a full slide: "fine", owner asked for springier, sliding windows, a shorter workspace slide),
   layers fade 150 ms, fades 150 ms; border stays instant. `style` is accepted by hl.animation (checked with `hyprctl
   animations`; the stubs don't type it). Settings > Look "Window fade" renamed "Animations" (it is
-  animations.enabled). Next: step 2, the shell's panels (Quickshell, Behavior/NumberAnimation).
+  animations.enabled).
+  Step 2 (2026-10-17, works, owner: "I love it"): `Reveal.qml` in the five bar panels
+  (tools, settings, network, Pomodoro, phone; xdg popups, which Hyprland doesn't animate): on
+  opening, body slides down its full height from behind the bar (the popup clips it) on
+  hyprland.lua's "spring" bezier as an Easing.BezierSpline [0.34, 1.3, 0.64, 1, 1, 1], 300 ms, and
+  fades in 150 ms, like a window (first try, a 12px OutBack drop: owner didn't like it). Closing
+  is the exact reverse (owner): the curve turned around [0.36, 0, 0.66, -0.3], 300 ms, fading
+  over the last 150 ms, then `visible = false`. For that the panels set grabFocus: false and
+  Reveal holds a HyprlandFocusGrab (active while visible; cleared() on an outside click starts the
+  close): an xdg-popup grab hides the popup at once. Every close goes through reveal.close();
+  three stay instant (`panel.visible = false`): pick colour, read text (they freeze or select the
+  screen next) and the phone's file picker (needs the keyboard now). Keyboard input under
+  the focus grab works (owner checked Escape and typing). The island's width/height: the same spline, 300 ms (was 120 ms linear).
+  Both follow Settings > Look > Animations. The inbox and the shortcuts overlay are layer
+  surfaces: Hyprland's layers fade already covers them.
 - **Legion keyboard RGB** (owner, 2026-10-17, planned): the Legion 5 16IRX9's own keyboard
   (ITE 048d:c994 / c992) in the accent like the AULA F87; lit only by Fn + Space so far. OpenRGB
   `--list-devices` printed nothing here (the openrgb-kb server holds the devices?): which tool

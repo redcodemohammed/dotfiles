@@ -24,13 +24,13 @@ PopupWindow {
     implicitWidth: 420
     implicitHeight: body.height
     color: "transparent"
-    grabFocus: true
+    grabFocus: false // an outside click goes through Reveal's focus grab, so closing can slide
     visible: false
 
     property double closedAt: 0
     function toggle() {
         if (visible)
-            visible = false
+            reveal.close()
         else if (Date.now() - closedAt > 300) // the click that closed it may also land on the block
             visible = true
     }
@@ -52,7 +52,7 @@ PopupWindow {
         target: Phone
         function onMountingChanged() {
             if (!Phone.mounting && panel.visible && panel.toast === "")
-                panel.visible = false
+                reveal.close()
         }
         function onMountFailed(message) {
             panel.say(message)
@@ -79,6 +79,8 @@ PopupWindow {
         return parts.join(" · ")
     }
 
+    Reveal { id: reveal; window: panel; target: body } // slides in and out like a window
+
     Rectangle {
         id: body
         width: 420
@@ -87,7 +89,7 @@ PopupWindow {
         border.width: 2
         border.color: Theme.border
         focus: true
-        Keys.onEscapePressed: panel.visible = false
+        Keys.onEscapePressed: reveal.close()
 
         Column {
             id: content

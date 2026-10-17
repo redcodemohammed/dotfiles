@@ -77,8 +77,16 @@ PanelWindow {
         border.width: root.edge // subtle, like an inactive window (owner); red for alerts
         border.color: alert ? Theme.alert : Theme.border
 
-        Behavior on width { NumberAnimation { duration: 120; easing.type: Easing.Linear } }
-        Behavior on height { NumberAnimation { duration: 120; easing.type: Easing.Linear } }
+        // Size changes on the same small spring as Hyprland's windows (owner, 2026-10-17; was
+        // 120 ms linear): hyprland.lua's "spring" bezier. Off with Settings > Look > Animations.
+        Behavior on width {
+            enabled: Settings.look.animations
+            NumberAnimation { duration: 300; easing.type: Easing.BezierSpline; easing.bezierCurve: [0.34, 1.3, 0.64, 1, 1, 1] }
+        }
+        Behavior on height {
+            enabled: Settings.look.animations
+            NumberAnimation { duration: 300; easing.type: Easing.BezierSpline; easing.bezierCurve: [0.34, 1.3, 0.64, 1, 1, 1] }
+        }
         Behavior on y {
             NumberAnimation {
                 duration: 120

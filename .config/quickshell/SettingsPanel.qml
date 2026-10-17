@@ -17,13 +17,13 @@ PopupWindow {
     implicitWidth: 360
     implicitHeight: body.implicitHeight
     color: "transparent"
-    grabFocus: true
+    grabFocus: false // an outside click goes through Reveal's focus grab, so closing can slide
     visible: false
 
     property double closedAt: 0
     function toggle() {
         if (visible)
-            visible = false
+            reveal.close()
         else if (Date.now() - closedAt > 300) // the click that closed it may also land on the block
             visible = true
     }
@@ -110,6 +110,8 @@ PopupWindow {
         }
     }
 
+    Reveal { id: reveal; window: panel; target: body } // slides in and out like a window
+
     Rectangle {
         id: body
         width: parent.width
@@ -119,7 +121,7 @@ PopupWindow {
         border.color: Theme.border
 
         focus: true
-        Keys.onEscapePressed: panel.visible = false
+        Keys.onEscapePressed: reveal.close()
 
         Column {
             id: column
