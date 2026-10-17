@@ -6,8 +6,10 @@ Keeps the design system's structure (dark, grayscale chrome, one accent):
   (within 20 degrees of the alert red's hue) are lit at L 0.72 instead, because at 0.78 red turns
   coral or salmon; the alert red stays as it is (owner, 2026-10-17, overriding the spec's "red
   means live or failed only": a red wallpaper gives a red accent; there used to be a keep-out
-  zone pushing red toward orange). An image with too little colour (fewer than 1% vivid pixels, e.g.
-  black and white) gets a light gray accent, a monochrome desktop (owner, 2026-10-16).
+  zone pushing red toward orange). A soft image (fewer than 1% vivid pixels, but visibly coloured)
+  takes its warm highlight (reds, oranges, pinks: a sunset on a blue dusk) when at least 0.5% of
+  it is warm, else its most colourful soft hue (owner, 2026-10-17: these used to turn gray). Only
+  an image without colour (black and white) gets a light gray accent, a monochrome desktop.
 - neutrals (bg, surfaces, border, text): the default palette's exact lightness, faintly tinted
   toward the image's dominant hue, so contrast stays what it was.
 - alert and the ANSI colours stay as in the default, except yellow (= accent, unless the accent
@@ -33,7 +35,13 @@ ACCENT_C = (0.10, 0.17)       # chroma range for the accent
 ALERT_HUE = 25.0              # OKLCH hue of the alert red
 RED_RANGE = 20.0              # accent hues this close to the alert red's count as red
 RED_L = 0.72                  # their lightness: still red, lighter than alert (#e5484d, L 0.63)
-GRAY_ACCENT = "#bebebe"       # too little colour: OKLCH L 0.80, no chroma (contrast 10 on bg)
+GRAY_ACCENT = "#bebebe"       # no colour: OKLCH L 0.80, no chroma (contrast 10 on bg)
+SOFT_C = 0.035                # a soft image's coloured pixels: at least this chroma
+WARM_SHARE = 0.005            # warm soft pixels needed for the warm highlight to win (0.5%)
+
+
+def is_warm(h):
+    return h >= 330 or h <= 80  # pinks, reds, oranges, ambers
 TINT_MAX = 0.012              # neutral tint chroma at most (barely there)
 NEUTRALS = ("bg", "surface", "surface_selected", "border", "fg", "fg_muted", "fg_dim")
 
@@ -130,7 +138,15 @@ def analyse(path):
     # Accent: the hue band (10 degrees) holding the most vivid pixels (sum of chroma squared).
     vivid = [(L, C, h) for L, C, h in pixels if C >= 0.06 and 0.3 <= L <= 0.95]
     if len(vivid) < len(pixels) * 0.01:
-        return base_hue, avg_chroma, None, None
+        # Soft image: its gentler colours count; a warm highlight wins over a larger cool area.
+        soft = [(L, C, h) for L, C, h in pixels if C >= SOFT_C and 0.2 <= L <= 0.95]
+        warm = [(L, C, h) for L, C, h in soft if is_warm(h)]
+        if len(warm) >= len(pixels) * WARM_SHARE:
+            vivid = warm
+        elif len(soft) >= len(pixels) * 0.01:
+            vivid = soft
+        else:
+            return base_hue, avg_chroma, None, None  # no colour: the gray accent
     bins = [0.0] * 36
     for L, C, h in vivid:
         bins[int(h // 10) % 36] += C * C
