@@ -4,7 +4,7 @@ import Quickshell
 // Settings panel (owner, 2026-10-17): opened from the tools panel's Settings button (or
 // `qs ipc call settings toggle`), it drops from the same power block, 360 wide. Values live in
 // Settings.qml; a change is saved at once and reaches Hyprland and Alacritty 300 ms later.
-// Tabs: Look (4a), Input (4b), Bar & island (4c). Next: Displays & power.
+// Tabs: Look (4a), Input (4b), Bar & island (4c), Power (4d: the idle chain).
 PopupWindow {
     id: panel
     required property var bar
@@ -130,10 +130,11 @@ PopupWindow {
 
             Row {
                 width: parent.width
-                readonly property real cell: width / 3
+                readonly property real cell: width / 4
                 SettingsTab { width: parent.cell; tab: panel.tab; label: "Look"; section: "look"; onChosen: panel.tab = section }
                 SettingsTab { width: parent.cell; tab: panel.tab; label: "Input"; section: "input"; onChosen: panel.tab = section }
                 SettingsTab { width: parent.cell; tab: panel.tab; label: "Bar"; section: "bar"; onChosen: panel.tab = section }
+                SettingsTab { width: parent.cell; tab: panel.tab; label: "Power"; section: "power"; onChosen: panel.tab = section }
             }
             Item { width: 1; height: 4 }
 
@@ -247,6 +248,45 @@ PopupWindow {
                 topPadding: 4
                 wrapMode: Text.Wrap
                 text: "Pomodoro lengths: in its panel. Lyrics: in the expanded media island."
+                font.family: "JetBrainsMono Nerd Font"
+                font.pixelSize: 12
+                color: Theme.fgDim
+            }
+            }
+
+            Column {
+            visible: panel.tab === "power"
+            width: parent.width
+            spacing: 4
+            Stepper {
+                label: "Lock after"
+                value: Settings.power.lockAfter
+                low: 2; high: 30; unit: " min"
+                onPicked: (v) => Settings.power.lockAfter = v
+            }
+            Stepper {
+                label: "Screens off, after lock"
+                value: Settings.power.screenOffAfter
+                low: 1; high: 10; unit: " min"
+                onPicked: (v) => Settings.power.screenOffAfter = v
+            }
+            Toggle {
+                label: "Sleep on battery"
+                on: Settings.power.sleep
+                onPicked: (on) => Settings.power.sleep = on
+            }
+            Stepper {
+                label: "Sleep after"
+                value: Settings.power.sleepAfter
+                low: 10; high: 120; step: 10; unit: " min"
+                available: Settings.power.sleep
+                onPicked: (v) => Settings.power.sleepAfter = v
+            }
+            Text {
+                width: parent.width
+                topPadding: 4
+                wrapMode: Text.Wrap
+                text: Tools.keepAwake ? "Keep awake is on: none of this runs until it is off." : "Idle time: no keyboard or mouse input."
                 font.family: "JetBrainsMono Nerd Font"
                 font.pixelSize: 12
                 color: Theme.fgDim

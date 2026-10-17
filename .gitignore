@@ -3,3 +3,4 @@
 .env
 .config/hypr/hypr_settings.lua
 .config/alacritty/settings.toml
+.config/hypr/hypridle-settings.conf

@@ -625,8 +625,19 @@ Done (section 4):
   IslandState.media false). Pomodoro lengths and lyrics stay where they are (its panel, the
   expanded media island): copying them would make two sources of truth; the tab says where they
   are. Settings.apply now writes a generated file (and reloads Hyprland) only when its text
-  changed, so shell-only settings never reload Hyprland. Next: 4d Displays & power (lock 2-30 min, screen off 1-10 min after lock, sleep 10-120 min
-  or never; scale left out: a wrong scale needs a revert countdown, its own step).
+  changed, so shell-only settings never reload Hyprland.
+  Step 4d (2026-10-17, works): Power tab, the idle chain. hypridle.conf
+  keeps its defaults as hyprlang variables ($lock_after 300, $screen_off_after 360, $sleep_after
+  1800, $sleep_on 1) and then `source = ~/.config/hypr/hypridle-settings.conf` (generated,
+  gitignored) overrides them. Tested with test copies of hypridle: a missing or broken sourced
+  file only logs "Config has errors ... Proceeding ignoring faulty entries" and the defaults
+  register, so the lock never depends on it; `~` resolves; variables substitute inside commands
+  too (`test $sleep_on = 1 && ...` turns sleep off). Panel: lock after 2-30 min, screens off 1-10
+  min after the lock, sleep on battery on/off, sleep after 10-120 step 10. hypridle can't reload:
+  Settings restarts it (pkill, wait until gone: two can't own org.freedesktop.ScreenSaver, then
+  setsid hypridle) and, if Keep awake is on, takes it off and on again so the new hypridle sees
+  the inhibitor as a change (it logs nothing about inhibitors at start; tested: inhibitor back,
+  newer than hypridle). Display scale left out (a wrong scale needs a revert countdown).
 - **Blur behind see-through apps** (owner, 2026-10-17, overriding the spec / CLAUDE.md "no
   transparency, no blur"; 2026-10-17, works): `hyprland.lua`
   decoration.blur enabled, size 6, passes 2 (only affects windows with alpha); Alacritty
