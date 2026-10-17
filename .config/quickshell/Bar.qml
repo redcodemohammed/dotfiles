@@ -47,6 +47,19 @@ PanelWindow {
         id: toolsPanel
         bar: bar
         block: toolsBlock
+        onSettingsRequested: { settingsPanel.closedAt = 0; settingsPanel.toggle() }
+    }
+    SettingsPanel { // from the tools panel's Settings button, under the same block
+        id: settingsPanel
+        bar: bar
+        block: toolsBlock
+    }
+    Connections {
+        target: Settings
+        function onPanelRequested(screen) {
+            if (screen === bar.modelData.name)
+                settingsPanel.toggle()
+        }
     }
     Connections {
         target: Tools

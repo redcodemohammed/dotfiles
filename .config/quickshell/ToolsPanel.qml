@@ -12,7 +12,7 @@ import Quickshell
 // in, the result back), Generate (UUID, ISO and Unix time, lorem ipsum: copied) and Localhost QR
 // (your dev servers' ports; a LAN one shows a QR of http://<LAN address>:<port> for the phone,
 // a localhost-only one says to start it with --host). The note line reports each result.
-// Next step adds a Settings button.
+// Settings (top right) closes it and opens the settings panel (SettingsPanel.qml).
 PopupWindow {
     id: panel
     required property var bar
@@ -27,6 +27,7 @@ PopupWindow {
     color: "transparent"
     grabFocus: true
     visible: false
+    signal settingsRequested
 
     property double closedAt: 0
     function toggle() {
@@ -197,11 +198,24 @@ PopupWindow {
             width: parent.width - 24
             spacing: 8
 
-            Text {
-                text: "Power"
-                font.family: "JetBrainsMono Nerd Font"
-                font.pixelSize: 12
-                color: Theme.fgMuted
+            Item {
+                width: parent.width
+                height: 28
+                Text {
+                    anchors.verticalCenter: parent.verticalCenter
+                    text: "Power"
+                    font.family: "JetBrainsMono Nerd Font"
+                    font.pixelSize: 12
+                    color: Theme.fgMuted
+                }
+                Chip {
+                    anchors.right: parent.right
+                    label: "Settings"
+                    onClicked: {
+                        panel.visible = false
+                        panel.settingsRequested()
+                    }
+                }
             }
 
             Row {

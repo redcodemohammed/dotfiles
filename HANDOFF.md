@@ -595,9 +595,26 @@ Done (section 4):
   backup came out empty); tests now use --stdout.
   Quickshell quirk (seen twice: ToolTile, Chip): a reload that adds a new inline component AND
   uses it can fail with "X is not a type"; a further reload after any other change loads it.
-  Planned next: step 4 settings panel
-  (one settings file `~/.config/hypr-settings.json`, read by Quickshell live and by hyprland.lua
-  at load, changes applied live with hyprctl): Look, Bar and island, Input, Displays and power.
+  Step 4a (2026-10-17, works): settings panel, Look.
+  Opened by the tools panel's Settings chip (top right) or `qs ipc call settings toggle`; no
+  keybind yet. One file `~/.config/desktop-settings.json` (outside the repo) through
+  FileView + JsonAdapter (`Settings.qml`); a change in the panel saves it and, 300 ms after the
+  last click, writes `~/.config/hypr/hypr_settings.lua` (`return { gaps_in = .. }`, then
+  `hyprctl reload`) and `~/.config/alacritty/settings.toml` (imported; `opacity` moved out of
+  alacritty.toml, which loads after its imports and would always win). Both generated files are
+  gitignored and written at shell start when missing. hyprland.lua: `pcall(require,
+  "hypr_settings")` laid key by key over its defaults, a value of the wrong type is ignored
+  (tested: border 4 applied; `border_size = "oops"` fell back to 2, no config error). Look:
+  gap between windows 0-24 step 2 (gaps_in = half), gap at edges 0-24 step 2, border 1-4 (never
+  0: it shows focus), blur on/off, blur strength 2-12, terminal opacity 70-100 step 5, window
+  fade on/off (animations.enabled). No accent override (owner). Steppers, not sliders: exact
+  values, one write per click. Editing the JSON by hand updates the shell but not Hyprland or
+  Alacritty (only panel changes regenerate). QML gotcha: `from` and `set` can't be property or
+  signal names (parse error "Expected token `:'"). Next: 4b Input (repeat delay 200-600 ms, rate
+  20-50/s, touchpad natural scroll, tap to click, speed -1..1, mouse speed -1..1), 4c Bar & island
+  (24/12 h, seconds, bar on all screens or main only, media, lyrics, Pomodoro 15-60 / 3-15 /
+  10-30 min), 4d Displays & power (lock 2-30 min, screen off 1-10 min after lock, sleep 10-120 min
+  or never; scale left out: a wrong scale needs a revert countdown, its own step).
 - **Blur behind see-through apps** (owner, 2026-10-17, overriding the spec / CLAUDE.md "no
   transparency, no blur"; 2026-10-17, works): `hyprland.lua`
   decoration.blur enabled, size 6, passes 2 (only affects windows with alpha); Alacritty
