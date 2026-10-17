@@ -700,8 +700,13 @@ Done (section 4):
   drives it (SUPER + I, the bell): the focused screen's bar opens; closing any other way sets it
   back; a reopen within 300 ms of closing is the closing click landing on the bell, ignored.
   Tested via IPC: opens under the bell, settings replaces it, toggle closes it.
-- **Chorus colours** (flatpak space.f1nn.chorus, lyrics; owner 2026-10-17, works,
-  uncommitted): no colour settings of its own (gschema: size, blur, background opacity). GTK4 in a
+- **Record and sound panels** (owner, 2026-10-17, works): the record and volume blocks open
+  drop-downs (RecordPanel.qml, SoundPanel.qml, on Reveal) in place of the island views; they reuse
+  IslandRecord (setup 340x324 while idle, the recording view 340x172 while recording) and
+  IslandVolume (open, 320 x IslandState.volumeHeight). Starting a recording closes the panel at
+  once, so it isn't filmed. The volume keys still show the island's compact pill. New IPC:
+  `qs ipc call panel toggle <record|sound>` (Panels.qml; Bar.qml opens it on the focused screen).
+- **Chorus colours** (flatpak space.f1nn.chorus, lyrics; owner 2026-10-17, works): no colour settings of its own (gschema: size, blur, background opacity). GTK4 in a
   sandbox reads gtk.css from ~/.var/app/space.f1nn.chorus/config/gtk-4.0 and can't follow the
   symlink into ~/dotfiles, so generate.py's COPIES writes a real copy there (no flatpak override
   needed). Its lyrics view draws over the album art: likely only the window chrome follows.

@@ -74,6 +74,25 @@ PanelWindow {
                 toolsPanel.toggle()
         }
     }
+    RecordPanel { // drops from the record block
+        id: recordPanel
+        bar: bar
+        block: recordBlock
+    }
+    SoundPanel { // drops from the volume block
+        id: soundPanel
+        bar: bar
+        block: volumeBlock
+    }
+    Connections {
+        target: Panels
+        function onToggleRequested(name, screen) {
+            if (screen !== bar.modelData.name)
+                return
+            if (name === "record") recordPanel.toggle()
+            else if (name === "sound") soundPanel.toggle()
+        }
+    }
     PomodoroPanel { // drops from the Pomodoro block
         id: pomodoroPanel
         bar: bar
@@ -155,10 +174,11 @@ PanelWindow {
             onClicked: pomodoroPanel.toggle()
             PomodoroStatus {}
         }
-        BarBlock { // screen recording: muted when idle, red while recording; click: the island panel
+        BarBlock { // screen recording: muted when idle, red while recording; click: its panel
+            id: recordBlock
             visible: bar.full
             clickable: true
-            onClicked: IslandState.showRecording()
+            onClicked: recordPanel.toggle()
             Text {
                 text: Icons.record
                 font.family: Recording.active ? Icons.fill : Icons.regular
@@ -172,10 +192,11 @@ PanelWindow {
                 id: capture
             }
         }
-        BarBlock { // click: the volume island with the device lists
+        BarBlock { // click: the sound panel with the device lists
+            id: volumeBlock
             visible: bar.full && volume.sink !== null
             clickable: true
-            onClicked: IslandState.showVolume()
+            onClicked: soundPanel.toggle()
             Volume {
                 id: volume
             }
