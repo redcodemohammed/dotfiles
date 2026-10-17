@@ -7,6 +7,9 @@ import = ["colors.toml"]
 [window]
 padding = { x = 8, y = 8 }
 decorations = "None"
+# See-through, with Hyprland's blur behind it (owner, 2026-10-17, overriding the spec's "no
+# transparency"). 1.0 makes it solid again.
+opacity = 0.9
 
 [font]
 normal = { family = "JetBrainsMono Nerd Font", style = "Regular" }

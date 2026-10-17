@@ -28,6 +28,8 @@
 	// Sharp, flat, solid. 640px wide (owner asked for a bit bigger than the
 	// spec's 560 on the laptop). Height: 48 search + 8 rows of 40 + footer.
 	"launcher_window": {
+		// See-through, blurred by Hyprland's layer rule (owner, 2026-10-17); 1 is solid.
+		"opacity": 0.9,
 		"material": "none",
 		"rounding": 0,
 		"client_side_decorations": {

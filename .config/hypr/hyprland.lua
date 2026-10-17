@@ -187,7 +187,9 @@ hl.config({
         layout = "dwindle",
     },
 
-    -- Sharp, flat, solid: no rounding, no shadow, no blur, no transparency.
+    -- Sharp and flat: no rounding, no shadow. Blur behind see-through windows (owner, 2026-10-17,
+    -- overriding the spec's "no blur, no transparency"): only apps that are transparent get it
+    -- (Alacritty 0.9, Vicinae 0.9 with the layer rule below); everything opaque looks as before.
     decoration = {
         rounding       = 0,
         rounding_power = 2,
@@ -204,9 +206,9 @@ hl.config({
         },
 
         blur = {
-            enabled   = false,
-            size      = 3,
-            passes    = 1,
+            enabled   = true,
+            size      = 6,
+            passes    = 2,
             vibrancy  = 0.1696,
         },
     },
@@ -509,6 +511,16 @@ hl.window_rule({
 --     no_anim = true,
 -- })
 -- overlayLayerRule:set_enabled(false)
+
+-- Vicinae's launcher is a layer surface: window blur doesn't reach it, this rule does
+-- (docs.vicinae.com/quickstart/hyprland-lua). ignore_alpha 0: blur behind every pixel that isn't
+-- fully clear. Its opacity is launcher_window.opacity in vicinae/hypr.jsonc.
+hl.layer_rule({
+    name  = "vicinae-blur",
+    match = { namespace = "vicinae" },
+    blur  = true,
+    ignore_alpha = 0,
+})
 
 -- Hyprland-run windowrule
 hl.window_rule({
