@@ -372,6 +372,8 @@ end
 
 -- Example binds, see https://wiki.hypr.land/Configuring/Basics/Binds/ for more
 bind(mainMod .. " + Return", hl.dsp.exec_cmd(terminal), "Apps: Terminal")
+-- Without tmux (owner, 2026-10-17): -e runs fish in place of alacritty.toml's tmux shell.
+bind(mainMod .. " + SHIFT + Return", hl.dsp.exec_cmd(terminal .. " -e fish"), "Apps: Terminal without tmux")
 bind(mainMod .. " + code:61", hl.dsp.exec_cmd("vicinae toggle"), "Apps: Launcher") -- slash key, any layout
 bind(mainMod .. " + code:31", hl.dsp.exec_cmd("qs ipc call inbox toggle"), "Shell: Notifications") -- I key: notification inbox
 bind(mainMod .. " + code:53", hl.dsp.exec_cmd("qs ipc call tools toggle"), "Shell: Tools and power") -- X key: tools panel (power, tools, settings; owner, 2026-10-17)
