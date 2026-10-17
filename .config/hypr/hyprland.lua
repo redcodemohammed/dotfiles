@@ -349,33 +349,44 @@ hl.device({
 
 local mainMod = "SUPER" -- Sets "Windows" key as main modifier
 
+-- hl.bind plus a line in the shortcuts panel (SUPER + F1, quickshell/Shortcuts.qml): `desc` is
+-- "Group: what it does"; binds with the same one share a row. The keys ride along after a tab
+-- because `hyprctl binds -j` reports a keycode bind (code:NN) with an empty key. A bind without
+-- a description (the lid switch) stays out of the panel.
+local function bind(keys, action, desc, opts)
+    opts = opts or {}
+    opts.description = desc .. "\t" .. keys
+    return hl.bind(keys, action, opts)
+end
+
 -- Example binds, see https://wiki.hypr.land/Configuring/Basics/Binds/ for more
-hl.bind(mainMod .. " + Return", hl.dsp.exec_cmd(terminal))
-hl.bind(mainMod .. " + code:61", hl.dsp.exec_cmd("vicinae toggle")) -- slash key, any layout
-hl.bind(mainMod .. " + code:31", hl.dsp.exec_cmd("qs ipc call inbox toggle")) -- I key: notification inbox
-hl.bind(mainMod .. " + code:53", hl.dsp.exec_cmd("qs ipc call tools toggle")) -- X key: tools panel (power, tools, settings; owner, 2026-10-17)
-hl.bind(mainMod .. " + code:59", hl.dsp.exec_cmd("qs ipc call settings toggle")) -- comma key: settings panel (owner, 2026-10-17)
-hl.bind(mainMod .. " + code:33", hl.dsp.exec_cmd("qs ipc call pomodoro toggle")) -- P key: Pomodoro start / pause (owner, 2026-10-17)
-hl.bind(mainMod .. " + code:26", hl.dsp.exec_cmd("~/.local/scripts/vicinae-emulator.sh")) -- E key: Android emulator picker (owner's request)
-hl.bind(mainMod .. " + code:27", hl.dsp.exec_cmd("~/.local/bin/screen-record toggle")) -- R key: record the focused screen (spec)
-hl.bind(mainMod .. " + code:41", hl.dsp.exec_cmd("~/.local/bin/strata")) -- F key: Strata file manager (owner's request)
+bind(mainMod .. " + Return", hl.dsp.exec_cmd(terminal), "Apps: Terminal")
+bind(mainMod .. " + code:61", hl.dsp.exec_cmd("vicinae toggle"), "Apps: Launcher") -- slash key, any layout
+bind(mainMod .. " + code:31", hl.dsp.exec_cmd("qs ipc call inbox toggle"), "Shell: Notifications") -- I key: notification inbox
+bind(mainMod .. " + code:53", hl.dsp.exec_cmd("qs ipc call tools toggle"), "Shell: Tools and power") -- X key: tools panel (power, tools, settings; owner, 2026-10-17)
+bind(mainMod .. " + code:59", hl.dsp.exec_cmd("qs ipc call settings toggle"), "Shell: Settings") -- comma key: settings panel (owner, 2026-10-17)
+bind(mainMod .. " + code:67", hl.dsp.exec_cmd("qs ipc call shortcuts toggle"), "Shell: Shortcuts") -- F1 key: this list (owner, 2026-10-17)
+bind(mainMod .. " + code:33", hl.dsp.exec_cmd("qs ipc call pomodoro toggle"), "Shell: Pomodoro start / pause") -- P key: Pomodoro start / pause (owner, 2026-10-17)
+bind(mainMod .. " + code:26", hl.dsp.exec_cmd("~/.local/scripts/vicinae-emulator.sh"), "Apps: Android emulator") -- E key: Android emulator picker (owner's request)
+bind(mainMod .. " + code:27", hl.dsp.exec_cmd("~/.local/bin/screen-record toggle"), "Capture: Record the screen") -- R key: record the focused screen (spec)
+bind(mainMod .. " + code:41", hl.dsp.exec_cmd("~/.local/bin/strata"), "Apps: Files") -- F key: Strata file manager (owner's request)
 -- Lock: Quickshell lock in its own instance. flock stops a second locker from starting.
-hl.bind(mainMod .. " + Escape", hl.dsp.exec_cmd([[sh -c 'flock -n "$XDG_RUNTIME_DIR/quickshell-lock.flock" qs -p ~/.config/quickshell-lock']]))
+bind(mainMod .. " + Escape", hl.dsp.exec_cmd([[sh -c 'flock -n "$XDG_RUNTIME_DIR/quickshell-lock.flock" qs -p ~/.config/quickshell-lock']]), "Session: Lock")
 
 -- Screenshots: saved to the folder and copied to the clipboard. Never all screens at once.
 -- ~/.local/bin/screenshot runs hyprshot, then a notification with Copy / Send to phone / Show in
 -- folder / Annotate / Delete (capture-notify).
 local shot = "~/.local/bin/screenshot "
-hl.bind("Print",                         hl.dsp.exec_cmd(shot .. "-m region"))
-hl.bind(mainMod .. " + Print",           hl.dsp.exec_cmd(shot .. "-m window -m active"))
-hl.bind(mainMod .. " + SHIFT + Print",   hl.dsp.exec_cmd(shot .. "-m output -m active"))
+bind("Print",                         hl.dsp.exec_cmd(shot .. "-m region"), "Capture: Screenshot a region")
+bind(mainMod .. " + Print",           hl.dsp.exec_cmd(shot .. "-m window -m active"), "Capture: Screenshot the window")
+bind(mainMod .. " + SHIFT + Print",   hl.dsp.exec_cmd(shot .. "-m output -m active"), "Capture: Screenshot the screen")
 -- Annotate the newest shot. Saves a -annotated copy next to it, original untouched.
-hl.bind(mainMod .. " + CTRL + Print", hl.dsp.exec_cmd([[sh -c 'f=$(ls -t ~/Pictures/Screenshots/*.png 2>/dev/null | head -1); [ -n "$f" ] && satty -f "$f" -o "${f%.png}-annotated.png" --copy-command wl-copy']]))
-hl.bind(mainMod .. " + code:24", hl.dsp.window.close()) -- Q key, any layout
-hl.bind(mainMod .. " + SHIFT + Escape", hl.dsp.exec_cmd("command -v hyprshutdown >/dev/null 2>&1 && hyprshutdown || hyprctl dispatch 'hl.dsp.exit()'")) -- log out
+bind(mainMod .. " + CTRL + Print", hl.dsp.exec_cmd([[sh -c 'f=$(ls -t ~/Pictures/Screenshots/*.png 2>/dev/null | head -1); [ -n "$f" ] && satty -f "$f" -o "${f%.png}-annotated.png" --copy-command wl-copy']]), "Capture: Annotate last shot")
+bind(mainMod .. " + code:24", hl.dsp.window.close(), "Windows: Close") -- Q key, any layout
+bind(mainMod .. " + SHIFT + Escape", hl.dsp.exec_cmd("command -v hyprshutdown >/dev/null 2>&1 && hyprshutdown || hyprctl dispatch 'hl.dsp.exit()'"), "Session: Log out") -- log out
 -- V key (any layout): toggle floating. A window that just started floating gets 60% x 70%
 -- of its monitor, centred, so it never fills the screen and slides under the bar.
-hl.bind(mainMod .. " + code:55", function()
+bind(mainMod .. " + code:55", function()
     hl.dispatch(hl.dsp.window.float({ action = "toggle" }))
     local w = hl.get_active_window()
     if w ~= nil and w.floating and w.monitor ~= nil then
@@ -386,7 +397,7 @@ hl.bind(mainMod .. " + code:55", function()
         }))
         hl.dispatch(hl.dsp.window.center())
     end
-end)
+end, "Windows: Float / tile")
 -- Lid: closing or opening it reloads the config, which decides whether the laptop screen is on
 -- (see "Lid" under the monitors). locked: also while the lock screen is up. A screen plugged in
 -- while the lid is shut turns the laptop screen off; the last one unplugged brings it back.
@@ -429,8 +440,8 @@ hl.on("monitor.removed", function(m)
     end
 end)
 -- N: true fullscreen, covers the bar. M: maximized, bar and gaps stay.
-hl.bind(mainMod .. " + code:57", hl.dsp.window.fullscreen({ mode = "fullscreen", action = "toggle" }))
-hl.bind(mainMod .. " + code:58", hl.dsp.window.fullscreen({ mode = "maximized",  action = "toggle" }))
+bind(mainMod .. " + code:57", hl.dsp.window.fullscreen({ mode = "fullscreen", action = "toggle" }), "Windows: Fullscreen")
+bind(mainMod .. " + code:58", hl.dsp.window.fullscreen({ mode = "maximized",  action = "toggle" }), "Windows: Maximise")
 
 -- Focus: SUPER + arrows or H J K L. Move window: add Shift. Resize: SUPER + Ctrl + arrows.
 -- Letters by keycode (h = 43, j = 44, k = 45, l = 46). Resize steps 40px and repeats when held.
@@ -442,18 +453,18 @@ local directions = {
 }
 for _, d in ipairs(directions) do
     for _, key in ipairs({ d.arrow, "code:" .. d.code }) do
-        hl.bind(mainMod .. " + " .. key,             hl.dsp.focus({ direction = d.dir }))
-        hl.bind(mainMod .. " + SHIFT + " .. key,     hl.dsp.window.move({ direction = d.dir }))
+        bind(mainMod .. " + " .. key,             hl.dsp.focus({ direction = d.dir }), "Windows: Focus")
+        bind(mainMod .. " + SHIFT + " .. key,     hl.dsp.window.move({ direction = d.dir }), "Windows: Move")
     end
-    hl.bind(mainMod .. " + CTRL + " .. d.arrow,
-        hl.dsp.window.resize({ x = d.dx, y = d.dy, relative = true }), { repeating = true })
+    bind(mainMod .. " + CTRL + " .. d.arrow,
+        hl.dsp.window.resize({ x = d.dx, y = d.dy, relative = true }), "Windows: Resize", { repeating = true })
 end
 
 -- Window to the screen on the left / right (spec: SUPER + Shift + comma / period), focus follows.
 -- Comma and period by keycode (59, 60), so any layout works; it lands on that screen's active
 -- workspace, which hyprsplit keeps in that screen's 1-5.
-hl.bind(mainMod .. " + SHIFT + code:59", hl.dsp.window.move({ monitor = "l", follow = true }))
-hl.bind(mainMod .. " + SHIFT + code:60", hl.dsp.window.move({ monitor = "r", follow = true }))
+bind(mainMod .. " + SHIFT + code:59", hl.dsp.window.move({ monitor = "l", follow = true }), "Windows: To the left screen")
+bind(mainMod .. " + SHIFT + code:60", hl.dsp.window.move({ monitor = "r", follow = true }), "Windows: To the right screen")
 
 -- Workspaces 1 to 5 per monitor via hyprsplit (Lua library, submodule pinned in hypr/hyprsplit).
 -- SUPER + 1-5 switches on the focused monitor, SUPER + Shift + 1-5 sends the window.
@@ -466,31 +477,31 @@ hs.config({ num_workspaces = 5 })
 hs.monitor_priority({ "HDMI-A-1", "eDP-1", "DP-2" })
 for i = 1, 5 do
     local key = "code:" .. (i + 9)
-    hl.bind(mainMod .. " + " .. key,             hs.dsp.focus({ workspace = i }))
-    hl.bind(mainMod .. " + SHIFT + " .. key,     hs.dsp.window.move({ workspace = i }))
+    bind(mainMod .. " + " .. key,             hs.dsp.focus({ workspace = i }), "Workspaces: Go to 1-5")
+    bind(mainMod .. " + SHIFT + " .. key,     hs.dsp.window.move({ workspace = i }), "Workspaces: Send the window to 1-5")
 end
 
 -- Scroll through existing workspaces with mainMod + scroll
-hl.bind(mainMod .. " + mouse_down", hl.dsp.focus({ workspace = "e+1" }))
-hl.bind(mainMod .. " + mouse_up",   hl.dsp.focus({ workspace = "e-1" }))
+bind(mainMod .. " + mouse_down", hl.dsp.focus({ workspace = "e+1" }), "Workspaces: Next")
+bind(mainMod .. " + mouse_up",   hl.dsp.focus({ workspace = "e-1" }), "Workspaces: Previous")
 
 -- Move/resize windows with mainMod + LMB/RMB and dragging
-hl.bind(mainMod .. " + mouse:272", hl.dsp.window.drag(),   { mouse = true })
-hl.bind(mainMod .. " + mouse:273", hl.dsp.window.resize(), { mouse = true })
+bind(mainMod .. " + mouse:272", hl.dsp.window.drag(), "Windows: Drag (left button)", { mouse = true })
+bind(mainMod .. " + mouse:273", hl.dsp.window.resize(), "Windows: Resize (right button)", { mouse = true })
 
 -- Laptop multimedia keys for volume and LCD brightness
-hl.bind("XF86AudioRaiseVolume", hl.dsp.exec_cmd("wpctl set-volume -l 1 @DEFAULT_AUDIO_SINK@ 5%+"), { locked = true, repeating = true })
-hl.bind("XF86AudioLowerVolume", hl.dsp.exec_cmd("wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%-"),      { locked = true, repeating = true })
-hl.bind("XF86AudioMute",        hl.dsp.exec_cmd("wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle"),     { locked = true, repeating = true })
-hl.bind("XF86AudioMicMute",     hl.dsp.exec_cmd("wpctl set-mute @DEFAULT_AUDIO_SOURCE@ toggle"),   { locked = true, repeating = true })
-hl.bind("XF86MonBrightnessUp",  hl.dsp.exec_cmd("brightnessctl -e4 -n2 set 5%+"),                  { locked = true, repeating = true })
-hl.bind("XF86MonBrightnessDown",hl.dsp.exec_cmd("brightnessctl -e4 -n2 set 5%-"),                  { locked = true, repeating = true })
+bind("XF86AudioRaiseVolume", hl.dsp.exec_cmd("wpctl set-volume -l 1 @DEFAULT_AUDIO_SINK@ 5%+"), "Media: Volume up", { locked = true, repeating = true })
+bind("XF86AudioLowerVolume", hl.dsp.exec_cmd("wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%-"), "Media: Volume down", { locked = true, repeating = true })
+bind("XF86AudioMute",        hl.dsp.exec_cmd("wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle"), "Media: Mute", { locked = true, repeating = true })
+bind("XF86AudioMicMute",     hl.dsp.exec_cmd("wpctl set-mute @DEFAULT_AUDIO_SOURCE@ toggle"), "Media: Microphone mute", { locked = true, repeating = true })
+bind("XF86MonBrightnessUp",  hl.dsp.exec_cmd("brightnessctl -e4 -n2 set 5%+"), "Media: Brightness up", { locked = true, repeating = true })
+bind("XF86MonBrightnessDown",hl.dsp.exec_cmd("brightnessctl -e4 -n2 set 5%-"), "Media: Brightness down", { locked = true, repeating = true })
 
 -- Requires playerctl
-hl.bind("XF86AudioNext",  hl.dsp.exec_cmd("playerctl next"),       { locked = true })
-hl.bind("XF86AudioPause", hl.dsp.exec_cmd("playerctl play-pause"), { locked = true })
-hl.bind("XF86AudioPlay",  hl.dsp.exec_cmd("playerctl play-pause"), { locked = true })
-hl.bind("XF86AudioPrev",  hl.dsp.exec_cmd("playerctl previous"),   { locked = true })
+bind("XF86AudioNext",  hl.dsp.exec_cmd("playerctl next"), "Media: Next track", { locked = true })
+bind("XF86AudioPause", hl.dsp.exec_cmd("playerctl play-pause"), "Media: Play / pause", { locked = true })
+bind("XF86AudioPlay",  hl.dsp.exec_cmd("playerctl play-pause"), "Media: Play / pause", { locked = true })
+bind("XF86AudioPrev",  hl.dsp.exec_cmd("playerctl previous"), "Media: Previous track", { locked = true })
 
 
 --------------------------------

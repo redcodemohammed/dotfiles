@@ -639,6 +639,19 @@ Done (section 4):
   setsid hypridle) and, if Keep awake is on, takes it off and on again so the new hypridle sees
   the inhibitor as a change (it logs nothing about inhibitors at start; tested: inhibitor back,
   newer than hypridle). Display scale left out (a wrong scale needs a revert countdown).
+- **Shortcuts overlay** (owner, 2026-10-17; step 1 of 3, works):
+  SUPER + F1 (`code:67`; `qs ipc call shortcuts toggle`) shows `Shortcuts.qml`, one overlay-layer
+  window on the focused screen with exclusive keyboard focus; Escape, any click or SUPER + F1
+  closes it. Read live from `hyprctl binds -j` at each opening. hyprland.lua's `bind(keys, action,
+  desc, opts)` wraps hl.bind and sets `opts.description = desc .. "\t" .. keys` (option checked
+  in /usr/share/hypr/stubs/hl.meta.lua, HL.BindOptions): "Group: what it does", then the keys,
+  because `hyprctl binds -j` gives keycode binds an empty key and keycode 0. The panel maps
+  code:NN to US key names (rows from 10, 24, 38, 52; F1-F10 from 67), merges binds that share a
+  description into one row (arrows first, then the rest in bind order: Qt's JS sort is not
+  stable, so the index breaks ties) and lays the groups in three columns (Windows + Workspaces;
+  Apps + Shell + Session; Capture + Media; an unknown group joins the last). A bind with no
+  description (the lid switch) is left out. Lua binds show in `hyprctl binds` as dispatcher
+  `__lua` with an id. Next: step 2 tmux, step 3 Neovim (owner's own mappings).
 - **Blur behind see-through apps** (owner, 2026-10-17, overriding the spec / CLAUDE.md "no
   transparency, no blur"; 2026-10-17, works): `hyprland.lua`
   decoration.blur enabled, size 6, passes 2 (only affects windows with alpha); Alacritty

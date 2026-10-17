@@ -19,4 +19,7 @@ ShellRoot {
         model: Quickshell.screens
         Island {}
     }
+
+    // SUPER + F1: every Hyprland shortcut, on the focused screen (one window that follows focus).
+    Shortcuts {}
 }
