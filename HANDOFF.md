@@ -709,6 +709,20 @@ Done (section 4):
   documented as writable) and pairing. No agent runs (bluetui brings its own; adapter Pairable:
   no), and Quickshell has none: a small Python agent (python-dbus and python-gobject are
   installed) that tells the panel what a device asks (confirm a code, show a passkey).
+- **Workspaces with app glyphs** (owner, 2026-10-17, from their sample; works): an empty workspace shows its number (active: accent square); one with windows
+  shows a small dim number (11px; hidden at first, owner asked for it back) and a Nerd Font glyph
+  per window (owner: one per window) on its own block,
+  surface_selected with fg_muted glyphs, the active one accent with on_accent glyphs. Square
+  (radius 0, not the sample's rounding). AppGlyphs.qml maps app IDs (Wayland appId or the IPC
+  class, lowercase, first rule the ID contains) to codepoints checked by glyph name in
+  JetBrainsMonoNerdFont-Regular.ttf (dev-terminal, fa-firefox for Zen, fa-telegram, fa-discord,
+  fa-spotify, dev-vscode, dev-datagrip, custom-folder for Strata, fa-steam...); unknown apps
+  fa-window_maximize. Tried first: Papirus icons in colour, then tinted (MultiEffect): a tinted
+  full-colour icon shows its background shape as a blob (owner: "they look bad"). A click
+  focuses the workspace (main slots: hyprsplit ID base + n, the monitor first when empty); the
+  wheel over the block steps e+1 / e-1. Spacing (owner): blocks 20 tall, 8px either side of the
+  glyphs, 6px between workspaces, the workspaces block's padding 6, so every block sits 4px
+  clear of its 2px border.
 - **Grouped bar** (owner, 2026-10-17: "clean this mess"; works): the
   right zone went from 13 blocks to 5: [tray behind a chevron] [layout, clock] [phone, Pomodoro,
   record, mic/camera] [sound, network, Bluetooth, battery] [notifications, power]. BarCell.qml:

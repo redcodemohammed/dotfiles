@@ -129,7 +129,7 @@ PanelWindow {
     BarBlock {
         id: workspacesBlock
         anchors.left: parent.left
-        padding: 4 // the 24px squares sit 4px in, as from the top and bottom
+        padding: 6 // the 20px workspaces sit 4px clear of the 2px border, as top and bottom (owner)
         Workspaces {
             screen: bar.modelData
         }

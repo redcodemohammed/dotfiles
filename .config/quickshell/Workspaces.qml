@@ -1,8 +1,9 @@
 import QtQuick
 import Quickshell.Hyprland
 
-// Workspaces 1 to 5 as 24px squares. Active: amber fill, dark number. Occupied: gray number.
-// Empty: dim number. Display only.
+// Workspaces 1 to 5, each its number and an icon per window (WorkspaceSquare.qml; owner,
+// 2026-10-17: icons instead of bare numbers). Active: amber number square on a lighter group.
+// A click goes to a workspace; the wheel over the block steps through the existing ones.
 // hyprsplit gives each monitor its own ID range by its priority (hyprland.lua:
 // hs.monitor_priority; G5 1-5, laptop 6-10, LF24 11-15), so a monitor shows the workspaces of its
 // range in slots 1 to 5. A screen that goes away (lid shut) leaves its workspaces on a survivor:
@@ -37,7 +38,7 @@ Row {
         }
         return groups
     }
-    spacing: 4
+    spacing: 6 // as between the bar's blocks
 
     Repeater {
         model: 5
@@ -47,6 +48,8 @@ Row {
             ws: Hyprland.workspaces.values.find(w => w.monitor === root.monitor && w.id > 0 && root.own(w)
                 && ((w.id - 1) % 5) + 1 === index + 1) ?? null
             number: index + 1
+            target: root.known ? root.base + index + 1 : index + 1
+            monitorName: root.monitor ? root.monitor.name : ""
         }
     }
 
@@ -72,9 +75,12 @@ Row {
                     required property var modelData
                     ws: modelData
                     number: ((modelData.id - 1) % 5) + 1
-                    clickable: true
                 }
             }
         }
+    }
+
+    WheelHandler { // like SUPER + scroll: the next or previous existing workspace
+        onWheel: event => Hyprland.dispatch("hl.dsp.focus({ workspace = \"" + (event.angleDelta.y < 0 ? "e+1" : "e-1") + "\" })")
     }
 }
