@@ -65,7 +65,7 @@ Singleton {
         id: wallpaperStart
         interval: 150
         onTriggered: {
-            Quickshell.execDetached(["sh", "-c", "pgrep -x hyprpaper >/dev/null || exec setsid hyprpaper"])
+            Quickshell.execDetached([Quickshell.env("HOME") + "/.local/bin/wallpaper-start"]) // hyprpaper or mpvpaper
             wallpaperWait.tries = 0
             wallpaperWait.start()
         }
@@ -86,7 +86,7 @@ Singleton {
     }
     Process {
         id: layerCheck
-        command: ["sh", "-c", "hyprctl layers | grep -q 'namespace: hyprpaper'"]
+        command: ["sh", "-c", "hyprctl layers | grep -qE 'namespace: (hyprpaper|mpvpaper)'"]
         onExited: (code) => {
             if (code === 0 && wallpaperWait.running) {
                 wallpaperWait.stop()

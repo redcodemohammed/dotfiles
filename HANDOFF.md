@@ -709,6 +709,22 @@ Done (section 4):
   documented as writable) and pairing. No agent runs (bluetui brings its own; adapter Pairable:
   no), and Quickshell has none: a small Python agent (python-dbus and python-gobject are
   installed) that tells the panel what a device asks (confirm a code, show a passkey).
+- **Video wallpapers** (owner, 2026-10-17, works): mpvpaper 1.9
+  (chaotic-aur, owner installed). `wallpaper-apply <video>` (mp4, webm, mkv, mov) writes its path
+  to ~/.config/hypr/wallpaper-video (gitignored), runs wallpaper-start, and takes the colours from
+  the frame at 10% (ffmpeg -> ~/.cache/hypr/wallpaper-frame.png); an image removes that file.
+  `wallpaper-start` (also the login path, Entrance.qml, and hyprland.lua's 5 s fallback): video:
+  stops hyprpaper, `mpvpaper -p -a FULL -o "no-audio loop panscan=1.0 hwdec=auto
+  input-ipc-server=$XDG_RUNTIME_DIR/mpvpaper.sock" ALL <video>` (one process, one socket, every
+  screen; tested); image: stops mpvpaper, starts hyprpaper. Pauses: fullscreen window (-a FULL)
+  and hidden wallpaper (-p) by mpvpaper; battery (UPower.onBattery) and lock (Entrance.covered)
+  by VideoWallpaper.qml over the socket with socat, re-sent every 3 s while held (mpvpaper's own
+  auto-pause may resume it). Tested with a test pattern: paused while covered, resumed after;
+  back to an image restored hyprpaper. The picker lists videos too. load-scripts=no: mpv-mpris
+  (/etc/mpv/scripts/mpris.so) made the wallpaper a media player and the island showed it (owner).
+  A fullscreen window on one screen pauses all of them (one mpv for every screen): the owner
+  chose to keep that over one mpvpaper per screen (3x the decoding). Works with the owner's own
+  videos (10221.mp4). Untested: battery.
 - **Generated colours out of git** (owner, 2026-10-17, works: a wallpaper change left git clean): every
   generate.py output (18 files: Theme.qml, hypr_palette.lua, colors.toml, gtk.css, .dircolors,
   cava, fastfetch, peaclock, the Spotifast / Strata / VS Code themes...), palette/palette.toml and

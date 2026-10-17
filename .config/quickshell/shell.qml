@@ -22,6 +22,10 @@ ShellRoot {
         EntranceCover {}
     }
 
+    // A video wallpaper pauses on battery and while locked (VideoWallpaper.qml); touching the
+    // singleton here starts it with the shell.
+    property bool videoWallpaperHold: VideoWallpaper.hold
+
     // SUPER + F1: every Hyprland shortcut, on the focused screen (one window that follows focus).
     Shortcuts {}
 }

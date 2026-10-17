@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Pick a wallpaper in Vicinae; the desktop is recoloured from it (wallpaper-apply).
-# Lists ~/Pictures/Wallpapers as full paths, so Vicinae can show a Quick Look preview; the last
+# Lists ~/Pictures/Wallpapers (images and videos) as full paths, so Vicinae can show a Quick Look preview; the last
 # entry goes back to the hand-made palette. Opened from Vicinae's search as "Wallpaper"
 # (.local/share/applications/wallpaper-pick.desktop). Owner's request, 2026-10-15.
 set -euo pipefail
@@ -8,7 +8,8 @@ dir="$HOME/Pictures/Wallpapers"
 reset="Default colours (keep the wallpaper)"
 
 choice=$({
-    find "$dir" -maxdepth 1 -type f \( -iname '*.png' -o -iname '*.jpg' -o -iname '*.jpeg' -o -iname '*.webp' \) | sort
+    find "$dir" -maxdepth 1 -type f \( -iname '*.png' -o -iname '*.jpg' -o -iname '*.jpeg' -o -iname '*.webp' \
+        -o -iname '*.mp4' -o -iname '*.webm' -o -iname '*.mkv' -o -iname '*.mov' \) | sort # videos too (mpvpaper)
     echo "$reset"
 } | vicinae dmenu --navigation-title "Wallpaper" --placeholder "Pick a wallpaper" --section-title "Wallpapers ({count})") || exit 0
 

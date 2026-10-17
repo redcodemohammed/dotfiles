@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+# wallpaper-start: starts the wallpaper last chosen with wallpaper-apply (owner, 2026-10-17).
+# A video (~/.config/hypr/wallpaper-video holds its path; not in git): mpvpaper on every screen,
+# muted, looping, cropped to fill (panscan), no mpv scripts (mpv-mpris would announce it as a
+# media player and the island would show it), paused by mpvpaper itself while a window is
+# fullscreen (-a FULL) or the wallpaper is hidden (-p); the shell pauses it on battery and while
+# locked through its socket ($XDG_RUNTIME_DIR/mpvpaper.sock, quickshell/VideoWallpaper.qml).
+# An image: hyprpaper (hyprpaper.conf sources hyprpaper-wallpaper.conf). Either way the other
+# one is stopped first, so they never stack. Run at login by the shell, under its entrance sheet.
+set -u
+video_file="$HOME/.config/hypr/wallpaper-video"
+sock="${XDG_RUNTIME_DIR:-/run/user/$UID}/mpvpaper.sock"
+video=""
+[ -r "$video_file" ] && video=$(head -n 1 "$video_file")
+video=${video/#\~/$HOME}
+
+stop() { pkill -x "$1" 2>/dev/null; for _ in $(seq 50); do pgrep -x "$1" >/dev/null || return 0; sleep 0.05; done; }
+
+if [ -n "$video" ] && [ -f "$video" ]; then
+    stop hyprpaper
+    stop mpvpaper
+    rm -f "$sock"
+    setsid mpvpaper -p -a FULL \
+        -o "no-audio loop panscan=1.0 hwdec=auto load-scripts=no input-ipc-server=$sock" \
+        ALL "$video" >/dev/null 2>&1 </dev/null &
+else
+    stop mpvpaper
+    rm -f "$sock"
+    pgrep -x hyprpaper >/dev/null || setsid hyprpaper >/dev/null 2>&1 </dev/null &
+fi

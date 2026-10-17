@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-# wallpaper-apply <image>     set the wallpaper and recolour the desktop from it
+# wallpaper-apply <image|video>  set the wallpaper and recolour the desktop from it
+#                               (a video: mp4, webm, mkv, mov; one frame gives the colours)
 # wallpaper-apply --default   back to the hand-made palette (the wallpaper stays)
 #
 # 1. hyprpaper shows the image on every screen now, and ~/.config/hypr/hyprpaper-wallpaper.conf
@@ -23,8 +24,23 @@ fi
 if [ "${1:-}" = "--default" ]; then
     python3 -I "$D/palette/from-wallpaper.py" --default
     what="Default colours"
+elif [ -n "${1:-}" ] && [ -f "$1" ] && [[ "${1,,}" =~ \.(mp4|webm|mkv|mov)$ ]]; then
+    # A video (owner, 2026-10-17): mpvpaper plays it (wallpaper-start); the colours come from
+    # the frame a tenth of the way in (the first is often black).
+    vid=$(realpath "$1")
+    printf '%s\n' "${vid/#$HOME/\~}" >"$D/.config/hypr/wallpaper-video"
+    "$HOME/.local/bin/wallpaper-start"
+    frame="$HOME/.cache/hypr/wallpaper-frame.png"
+    mkdir -p "${frame%/*}"
+    length=$(ffprobe -v error -show_entries format=duration -of csv=p=0 "$vid" 2>/dev/null || echo 0)
+    ffmpeg -v error -y -ss "$(awk -v d="${length:-0}" 'BEGIN { print d * 0.1 }')" -i "$vid" -frames:v 1 "$frame"
+    python3 -I "$D/palette/from-wallpaper.py" "$frame"
+    what="Colours from $(basename "$vid")"
 elif [ -n "${1:-}" ] && [ -f "$1" ]; then
     img=$(realpath "$1")
+    rm -f "$D/.config/hypr/wallpaper-video" # back to an image: hyprpaper
+    "$HOME/.local/bin/wallpaper-start"
+    for _ in $(seq 40); do hyprctl hyprpaper listloaded >/dev/null 2>&1 && break; sleep 0.05; done
     for monitor in $(hyprctl -j monitors | jq -r '.[].name'); do
         hyprctl hyprpaper wallpaper "$monitor,$img,cover" >/dev/null
     done

@@ -120,7 +120,7 @@ hl.on("hyprland.start", function ()
     -- Wallpaper image (hypr/hyprpaper.conf): Quickshell starts hyprpaper at login under its
     -- entrance sheet (quickshell/Entrance.qml), so the image never shows before the fade. This
     -- only starts it when that didn't happen (Quickshell broken). background_color stays below.
-    hl.exec_cmd("sh -c 'sleep 5; pgrep -x hyprpaper >/dev/null || exec hyprpaper'")
+    hl.exec_cmd("sh -c 'sleep 5; pgrep -x hyprpaper >/dev/null || pgrep -x mpvpaper >/dev/null || exec ~/.local/bin/wallpaper-start'")
     -- Boot screens still on an older palette: a reminder once the bar (notifications) is up.
     hl.exec_cmd("sleep 15 && ~/.local/bin/boot-colours --remind")
 end)
