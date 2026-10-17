@@ -13,7 +13,15 @@
    "imports": [
       "hypr.jsonc"
    ],
+   "close_on_focus_loss": true,
+   "pop_to_root_on_close": true,
    "encrypt_sensitive_data": true,
+   "escape_key_behavior": "close_window",
+   "font": {
+      "normal": {
+         "size": 12.5
+      }
+   },
    "theme": {
       "dark": {
          "name": "hypr"
@@ -21,7 +29,8 @@
    },
    "launcher_window": {
       "compact_mode": {
-         "enabled": true
-      }
+         "enabled": false
+      },
+      "floating_status_bar": true
    }
 }
