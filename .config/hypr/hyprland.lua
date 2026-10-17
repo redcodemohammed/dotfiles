@@ -354,6 +354,7 @@ hl.bind(mainMod .. " + Return", hl.dsp.exec_cmd(terminal))
 hl.bind(mainMod .. " + code:61", hl.dsp.exec_cmd("vicinae toggle")) -- slash key, any layout
 hl.bind(mainMod .. " + code:31", hl.dsp.exec_cmd("qs ipc call inbox toggle")) -- I key: notification inbox
 hl.bind(mainMod .. " + code:53", hl.dsp.exec_cmd("qs ipc call tools toggle")) -- X key: tools panel (power, tools, settings; owner, 2026-10-17)
+hl.bind(mainMod .. " + code:59", hl.dsp.exec_cmd("qs ipc call settings toggle")) -- comma key: settings panel (owner, 2026-10-17)
 hl.bind(mainMod .. " + code:33", hl.dsp.exec_cmd("qs ipc call pomodoro toggle")) -- P key: Pomodoro start / pause (owner, 2026-10-17)
 hl.bind(mainMod .. " + code:26", hl.dsp.exec_cmd("~/.local/scripts/vicinae-emulator.sh")) -- E key: Android emulator picker (owner's request)
 hl.bind(mainMod .. " + code:27", hl.dsp.exec_cmd("~/.local/bin/screen-record toggle")) -- R key: record the focused screen (spec)

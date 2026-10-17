@@ -596,8 +596,9 @@ Done (section 4):
   Quickshell quirk (seen twice: ToolTile, Chip): a reload that adds a new inline component AND
   uses it can fail with "X is not a type"; a further reload after any other change loads it.
   Step 4a (2026-10-17, works): settings panel, Look.
-  Opened by the tools panel's Settings chip (top right) or `qs ipc call settings toggle`; no
-  keybind yet. One file `~/.config/desktop-settings.json` (outside the repo) through
+  Opened by SUPER + comma (`code:59`; owner, 2026-10-17; SUPER + SHIFT + comma stays "window to
+  the left screen"), the tools panel's Settings chip (top right) or `qs ipc call settings toggle`.
+  `hyprctl binds` shows Lua binds as dispatcher `__lua` with an id, not the command: search by key. One file `~/.config/desktop-settings.json` (outside the repo) through
   FileView + JsonAdapter (`Settings.qml`); a change in the panel saves it and, 300 ms after the
   last click, writes `~/.config/hypr/hypr_settings.lua` (`return { gaps_in = .. }`, then
   `hyprctl reload`) and `~/.config/alacritty/settings.toml` (imported; `opacity` moved out of
