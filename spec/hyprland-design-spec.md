@@ -92,7 +92,9 @@ Each item answers one question.
 
 Slim bars: workspaces, window title, clock. Laptop adds battery and network. Right screen adds media.
 
-Cut on purpose: weather, CPU, RAM, temperature, disk, uptime, date. Date shows on clock hover.
+Cut on purpose: weather, uptime, date. Date shows on clock hover.
+
+System block (owner, 2026-10-18, overriding the earlier cut): main bar only, CPU, RAM and root disk as glyph plus percent, gray. A click opens the system panel: CPU use and temperature with a one-minute graph, memory with a graph, every disk, the three busiest processes.
 
 ### Bar styling
 

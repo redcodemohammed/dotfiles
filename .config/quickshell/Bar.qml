@@ -84,6 +84,11 @@ PanelWindow {
                 toolsPanel.toggle()
         }
     }
+    SystemPanel { // drops from the system block (CPU, memory, disks)
+        id: systemPanel
+        bar: bar
+        block: systemBlock
+    }
     RecordPanel { // drops from the record block
         id: recordPanel
         bar: bar
@@ -259,6 +264,17 @@ PanelWindow {
                         id: capture
                     }
                 }
+            }
+        }
+
+        BarBlock { // CPU, memory, root disk (owner, 2026-10-18); main bar only
+            visible: bar.full
+            padding: 2
+            BarCell {
+                id: systemBlock
+                clickable: true
+                onClicked: systemPanel.toggle()
+                SystemStatus {}
             }
         }
 

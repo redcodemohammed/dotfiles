@@ -39,6 +39,10 @@ Singleton {
     readonly property string musicNote: "" // no cover art
     readonly property string power: "\ue3da" // power panel: the bar block, Shut down
     readonly property string wrench: "\ue5d4" // tools panel: the bar block
+    readonly property string cpu: "\ue610" // system block and panel: CPU
+    readonly property string memory: "\ue9c4" // system block and panel: memory
+    readonly property string hardDrive: "\ue29e" // system block and panel: disks
+    readonly property string thermometer: "\ue5cc" // system panel: CPU temperature
     readonly property string signOut: "\ue42a" // power panel: Log out
     readonly property string moon: "\ue330" // power panel: Sleep
     readonly property string eyedropper: "\ue568" // tools panel: Pick colour
