@@ -24,6 +24,12 @@ grep -q '"hypr.jsonc"' "$HOME/.config/vicinae/settings.json" 2>/dev/null && pass
 [ -e "$D/.config/hypr/monitors.lua" ] && pass "monitors.lua (this machine's screens)" \
     || bad "no monitors.lua: using the example's screens (cp $D/.config/hypr/monitors_example.lua $D/.config/hypr/monitors.lua, then edit from hyprctl monitors)"
 
+# Strata as file picker and file manager: its Settings > Desktop integration writes these, but it
+# refuses while hyprland-portals.conf is a stow link (it rewrites it, same content): replace the
+# link with a copy, turn the switches on, then rm the copy and stow -R.
+[ -e "$HOME/.local/share/xdg-desktop-portal/portals/strata.portal" ] && pass "strata file picker registered" \
+    || bad "strata file picker not registered (cp --remove-destination $D/.config/xdg-desktop-portal/hyprland-portals.conf ~/.config/xdg-desktop-portal/; Strata > Settings > Desktop integration: file chooser and default file manager on; then rm ~/.config/xdg-desktop-portal/hyprland-portals.conf; cd $D && stow -R .)"
+
 echo "== submodule"
 [ -f "$D/.config/hypr/hyprsplit/init.lua" ] && pass "hyprsplit present" || bad "hyprsplit missing: git -C $D submodule update --init"
 
