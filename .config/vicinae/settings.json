@@ -11,7 +11,8 @@
 {
    "$schema": "https://vicinae.com/schemas/config.json",
    "imports": [
-      "hypr.jsonc"
+      "hypr.jsonc",
+      "local.jsonc"
    ],
    "close_on_focus_loss": true,
    "pop_to_root_on_close": true,
