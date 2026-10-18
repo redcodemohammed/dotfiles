@@ -1,4 +1,8 @@
--- Your screens: the one file to edit for another machine. Names and descriptions come from
+-- Example screens (the owner's first laptop: Odyssey G5 main, LF24T35 right, panel left). Each
+-- machine keeps its own monitors.lua (not in git, owner 2026-10-18): copy this file to it and
+-- edit. Without one, hyprland.lua and the greeter use this file, and unlisted screens still
+-- light up through the catch-all.
+-- Names and descriptions come from
 -- `hyprctl monitors` (name, description); mode, position and scale are as Hyprland takes them
 -- (wiki.hypr.land/Configuring/Basics/Monitors). Positions are logical pixels (after scale).
 -- Read by hyprland.lua and greeter/hyprland.lua (greeter/install.sh copies it beside the

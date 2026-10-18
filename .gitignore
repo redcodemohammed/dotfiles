@@ -2,6 +2,8 @@
 .config/hypr/hypr_settings.lua
 .config/alacritty/settings.toml
 .config/hypr/hypridle-settings.conf
+# This machine's screens; the template is monitors_example.lua
+/.config/hypr/monitors.lua
 
 # Generated from the wallpaper (palette/generate.py, wallpaper-apply): this machine's state, so a
 # wallpaper change leaves git clean. A fresh clone: python3 palette/generate.py (or pick a wallpaper).

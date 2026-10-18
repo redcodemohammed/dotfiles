@@ -18,7 +18,9 @@ install -m 644 "$src/GreeterContent.qml" /etc/greetd/quickshell-greeter/
 install -m 644 "$dots/.config/quickshell/Theme.qml" "$dots/.config/quickshell/Icons.qml" /etc/greetd/quickshell-greeter/
 install -m 644 "$src/hyprland.lua" /etc/greetd/hyprland-greeter.lua
 install -m 644 "$dots/.config/hypr/hypr_palette.lua" /etc/greetd/hypr_palette.lua
-install -m 644 "$dots/.config/hypr/monitors.lua" /etc/greetd/monitors.lua
+monitors="$dots/.config/hypr/monitors.lua" # this machine's screens; a fresh clone has only the example
+[ -e "$monitors" ] || monitors="$dots/.config/hypr/monitors_example.lua"
+install -m 644 "$monitors" /etc/greetd/monitors.lua
 python3 -I "$dots/palette/cursors.py" --dest /usr/share/icons/hypr-cursors
 install -m 644 "$src/greetd.toml" /etc/greetd/quickshell-greeter.toml
 install -m 644 "$src/greetd-test.toml" /etc/greetd/quickshell-greeter-test.toml

@@ -21,6 +21,9 @@ done
 grep -q '"hypr.jsonc"' "$HOME/.config/vicinae/settings.json" 2>/dev/null && pass "vicinae settings.json imports hypr.jsonc" \
     || bad "vicinae settings.json doesn't import hypr.jsonc (cp $D/.config/vicinae/settings.json ~/.config/vicinae/)"
 
+[ -e "$D/.config/hypr/monitors.lua" ] && pass "monitors.lua (this machine's screens)" \
+    || bad "no monitors.lua: using the example's screens (cp $D/.config/hypr/monitors_example.lua $D/.config/hypr/monitors.lua, then edit from hyprctl monitors)"
+
 echo "== submodule"
 [ -f "$D/.config/hypr/hyprsplit/init.lua" ] && pass "hyprsplit present" || bad "hyprsplit missing: git -C $D submodule update --init"
 

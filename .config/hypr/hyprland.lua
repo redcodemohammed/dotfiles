@@ -22,8 +22,10 @@
 ------------------
 
 -- See https://wiki.hypr.land/Configuring/Basics/Monitors/
--- The screens themselves: monitors.lua (the one file to edit for another machine).
-local screens = require("monitors")
+-- The screens themselves: monitors.lua, this machine's own (not in git; owner 2026-10-18).
+-- Missing (a fresh clone): monitors_example.lua, the template to copy it from.
+local found, screens = pcall(require, "monitors")
+if not found then screens = require("monitors_example") end
 local laptop = screens.laptop
 local main_model = nil
 for _, s in ipairs(screens.screens) do

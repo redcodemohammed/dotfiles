@@ -2,7 +2,8 @@
 -- user (/etc/greetd/quickshell-greeter.toml); it shows the Quickshell greeter and exits when the
 -- greeter quits, so greetd can start the chosen session. Installed to /etc/greetd by
 -- greeter/install.sh, with hypr_palette.lua beside it (the greeter user can't read ~).
--- Monitors: monitors.lua, the same file as the session's (install.sh copies it beside this one).
+-- Monitors: monitors.lua, the same file as the session's (install.sh copies it beside this one,
+-- or monitors_example.lua under that name on a machine without its own).
 
 local palette = require("hypr_palette")
 local screens = require("monitors")
