@@ -370,6 +370,8 @@ bind(mainMod .. " + Return", hl.dsp.exec_cmd(terminal), "Apps: Terminal")
 -- Without tmux (owner, 2026-10-17): -e runs fish in place of alacritty.toml's tmux shell.
 bind(mainMod .. " + SHIFT + Return", hl.dsp.exec_cmd(terminal .. " -e fish"), "Apps: Terminal without tmux")
 bind(mainMod .. " + code:61", hl.dsp.exec_cmd("vicinae toggle"), "Apps: Launcher") -- slash key, any layout
+bind(mainMod .. " + code:32", hl.dsp.exec_cmd("vicinae deeplink vicinae://launch/@redcodemohammed/dev-tools/open-project"), "Apps: Open project") -- O key: Vicinae dev-tools (owner, 2026-10-18)
+bind(mainMod .. " + code:56", hl.dsp.exec_cmd("vicinae deeplink vicinae://launch/@redcodemohammed/dev-tools/show-otp"), "Apps: Show OTP") -- B key: Vicinae dev-tools (owner, 2026-10-18)
 bind(mainMod .. " + code:31", hl.dsp.exec_cmd("qs ipc call inbox toggle"), "Shell: Notifications") -- I key: notification inbox
 bind(mainMod .. " + code:53", hl.dsp.exec_cmd("qs ipc call tools toggle"), "Shell: Tools") -- X key: tools panel (owner, 2026-10-17; power has its own panel since 2026-10-18)
 bind(mainMod .. " + code:59", hl.dsp.exec_cmd("qs ipc call settings toggle"), "Shell: Settings") -- comma key: settings panel (owner, 2026-10-17)
