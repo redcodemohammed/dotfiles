@@ -6,10 +6,11 @@ import Quickshell
 // on an outside click or Escape; SUPER + X toggles it (Tools.qml).
 // Tools (step 2): Pick colour (the panel closes, hyprpicker; recent colours below as swatches, a
 // click copies one), Keep awake (on/off; pauses the idle chain), Text from screen (OCR).
-// Web (step 3): Clipboard (format JSON, decode JWT, base64 and URL encode/decode: the clipboard
-// in, the result back), Generate (UUID, ISO and Unix time, lorem ipsum: copied) and Localhost QR
-// (your dev servers' ports; a LAN one shows a QR of http://<LAN address>:<port> for the phone,
-// a localhost-only one says to start it with --host). The note line reports each result.
+// Clipboard and Generate (step 3; equal grids, three a row, since 2026-10-18): Clipboard (format
+// JSON, decode JWT, base64 and URL encode/decode: the clipboard in, the result back), Generate
+// (UUID, ISO and Unix time, lorem ipsum: copied). Localhost QR: your dev servers' ports (known
+// runtimes only, dev-ports); a LAN one shows a QR of http://<LAN address>:<port> for the phone,
+// a localhost-only one says to start it with --host. The note line reports each result.
 PopupWindow {
     id: panel
     required property var bar
@@ -202,43 +203,45 @@ PopupWindow {
                 }
             }
 
-            Text {
-                topPadding: 4
-                text: "Web"
-                font.family: "JetBrainsMono Nerd Font"
-                font.pixelSize: 12
-                color: Theme.fgMuted
-            }
-
-            Flow { // the clipboard in, the result back
-                width: parent.width
-                spacing: 4
-                Repeater {
-                    model: [
+            // Web tools as two grids of equal buttons, three a row (owner, 2026-10-18).
+            Repeater {
+                model: [
+                    { title: "Clipboard", tools: [ // the clipboard in, the result back
                         { a: "json", t: "Format JSON" }, { a: "jwt", t: "Decode JWT" },
-                        { a: "b64e", t: "Base64 →" }, { a: "b64d", t: "Base64 ←" },
-                        { a: "urle", t: "URL →" }, { a: "urld", t: "URL ←" },
-                    ]
-                    Chip {
-                        required property var modelData
-                        label: modelData.t
-                        onClicked: Tools.clip(modelData.a)
-                    }
-                }
-            }
-
-            Flow { // copied fresh
-                width: parent.width
-                spacing: 4
-                Repeater {
-                    model: [
+                        { a: "b64e", t: "Base64 encode" }, { a: "b64d", t: "Base64 decode" },
+                        { a: "urle", t: "URL encode" }, { a: "urld", t: "URL decode" },
+                    ] },
+                    { title: "Generate", tools: [ // copied fresh
                         { a: "uuid", t: "UUID" }, { a: "iso", t: "ISO time" },
                         { a: "unix", t: "Unix time" }, { a: "lorem", t: "Lorem ipsum" },
-                    ]
-                    Chip {
-                        required property var modelData
-                        label: modelData.t
-                        onClicked: Tools.clip(modelData.a)
+                    ] },
+                ]
+                Column {
+                    required property var modelData
+                    width: column.width
+                    spacing: 8
+                    Text {
+                        topPadding: 4
+                        text: parent.modelData.title
+                        font.family: "JetBrainsMono Nerd Font"
+                        font.pixelSize: 12
+                        color: Theme.fgMuted
+                    }
+                    Grid {
+                        id: grid
+                        columns: 3
+                        spacing: 4
+                        readonly property real cell: (parent.width - 2 * spacing) / 3
+                        Repeater {
+                            model: parent.parent.modelData.tools
+                            Chip {
+                                required property var modelData
+                                width: grid.cell
+                                height: 32
+                                label: modelData.t
+                                onClicked: Tools.clip(modelData.a)
+                            }
+                        }
                     }
                 }
             }

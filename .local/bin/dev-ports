@@ -2,13 +2,15 @@
 # dev-ports: the TCP ports your own processes listen on, as JSON lines for the tools panel's
 # Localhost QR (owner, 2026-10-17): {port, name, pid, folder, lan}. lan is false for servers bound
 # to 127.0.0.1 / ::1 only: the phone can't reach those (start the dev server with --host /
-# 0.0.0.0). Desktop apps that listen for their own reasons are skipped.
+# 0.0.0.0). Only known dev runtimes count (owner, 2026-10-18), matched on the executable: the
+# process name can be a thread's (node shows as MainThread). Desktop apps never show.
 set -euo pipefail
-skip='^(spotify|syncthing|openrgb|kcd|chrome|zen|firefox|claude|electron|code|steam|obs|discord|telegram)'
+runtimes='^(node|bun|deno|python[0-9.]*|php[0-9.]*|php-fpm|ruby|java|dotnet|beam\.smp|hugo)$'
 ss -ltnpH 2>/dev/null | while read -r _ _ _ local _ users; do
     [[ "$users" =~ \(\(\"([^\"]+)\",pid=([0-9]+) ]] || continue # only our own processes show users
-    name=${BASH_REMATCH[1]} pid=${BASH_REMATCH[2]}
-    [[ "${name,,}" =~ $skip ]] && continue
+    pid=${BASH_REMATCH[2]}
+    name=$(basename "$(readlink "/proc/$pid/exe" 2>/dev/null || echo "?")")
+    [[ "$name" =~ $runtimes ]] || continue
     port=${local##*:}
     addr=${local%:*}
     lan=true
