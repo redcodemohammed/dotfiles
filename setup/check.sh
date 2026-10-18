@@ -33,13 +33,25 @@ after=$(cd "$D" && gen | xargs -r sha256sum 2>/dev/null)
 
 echo "== services"
 pactl info >/dev/null 2>&1 && pass "pipewire-pulse answers" || bad "pactl cannot connect"
+# Phone bridge (kcd): none of it comes with the package, so a fresh machine needs all three.
+systemctl --user is-enabled --quiet kcd.socket && pass "kcd.socket enabled" \
+    || bad "kcd.socket not enabled (systemctl --user enable --now kcd.socket)"
+if grep -qs '^ENABLED=yes' /etc/ufw/ufw.conf; then # the rule files are world-readable
+    grep -qs '1714:1764' /etc/ufw/user.rules && pass "ufw allows KDE Connect (1714:1764)" \
+        || bad "ufw blocks KDE Connect (sudo ufw allow 1714:1764/udp; sudo ufw allow 1714:1764/tcp)"
+else
+    pass "ufw off: KDE Connect ports open"
+fi
+kcd devices --json 2>/dev/null | jq -e 'any(.[]; .state == "PAIRED")' >/dev/null \
+    && pass "phone paired" || bad "no phone paired (kcd devices, then kcd pair <id>, accept on the phone)"
 
 echo "== session (inside Hyprland only)"
 if [ -n "${HYPRLAND_INSTANCE_SIGNATURE:-}" ]; then
     [ -z "$(hyprctl configerrors)" ] && pass "hyprland config: no errors" || bad "hyprctl configerrors not empty"
     pgrep -x qs >/dev/null && pass "quickshell running" || bad "quickshell (qs) not running"
     pgrep -x hypridle >/dev/null && pass "hypridle running" || bad "hypridle not running"
-    pgrep -x hyprpaper >/dev/null && pass "hyprpaper running" || bad "hyprpaper not running"
+    pgrep -x hyprpaper >/dev/null || pgrep -x mpvpaper >/dev/null && pass "wallpaper running (hyprpaper or mpvpaper)" \
+        || bad "no wallpaper: neither hyprpaper nor mpvpaper running (~/.local/bin/wallpaper-start)"
     pgrep -f polkit-gnome-authentication-agent >/dev/null && pass "polkit agent running" || bad "polkit agent not running"
     pgrep -f vicinae-server >/dev/null && pass "vicinae server running" || bad "vicinae server not running"
     [ "$(gsettings get org.gnome.desktop.interface color-scheme)" = "'prefer-dark'" ] && pass "gsettings dark" || bad "gsettings color-scheme not prefer-dark"
