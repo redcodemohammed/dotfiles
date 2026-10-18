@@ -52,18 +52,23 @@ PanelWindow {
     }
     Inbox { // drops from the bell (Notifs.inboxOpen); a slim bar has no bell: from the power block
         bar: bar
-        block: bellBlock.visible ? bellBlock : toolsBlock
+        block: bellBlock.visible ? bellBlock : powerBlock
     }
-    ToolsPanel { // drops from the power block at the far right; SUPER + X (Tools.qml)
+    ToolsPanel { // drops from the tools block (wrench); SUPER + X (Tools.qml)
         id: toolsPanel
         bar: bar
         block: toolsBlock
+    }
+    PowerPanel { // drops from the power block at the far right
+        id: powerPanel
+        bar: bar
+        block: powerBlock
         onSettingsRequested: { settingsPanel.closedAt = 0; settingsPanel.toggle() }
     }
-    SettingsPanel { // from the tools panel's Settings button, under the same block
+    SettingsPanel { // from the power panel's Settings button, under the same block
         id: settingsPanel
         bar: bar
-        block: toolsBlock
+        block: powerBlock
     }
     Connections {
         target: Settings
@@ -293,6 +298,21 @@ PanelWindow {
             }
         }
 
+        BarBlock { // tools (owner, 2026-10-18: its own block, apart from power)
+            padding: 2
+            BarCell {
+                id: toolsBlock
+                clickable: true
+                onClicked: toolsPanel.toggle()
+                Text { // accent while Keep awake holds the idle chain
+                    text: Icons.wrench
+                    font.family: Tools.keepAwake ? Icons.fill : Icons.regular
+                    font.pixelSize: 16
+                    color: Tools.keepAwake ? Theme.accent : Theme.fgMuted
+                }
+            }
+        }
+
         BarBlock { // notifications and power
             padding: 2
             Row {
@@ -301,15 +321,15 @@ PanelWindow {
                     visible: bar.full
                     NotificationCount {}
                 }
-                BarCell { // tools panel (owner, 2026-10-17): power options, tools, settings
-                    id: toolsBlock
+                BarCell { // power panel: power options and settings
+                    id: powerBlock
                     clickable: true
-                    onClicked: toolsPanel.toggle()
-                    Text { // accent while Keep awake holds the idle chain
+                    onClicked: powerPanel.toggle()
+                    Text {
                         text: Icons.power
-                        font.family: Tools.keepAwake ? Icons.fill : Icons.regular
+                        font.family: Icons.regular
                         font.pixelSize: 16
-                        color: Tools.keepAwake ? Theme.accent : Theme.fgMuted
+                        color: Theme.fgMuted
                     }
                 }
             }

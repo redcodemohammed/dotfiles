@@ -371,7 +371,7 @@ bind(mainMod .. " + Return", hl.dsp.exec_cmd(terminal), "Apps: Terminal")
 bind(mainMod .. " + SHIFT + Return", hl.dsp.exec_cmd(terminal .. " -e fish"), "Apps: Terminal without tmux")
 bind(mainMod .. " + code:61", hl.dsp.exec_cmd("vicinae toggle"), "Apps: Launcher") -- slash key, any layout
 bind(mainMod .. " + code:31", hl.dsp.exec_cmd("qs ipc call inbox toggle"), "Shell: Notifications") -- I key: notification inbox
-bind(mainMod .. " + code:53", hl.dsp.exec_cmd("qs ipc call tools toggle"), "Shell: Tools and power") -- X key: tools panel (power, tools, settings; owner, 2026-10-17)
+bind(mainMod .. " + code:53", hl.dsp.exec_cmd("qs ipc call tools toggle"), "Shell: Tools") -- X key: tools panel (owner, 2026-10-17; power has its own panel since 2026-10-18)
 bind(mainMod .. " + code:59", hl.dsp.exec_cmd("qs ipc call settings toggle"), "Shell: Settings") -- comma key: settings panel (owner, 2026-10-17)
 bind(mainMod .. " + code:67", hl.dsp.exec_cmd("qs ipc call shortcuts toggle"), "Shell: Shortcuts") -- F1 key: this list (owner, 2026-10-17)
 bind(mainMod .. " + code:33", hl.dsp.exec_cmd("qs ipc call pomodoro toggle"), "Shell: Pomodoro start / pause") -- P key: Pomodoro start / pause (owner, 2026-10-17)
