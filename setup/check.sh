@@ -11,11 +11,15 @@ done
 
 echo "== links (stow: the repo mirrors \$HOME, so ~/X must resolve to $D/X)"
 for p in .config/hypr .config/quickshell .config/quickshell-lock .config/alacritty .config/nvim \
-         .config/tmux .config/vicinae .config/satty .config/uwsm .local/share/vicinae/themes/hypr.toml .local/bin/island-build \
+         .config/tmux .config/vicinae/hypr.jsonc .config/satty .config/uwsm .local/share/vicinae/themes/hypr.toml .local/bin/island-build \
          .local/bin/wallpaper-apply .local/bin/wallpaper-pick .local/share/applications/wallpaper-pick.desktop \
          .config/gtk-3.0/gtk.css .config/gtk-4.0/gtk.css .local/share/applications/nvim-alacritty.desktop; do
     [ "$(readlink -f "$HOME/$p")" = "$D/$p" ] && pass "~/$p" || bad "~/$p should resolve to $D/$p (cd $D && stow -R .)"
 done
+
+# Vicinae's settings.json is copied, not linked (it rewrites it): it only has to import hypr.jsonc.
+grep -q '"hypr.jsonc"' "$HOME/.config/vicinae/settings.json" 2>/dev/null && pass "vicinae settings.json imports hypr.jsonc" \
+    || bad "vicinae settings.json doesn't import hypr.jsonc (cp $D/.config/vicinae/settings.json ~/.config/vicinae/)"
 
 echo "== submodule"
 [ -f "$D/.config/hypr/hyprsplit/init.lua" ] && pass "hyprsplit present" || bad "hyprsplit missing: git -C $D submodule update --init"

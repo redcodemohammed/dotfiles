@@ -40,4 +40,6 @@ _darcs
 ^/strata
 ^/vicinae-extensions
 ^/vscode
+# Vicinae rewrites it (a real file replaces the link): copied once, see the file
+^/\.config/vicinae/settings\.json
 

@@ -1,7 +1,15 @@
 // Hand-written Vicinae settings, imported by settings.json.
 // settings.json is rewritten by the Vicinae GUI and wins over this file,
-// so keep it to the imports line and set everything here.
+// so keep it to the imports line and set everything here. It is not stowed
+// (each machine keeps its own, owner 2026-10-18): Vicinae replaces the link
+// with a real file whenever a setting changes in its window.
 {
+	// Closes when it loses focus, and back to the root search when closed.
+	"close_on_focus_loss": true,
+	"pop_to_root_on_close": true,
+	"escape_key_behavior": "close_window",
+	"encrypt_sensitive_data": true,
+
 	// No system info sent to the Vicinae server.
 	"telemetry": {
 		"system_info": false
@@ -22,7 +30,7 @@
 
 	// Same font as the bar and terminal. Size left to Vicinae.
 	"font": {
-		"normal": { "family": "JetBrainsMono Nerd Font" }
+		"normal": { "family": "JetBrainsMono Nerd Font", "size": 12.5 }
 	},
 
 	// Sharp, flat, solid. 640px wide (owner asked for a bit bigger than the
@@ -40,6 +48,8 @@
 		"size": {
 			"width": 640,
 			"height": 416
-		}
+		},
+		"compact_mode": { "enabled": false },
+		"floating_status_bar": true
 	}
 }
