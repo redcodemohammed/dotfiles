@@ -28,10 +28,16 @@ hyprlock
 hypridle
 hyprsunset
 hyprpaper
-# Screenshots, recording
+hyprshutdown
+brightnessctl
+# Screenshots, recording, colour picker, text from screen
 hyprshot
 satty
 gpu-screen-recorder
+hyprpicker
+tesseract
+tesseract-data-eng
+tesseract-data-ara
 # Input
 keyd
 # Look
@@ -42,3 +48,10 @@ jq
 python-pillow
 neovim
 tmux
+wl-clipboard
+ffmpeg
+qrencode
+# Login screen and boot splash (greeter/, plymouth/; boot-colours)
+greetd
+greetd-agreety
+plymouth

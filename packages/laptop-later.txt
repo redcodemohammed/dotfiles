@@ -1,5 +1,4 @@
 # For features deferred to the real machine. Verify names before installing (CLAUDE.md).
-brightnessctl      # brightness keys (already bound in hyprland.lua), island volume panel brightness row
 playerctl          # media keys (already bound in hyprland.lua), island media
 bluez              # Bluetooth bar item and island event
 bluez-utils
