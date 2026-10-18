@@ -7,7 +7,7 @@
 #    (sourced by hyprpaper.conf; not in git) keeps it for the next login.
 # 2. palette/from-wallpaper.py writes palette/palette.toml from the image, palette/generate.py
 #    writes every app's colours from it (Quickshell, Hyprland, Alacritty, tmux, Neovim, Vicinae,
-#    satty, GTK css, Spotifast, Strata, keyboard RGB), and palette/cursors.py builds the mouse
+#    satty, GTK css, Spotifast, Strata, Obsidian, keyboard RGB), and palette/cursors.py builds the mouse
 #    cursor theme (~/.local/share/icons/hypr-cursors) from it.
 # 3. Running apps are told to reload. Quickshell (bar, island, lock), Spotifast and Hyprland's
 #    own files reload by themselves; the rest is nudged below. Satty and Strata pick it up when

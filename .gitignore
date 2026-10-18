@@ -25,6 +25,7 @@
 /spotifast/Hypr.json
 /strata/hypr.toml
 /vscode/hypr-theme/themes/hypr-color-theme.json
+/obsidian/Hypr/theme.css
 
 # cava shaders the owner is trying out (2026-10-17): kept local, not backed up
 /.config/cava/shaders/orion_*.frag

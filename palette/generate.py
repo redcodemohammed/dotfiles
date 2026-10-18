@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Generate app color files from palette.toml. Rerun after editing the palette."""
+import colorsys
 import json
 import re
 import tomllib
@@ -397,6 +398,104 @@ def vscode_theme(palette):
     return json.dumps(theme, indent=2) + "\n"
 
 
+def obsidian_theme(palette):
+    # Obsidian theme "Hypr" (owner, 2026-10-18), copied into every vault (see vault_copies). The
+    # desktop's shape: square, flat, 2px borders, no shadows; accent for focus, links and selection
+    # only, red for errors only, warnings in fg. Interface and code in JetBrains Mono, notes in
+    # Noto Sans with Vazirmatn for Arabic. Variable names: docs.obsidian.md, Reference > CSS
+    # variables. Syntax colors as in strata_theme.
+    ui, n, b = palette["ui"], palette["ansi"]["normal"], palette["ansi"]["bright"]
+
+    def rgb(value):
+        return ", ".join(str(int(value[i:i + 2], 16)) for i in (1, 3, 5))
+
+    r, g, bl = (int(ui["accent"][i:i + 2], 16) / 255 for i in (1, 3, 5))
+    h, l, sat = colorsys.rgb_to_hls(r, g, bl)
+    colors = {
+        "red": n["red"], "orange": b["red"], "yellow": n["yellow"], "green": n["green"],
+        "cyan": n["cyan"], "blue": n["blue"], "purple": n["magenta"], "pink": b["magenta"],
+    }
+    variables = {
+        # Accent: Obsidian derives its interactive accent from these three.
+        "accent-h": f"{round(h * 360)}", "accent-s": f"{round(sat * 100)}%", "accent-l": f"{round(l * 100)}%",
+        "color-accent": ui["accent"], "color-accent-1": ui["accent"], "color-accent-2": b["yellow"],
+        **{f"color-{name}": value for name, value in colors.items()},
+        **{f"color-{name}-rgb": rgb(value) for name, value in colors.items()},
+        "color-base-00": ui["bg"], "color-base-05": ui["bg"], "color-base-10": ui["surface"],
+        "color-base-20": ui["surface"], "color-base-25": ui["surface_selected"],
+        "color-base-30": ui["border"], "color-base-35": ui["border"], "color-base-40": ui["fg_dim"],
+        "color-base-50": ui["fg_dim"], "color-base-60": ui["fg_muted"], "color-base-70": ui["fg_muted"],
+        "color-base-100": ui["fg"],
+        "background-primary": ui["bg"], "background-primary-alt": ui["surface"],
+        "background-secondary": ui["surface"], "background-secondary-alt": ui["surface_selected"],
+        "background-modifier-hover": ui["surface_selected"],
+        "background-modifier-active-hover": ui["surface_selected"],
+        "background-modifier-border": ui["border"], "background-modifier-border-hover": ui["fg_dim"],
+        "background-modifier-border-focus": ui["accent"],
+        "background-modifier-form-field": ui["bg"],
+        "background-modifier-error": ui["alert"], "background-modifier-error-hover": b["red"],
+        "background-modifier-error-rgb": rgb(ui["alert"]),
+        "background-modifier-success": n["green"], "background-modifier-success-rgb": rgb(n["green"]),
+        "background-modifier-message": ui["surface_selected"],
+        "text-normal": ui["fg"], "text-muted": ui["fg_muted"], "text-faint": ui["fg_dim"],
+        "text-on-accent": ui["on_accent"], "text-on-accent-inverted": ui["fg"],
+        "text-accent": ui["accent"], "text-accent-hover": b["yellow"],
+        "text-error": ui["alert"], "text-success": n["green"],
+        "text-warning": ui["fg"],  # No amber warnings: amber means focus, never caution.
+        "text-selection": ui["border"],
+        "text-highlight-bg": ui["accent"], "text-highlight-bg-rgb": rgb(ui["accent"]),
+        "caret-color": ui["accent"],
+        "interactive-normal": ui["surface_selected"], "interactive-hover": ui["border"],
+        "interactive-accent": ui["accent"], "interactive-accent-hover": b["yellow"],
+        "link-color": ui["accent"], "link-color-hover": b["yellow"],
+        "link-external-color": ui["accent"], "link-external-color-hover": b["yellow"],
+        "link-unresolved-color": ui["fg_muted"], "link-unresolved-decoration-color": ui["fg_dim"],
+        "tag-color": ui["accent"], "tag-color-hover": b["yellow"], "tag-background": ui["surface_selected"],
+        "tag-background-hover": ui["border"], "tag-border-width": "0",
+        "checkbox-color": ui["accent"], "checkbox-color-hover": b["yellow"],
+        "checkbox-border-color": ui["fg_muted"], "checkbox-border-color-hover": ui["fg"],
+        "checkbox-marker-color": ui["on_accent"], "checklist-done-color": ui["fg_muted"],
+        "hr-color": ui["border"], "hr-thickness": "2px",
+        "code-background": ui["surface"], "code-normal": ui["fg"], "code-comment": ui["fg_muted"],
+        "code-keyword": n["magenta"], "code-string": n["green"], "code-value": n["cyan"],
+        "code-function": b["blue"], "code-property": n["blue"], "code-tag": n["magenta"],
+        "code-operator": ui["fg_muted"], "code-punctuation": ui["fg_muted"], "code-important": ui["alert"],
+        "callout-warning": rgb(ui["fg_muted"]),  # no caution colour (see text-warning)
+        "scrollbar-bg": "transparent", "scrollbar-thumb-bg": ui["border"],
+        "scrollbar-active-thumb-bg": ui["fg_dim"],
+        "modal-background": ui["surface"], "modal-border-color": ui["border"], "modal-border-width": "2px",
+        "prompt-border-color": ui["border"], "prompt-border-width": "2px",
+        "tab-container-background": ui["surface"], "tab-background-active": ui["bg"],
+        "tab-text-color": ui["fg_muted"], "tab-text-color-active": ui["fg"],
+        "tab-text-color-focused": ui["fg_muted"], "tab-text-color-focused-active": ui["fg"],
+        "tab-text-color-focused-active-current": ui["fg"], "tab-outline-color": ui["border"],
+        "tab-divider-color": ui["border"], "tab-curve": "0", "tab-radius": "0", "tab-radius-active": "0",
+        "bold-color": ui["fg"], "italic-color": ui["fg"],
+        # Shape: square and flat.
+        "radius-s": "0", "radius-m": "0", "radius-l": "0", "radius-xl": "0",
+        "button-radius": "0", "input-radius": "0", "modal-radius": "0", "checkbox-radius": "0",
+        "callout-radius": "0", "tag-radius": "0", "toggle-radius": "0", "toggle-thumb-radius": "0",
+        "border-width": "2px", "input-border-width": "2px",
+        "font-interface-theme": '"JetBrainsMono Nerd Font", "Vazirmatn"',
+        "font-monospace-theme": '"JetBrainsMono Nerd Font", "Vazirmatn"',
+        "font-text-theme": '"Noto Sans", "Vazirmatn"',
+    }
+    body = "\n".join(f"    --{name}: {value};" for name, value in variables.items())
+    return f"""/* {HEADER} */
+/* Dark only: the same values whichever base mode is picked. */
+body, .theme-dark, .theme-light {{
+{body}
+}}
+
+/* No shadows, no blur, no translucency. */
+* {{ box-shadow: none !important; text-shadow: none !important; backdrop-filter: none !important; }}
+.is-translucent:not(.is-fullscreen) .app-container, .is-translucent .workspace {{ background-color: {ui["bg"]}; }}
+
+/* ==highlights==: accent background, dark text on it. */
+.markdown-rendered mark, .cm-s-obsidian span.cm-highlight {{ color: {ui["on_accent"]}; }}
+"""
+
+
 def gtk3_css(palette):
     colors = "\n".join(f"@define-color {role}_color {value};" for role, value in gtk_roles(palette).items())
     return f"/* {HEADER} */\n/* GTK3 via adw-gtk3: overrides its named colors. */\n{colors}\n@define-color borders {palette['ui']['border']};\n{GTK_SHAPE}"
@@ -520,6 +619,7 @@ OUTPUTS = {
     "spotifast/Hypr.json": spotifast_theme,  # not stowed: see COPIES
     "strata/hypr.toml": strata_theme,  # not stowed: see COPIES
     "vscode/hypr-theme/themes/hypr-color-theme.json": vscode_theme,  # not stowed: see COPIES
+    "obsidian/Hypr/theme.css": obsidian_theme,  # not stowed: see vault_copies
 }
 
 # Apps that skip symlinked files get a real copy in $HOME; the repo file stays the tracked source.
@@ -537,6 +637,39 @@ COPIES = {
     "vscode/hypr-theme/themes/hypr-color-theme.json":
         "~/.vscode/extensions/local.hypr-theme-1.0.0/themes/hypr-color-theme.json",
 }
+
+
+def vault_copies():
+    # Obsidian keeps themes inside each vault (.obsidian/themes/<name>/), so the theme is copied
+    # into every vault Obsidian lists (~/.config/obsidian/obsidian.json): new vaults get it at the
+    # next run. obsidian/Hypr/manifest.json is hand-written and fixed; theme.css is regenerated.
+    listing = Path("~/.config/obsidian/obsidian.json").expanduser()
+    try:
+        vaults = json.loads(listing.read_text()).get("vaults", {}).values()
+    except (OSError, ValueError):
+        return {}
+    copies = {}
+    for vault in vaults:
+        themes = Path(vault["path"]) / ".obsidian"
+        if themes.is_dir():
+            for name in ("manifest.json", "theme.css"):
+                copies.setdefault(f"obsidian/Hypr/{name}", []).append(themes / "themes/Hypr" / name)
+    return copies
+
+
+def obsidian_select(config):
+    # A vault that has no theme picked yet gets Hypr in dark mode (owner, 2026-10-18); one with a
+    # theme chosen keeps it. Obsidian rewrites appearance.json itself, so only those two keys change.
+    path = config / "appearance.json"
+    try:
+        settings = json.loads(path.read_text() or "{}")
+    except (OSError, ValueError):
+        settings = {}
+    if settings.get("cssTheme"):
+        return
+    settings.update({"cssTheme": "Hypr", "theme": "obsidian"})
+    path.write_text(json.dumps(settings, indent=2) + "\n")
+    print(f"selected Hypr in {path}")
 
 
 def main():
@@ -558,6 +691,16 @@ def main():
         out.parent.mkdir(parents=True, exist_ok=True)
         out.write_bytes(data)
         print(f"copied {src} -> {dest}")
+    for src, dests in vault_copies().items():
+        data = (ROOT / src).read_bytes()
+        for out in dests:
+            if out.exists() and out.read_bytes() == data:
+                continue
+            out.parent.mkdir(parents=True, exist_ok=True)
+            out.write_bytes(data)
+            print(f"copied {src} -> {out}")
+    for dest in vault_copies().get("obsidian/Hypr/theme.css", []):
+        obsidian_select(dest.parent.parent.parent)
 
 
 if __name__ == "__main__":
