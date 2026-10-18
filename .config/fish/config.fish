@@ -61,3 +61,4 @@ load_env_vars ~/dotfiles/.env
 
 # FZF_DEFAULT_OPTS: conf.d/hypr_colors.fish (generated from the palette).
 
+export PATH="$HOME/.local/bin:$PATH"
