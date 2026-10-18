@@ -84,10 +84,20 @@ Singleton {
 
     onEntriesChanged: saveTimer.restart()
 
+    // An app icon that is a file (notify-send -i <file>: capture-notify's screenshots) is a
+    // picture, not a theme icon name: the history keeps only the app icon, and asking the icon
+    // theme for a path shows the missing-icon square (owner, 2026-10-18).
+    function pictureOf(appIcon, image) {
+        if (image) return image
+        if (appIcon.startsWith("file://")) return appIcon
+        if (appIcon.startsWith("/")) return "file://" + appIcon
+        return ""
+    }
+
     Component.onCompleted: {
         try {
             const saved = JSON.parse(store.text() || "[]")
-            entries = saved.map(e => Object.assign(e, { image: "", time: new Date(e.time), notification: null }))
+            entries = saved.map(e => Object.assign(e, { image: root.pictureOf(e.appIcon || "", ""), time: new Date(e.time), notification: null }))
         } catch (err) {
             console.warn("notifications: could not read history:", err)
         }
@@ -117,7 +127,7 @@ Singleton {
                 id: notification.id,
                 appName: notification.appName,
                 appIcon: notification.appIcon,
-                image: notification.image,
+                image: root.pictureOf(notification.appIcon, notification.image),
                 summary: notification.summary,
                 body: notification.body,
                 urgent: notification.urgency === NotificationUrgency.Critical,
