@@ -26,5 +26,9 @@ if [ -n "$video" ] && [ -f "$video" ]; then
 else
     stop mpvpaper
     rm -f "$sock"
+    # hyprpaper.conf sources this file, and hyprpaper 0.8.4 exits when it is missing (a fresh
+    # clone, before any wallpaper-apply): an empty one keeps it running on the background colour.
+    conf="$HOME/.config/hypr/hyprpaper-wallpaper.conf"
+    [ -e "$conf" ] || printf '# Written by wallpaper-apply: the image chosen last. Not in git.\n' >"$conf"
     pgrep -x hyprpaper >/dev/null || setsid hyprpaper >/dev/null 2>&1 </dev/null &
 fi
