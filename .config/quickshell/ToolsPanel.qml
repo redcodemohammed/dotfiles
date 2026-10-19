@@ -13,6 +13,7 @@ import Quickshell
 // that fits tinted blue, one that failed red; Decode JWT, Format JSON, then Base64 and URL as
 // split buttons, encode (↑) and decode (↓). Generate: the value itself on each row, UUID, ISO
 // and Unix time (live) and lorem ipsum; a click copies what is shown, then a new UUID comes.
+// Decode JWT copies the payload and pushes JwtView.qml (the header and payload, its expiry).
 // Localhost: one row (how many servers, how many on the LAN) pushing LocalhostView.qml on a
 // StackView, as quick settings' views: it slides in from the right, back or Escape pops it,
 // closing returns to the top level, the panel keeps the top level's height.
@@ -80,8 +81,16 @@ PopupWindow {
         id: localhostView
         LocalhostView { onBack: stack.pop() }
     }
+    Component {
+        id: jwtView
+        JwtView { onBack: stack.pop() }
+    }
     Connections {
         target: Tools
+        function onJwtDecoded(header, payload) {
+            if (panel.visible)
+                stack.push(jwtView, { header: header, payload: payload })
+        }
         function onLocalhostRequested(screen, port) {
             if (screen === panel.bar.modelData.name)
                 panel.openLocalhost(port)

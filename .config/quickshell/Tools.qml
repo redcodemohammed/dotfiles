@@ -36,12 +36,13 @@ Singleton {
     // `failed` names the action that failed last, for the panel's red button ("" once another
     // runs or the panel closes).
     signal clipDone(string message, bool ok)
+    signal jwtDecoded(var header, var payload) // Decode JWT worked: the panel's JWT view
     property string failed: ""
     function clip(action) {
         if (clipper.running) return
         failed = ""
         clipper.action = action
-        clipper.command = [bin + "clip-tool", action]
+        clipper.command = [bin + "clip-tool", action].concat(action === "jwt" ? ["--show"] : [])
         clipper.running = true
     }
     Process {
@@ -51,7 +52,15 @@ Singleton {
         stderr: StdioCollector { id: clipErr }
         onExited: (code) => {
             root.failed = code === 0 ? "" : action
-            root.clipDone(code === 0 ? clipOut.text.trim() : clipErr.text.trim() || "Failed", code === 0)
+            let message = clipOut.text.trim()
+            if (code === 0 && action === "jwt") { // --show: {message, header, payload}
+                try {
+                    const d = JSON.parse(message)
+                    message = d.message
+                    root.jwtDecoded(d.header, d.payload)
+                } catch (err) {}
+            }
+            root.clipDone(code === 0 ? message : clipErr.text.trim() || "Failed", code === 0)
             if (code === 0)
                 root.peek()
         }
