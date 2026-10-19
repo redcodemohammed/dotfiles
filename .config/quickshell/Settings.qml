@@ -60,6 +60,7 @@ Singleton {
                 property int blurSize: 6     // 2-12
                 property int terminalOpacity: 90 // %, 70-100
                 property bool animations: true
+                property string cornerScreen: "" // the corner widget's screen, by model; "" the main screen, "off" none
             }
             property JsonObject input: JsonObject {
                 property int repeatDelay: 600   // ms before a held key repeats, 200-600

@@ -16,6 +16,12 @@ ShellRoot {
         Island {}
     }
 
+    // The rings in the bottom-right corner, on the screen Settings > Look picks (CornerWidget.qml).
+    Variants {
+        model: Quickshell.screens
+        CornerWidget {}
+    }
+
     // The entrance at login and after unlocking: the wallpaper fades up (Entrance.qml).
     Variants {
         model: Quickshell.screens

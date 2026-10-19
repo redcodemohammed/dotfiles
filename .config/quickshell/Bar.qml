@@ -57,10 +57,9 @@ PanelWindow {
         bar: bar
         block: phoneBlock
     }
-    Inbox { // drops from the bell (Notifs.inboxOpen); a slim bar has no bell: from the power block
+    Inbox { // drops from the Arch chip (Notifs.inboxOpen), on every bar
         bar: bar
-        block: bellBlock.visible ? bellBlock : powerBlock
-        atRight: !bellBlock.visible
+        block: launcherBlock
     }
     ToolsPanel { // drops from the tools block (wrench); SUPER + X (Tools.qml)
         id: toolsPanel
@@ -91,11 +90,6 @@ PanelWindow {
             if (screen === bar.modelData.name)
                 toolsPanel.toggle()
         }
-    }
-    SystemPanel { // drops from the system block (CPU, memory, disks)
-        id: systemPanel
-        bar: bar
-        block: systemBlock
     }
     RecordPanel { // drops from the record block
         id: recordPanel
@@ -153,18 +147,41 @@ PanelWindow {
     // the accent round the colour wheel), placed so no two neighbours share one; 4px between the
     // chips of a group, 10px between groups. Red stays the alert's: a chip turns red while it
     // alerts (its widget's `ink`).
-    BarChip { // the launcher at the band's left end (owner, 2026-10-20): Vicinae, like SUPER + /
+    // The Arch chip at the band's left end (owner, 2026-10-20): the notifications, in place of the
+    // bell (Vicinae is SUPER + / only). A dot while something is unread; dimmed with Do Not
+    // Disturb. Left click: the inbox; right click: Do Not Disturb.
+    BarChip {
         id: launcherBlock
         anchors.left: parent.left
         y: 6
         hue: Theme.hue1
         clickable: true
-        onClicked: Quickshell.execDetached(["vicinae", "toggle"])
-        Text { // the Arch logo (owner, 2026-10-20; a magnifying glass before): Nerd Font's nf-linux-archlinux
-            text: "\uf303"
-            font.family: "JetBrainsMono Nerd Font"
-            font.pixelSize: 16
-            color: Theme.hue1
+        onClicked: Notifs.toggleInbox()
+        Item {
+            width: 16
+            height: 16
+            Text { // the Arch logo: Nerd Font's nf-linux-archlinux
+                anchors.centerIn: parent
+                text: "\uf303"
+                font.family: "JetBrainsMono Nerd Font"
+                font.pixelSize: 16
+                color: Notifs.dnd ? Qt.rgba(Theme.hue1.r, Theme.hue1.g, Theme.hue1.b, 0.6) : Theme.hue1
+            }
+            Rectangle { // unread
+                visible: Notifs.unread > 0
+                x: 12
+                y: -3
+                width: 7
+                height: 7
+                radius: 3.5
+                color: Theme.fg
+            }
+            MouseArea { // right click only: the chip takes the left one
+                anchors.fill: parent
+                anchors.margins: -8
+                acceptedButtons: Qt.RightButton
+                onClicked: Notifs.dnd = !Notifs.dnd
+            }
         }
     }
 
@@ -281,8 +298,9 @@ PanelWindow {
     }
 
     // Right zone, in groups (owner, 2026-10-17; separate chips since 2026-10-20): the tray behind
-    // a chevron; layout and clock; phone / Pomodoro / record / capture; system; sound / network /
-    // Bluetooth / battery; tools; notifications and power. A chip's panel drops under it. A group
+    // a chevron; the clock; phone / Pomodoro / record / capture; sound / network / Bluetooth /
+    // battery; tools; power (owner, 2026-10-20: the layout and system chips went, the bell is the
+    // Arch chip). A chip's panel drops under it. A group
     // hides when all its chips do (its conditions, not its chips' visible: a child of a hidden row
     // reads as hidden), so the 10px gaps don't double up.
     property bool trayOpen: false
@@ -335,22 +353,11 @@ PanelWindow {
             }
         }
 
-        Row { // keyboard layout and the clock
-            spacing: 4
-            BarChip {
-                visible: bar.full && keyboardLayout.keymap !== ""
-                hue: keyboardLayout.ink
-                KeyboardLayout {
-                    id: keyboardLayout
-                    hue: Theme.hue5
-                }
-            }
-            BarChip {
-                hue: clock.ink
-                Clock {
-                    id: clock
-                    hue: Theme.hue6
-                }
+        BarChip { // the clock (the layout chip went, owner 2026-10-20)
+            hue: clock.ink
+            Clock {
+                id: clock
+                hue: Theme.hue6
             }
         }
 
@@ -397,18 +404,6 @@ PanelWindow {
                 CaptureIndicator {
                     id: capture
                 }
-            }
-        }
-
-        BarChip { // CPU, memory, root disk (owner, 2026-10-18); main bar only
-            id: systemBlock
-            visible: bar.full
-            hue: systemStatus.ink
-            clickable: true
-            onClicked: systemPanel.toggle()
-            SystemStatus {
-                id: systemStatus
-                hue: Theme.hue2
             }
         }
 
@@ -469,19 +464,8 @@ PanelWindow {
             }
         }
 
-        Row { // notifications and power
+        Row { // power (the bell went to the Arch chip, owner 2026-10-20)
             spacing: 4
-            BarChip {
-                id: bellBlock
-                visible: bar.full
-                hue: notificationCount.ink
-                clickable: true // the bell's own area takes most clicks (right click: Do Not Disturb)
-                onClicked: Notifs.toggleInbox()
-                NotificationCount {
-                    id: notificationCount
-                    hue: Theme.hue1
-                }
-            }
             BarChip { // power panel: power options and settings
                 id: powerBlock
                 hue: Theme.hue5

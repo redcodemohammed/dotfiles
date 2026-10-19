@@ -19,12 +19,13 @@ PopupWindow {
     id: root
     required property var bar
     required property var block
-    property bool atRight: false // hung from the power chip at the bar's right end (a slim bar)
+    // From the Arch chip at the bar's left end (owner, 2026-10-20; the bell before): its body's
+    // left edge on the chip's, merged into the frame's left side.
     readonly property var monitor: Hyprland.monitorFor(bar.screen)
 
     anchor.window: bar
     anchor.item: block
-    anchor.rect.x: block.width + reveal.overhang - implicitWidth // the body's right edge on the chip's
+    anchor.rect.x: 0
     anchor.rect.y: block.height + 6 // the band's bottom edge
     grabFocus: false // EdgePanel's focus grab
     visible: false
@@ -56,7 +57,7 @@ PopupWindow {
     // 360 as designed; wider when a notification's actions (ActionRow) need it for one line:
     // 12 + 24 icon + 12 left, 12 right, 2 + 2 frame.
     implicitWidth: reveal.implicitWidth
-    readonly property real bodyWidth: Math.min(Math.max(360, widestActions + 64), bar.screen.width - 12 - 2 * reveal.r)
+    readonly property real bodyWidth: Math.min(Math.max(360, widestActions + 64), bar.screen.width - 12 - reveal.r)
     readonly property real widestActions: {
         let widest = 0
         for (const child of list.contentItem.children)
@@ -67,10 +68,10 @@ PopupWindow {
     implicitHeight: reveal.implicitHeight
     mask: Region { item: reveal.area }
 
-    EdgePanel { // comes out of the frame under the bell (owner, 2026-10-20)
+    EdgePanel { // comes out of the frame under the Arch chip (owner, 2026-10-20)
         id: reveal
         window: root
-        atRight: root.atRight
+        atLeft: true
         bodyWidth: root.bodyWidth
         // At most the screen under the band, less the frame's bottom side and the spring's room.
         bodyHeight: Math.min(Math.max(list.contentHeight, 44) + 4 + footer.height,

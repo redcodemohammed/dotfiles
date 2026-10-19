@@ -18,7 +18,8 @@ import Quickshell.Hyprland
 // implicitWidth (the curves stick out `r` either side).
 // `atRight`: a panel at the bar's right end (network, power, settings) has its right side on the
 // frame's side, in the same colour, so it merges into it: no curve into the band there, and its
-// bottom joins the side with an inward curve, as the open island joins the left one.
+// bottom joins the side with an inward curve, as the open island joins the left one. `atLeft`:
+// the same at the bar's left end (the inbox, from the Arch chip), its body's left edge on the chip's.
 Item {
     id: edge
     required property var window // the PopupWindow
@@ -29,9 +30,11 @@ Item {
     readonly property alias area: body // the panel's own box: the popup's input region
     readonly property bool closing: shrinking
     property bool atRight: false
+    property bool atLeft: false
     readonly property int overhang: atRight ? 0 : r // how far it sticks out right of its chip
+    readonly property int underhang: atLeft ? 0 : r // and left of it
 
-    implicitWidth: bodyWidth + r + overhang
+    implicitWidth: bodyWidth + underhang + overhang
     implicitHeight: bodyHeight + 32 // room for the spring's overshoot
 
     property bool open: false
@@ -98,14 +101,15 @@ Item {
         preferredRendererType: Shape.CurveRenderer
         readonly property real h: Math.max(0, edge.h)
         readonly property real rr: Math.min(edge.r, h / 2, edge.bodyWidth / 2)
-        readonly property real bodyLeft: edge.r
+        readonly property real bodyLeft: edge.underhang
         readonly property real bodyRight: edge.r + edge.bodyWidth
         readonly property real rt: edge.atRight ? 0 : rr // the top right curve
+        readonly property real lt: edge.atLeft ? 0 : rr // the top left curve
         ShapePath {
             fillColor: Edge.fill
             strokeColor: "transparent"
             strokeWidth: 0
-            startX: drawing.bodyLeft - drawing.rr
+            startX: drawing.bodyLeft - drawing.lt
             startY: 0
             PathLine { x: drawing.bodyRight + drawing.rt; y: 0 }
             PathArc { // inward, into the band
@@ -120,15 +124,15 @@ Item {
                 direction: edge.atRight ? PathArc.Counterclockwise : PathArc.Clockwise
             }
             PathLine { x: drawing.bodyLeft + drawing.rr; y: drawing.h }
-            PathArc {
-                x: drawing.bodyLeft; y: drawing.h - drawing.rr
+            PathArc { // the body's corner; atLeft: inward, into the frame's side
+                x: drawing.bodyLeft; y: edge.atLeft ? drawing.h + drawing.rr : drawing.h - drawing.rr
                 radiusX: drawing.rr; radiusY: drawing.rr
-                direction: PathArc.Clockwise
+                direction: edge.atLeft ? PathArc.Counterclockwise : PathArc.Clockwise
             }
-            PathLine { x: drawing.bodyLeft; y: drawing.rr }
+            PathLine { x: drawing.bodyLeft; y: drawing.lt }
             PathArc { // inward, into the band
-                x: drawing.bodyLeft - drawing.rr; y: 0
-                radiusX: drawing.rr; radiusY: drawing.rr
+                x: drawing.bodyLeft - drawing.lt; y: 0
+                radiusX: drawing.lt; radiusY: drawing.lt
                 direction: PathArc.Counterclockwise
             }
         }
@@ -136,7 +140,7 @@ Item {
 
     Item {
         id: body // the panel's box, growing: clips the content
-        x: edge.r
+        x: edge.underhang
         width: edge.bodyWidth
         height: Math.max(0, edge.h)
         clip: true

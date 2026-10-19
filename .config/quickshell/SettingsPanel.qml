@@ -166,6 +166,38 @@ PopupWindow {
                 low: 0; high: 32; step: 2; unit: " px"
                 onPicked: (v) => Settings.look.frameRadius = v
             }
+            Item { // ‹ screen ›: cycles Off and each screen by model; "" (the main screen) shows as its model
+                id: corner
+                readonly property string mainModel: Quickshell.env("DESKTOP_MAIN_MODEL") ?? ""
+                readonly property string value: Settings.look.cornerScreen !== "" ? Settings.look.cornerScreen
+                    : mainModel !== "" ? mainModel : (Quickshell.screens.length > 0 ? Quickshell.screens[0].model : "off")
+                readonly property var options: [{ value: "off", label: "Off" }].concat(
+                    Quickshell.screens.map(s => ({ value: s.model, label: s.model || s.name })))
+                readonly property int at: Math.max(0, options.findIndex(o => o.value === value))
+                function move(by) {
+                    Settings.look.cornerScreen = options[(at + by + options.length) % options.length].value
+                }
+                width: parent.width
+                height: 28
+                Label {
+                    anchors.verticalCenter: parent.verticalCenter
+                    text: "Corner widget"
+                }
+                Row {
+                    anchors.right: parent.right
+                    spacing: 4
+                    StepButton { text: "‹"; onClicked: corner.move(-1) }
+                    Label {
+                        width: 120
+                        height: 28
+                        horizontalAlignment: Text.AlignHCenter
+                        verticalAlignment: Text.AlignVCenter
+                        elide: Text.ElideRight
+                        text: corner.options[corner.at].label
+                    }
+                    StepButton { text: "›"; onClicked: corner.move(1) }
+                }
+            }
             Stepper {
                 label: "Border"
                 value: Settings.look.border
