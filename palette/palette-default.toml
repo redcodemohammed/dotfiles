@@ -1,5 +1,5 @@
 # Shared palette. Single source of truth for every UI color.
-# Values from design-system/project/tokens.json. Dark only.
+# Values from docs/design-system/project/tokens.json. Dark only.
 # Generated from this file: Quickshell Theme.qml, Alacritty colors.
 # Contrast figures are against bg #111111.
 
@@ -35,3 +35,14 @@ blue    = "#7da5ce" # 7.3:1
 magenta = "#be98bf" # 7.6:1
 cyan    = "#7cbcb9" # 8.8:1
 white   = "#e6e6e6" # = fg
+
+# The bar's chips (owner, 2026-10-20): the accent turned round the colour wheel in 60-degree
+# steps, at the amber's lightness (from-wallpaper.py spread(), from #f5a524). Red means alert,
+# so hue6 stops at the red zone's edge: a pink. Contrast on each one's own chip, 5.9 to 6.7.
+[hues]
+hue1 = "#f5a524" # = accent
+hue2 = "#90cc5b" # green
+hue3 = "#0ed2ce" # teal
+hue4 = "#80bcff" # blue
+hue5 = "#d998ff" # purple
+hue6 = "#ff91ac" # pink

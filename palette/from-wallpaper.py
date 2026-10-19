@@ -14,6 +14,8 @@ Keeps the design system's structure (dark, grayscale chrome, one accent):
   toward the image's dominant hue, so contrast stays what it was.
 - alert and the ANSI colours stay as in the default, except yellow (= accent, unless the accent
   is gray: a gray "yellow" would hide warnings) and the grays (= the tinted neutrals).
+- hues (hue1-hue6, the bar's chips): the accent turned round the colour wheel (spread()); a gray
+  accent keeps the default's.
 Every pair that matters is checked against WCAG contrast and nudged if needed.
 
   from-wallpaper.py <image>     write palette.toml from the image
@@ -117,6 +119,41 @@ def contrast(a, b):
 
 def hue_dist(a, b):
     return abs((a - b + 180) % 360 - 180)
+
+
+def mix(a, b, t):
+    """b laid over a at opacity t, in sRGB, as Qt.tint does."""
+    return rgb_hex(tuple(x * (1 - t) + y * t for x, y in zip(hex_rgb(a), hex_rgb(b))))
+
+
+HUE_COUNT = 6       # the shell's item colours, [hues] hue1-hue6
+HUE_STEP = 60.0     # degrees between them
+FRAME_TINT = 0.08   # the frame: bg with this much accent (quickshell/Edge.qml)
+CHIP_TINT = 0.15    # a chip: the frame with this much of its hue (quickshell/BarChip.qml)
+
+
+def spread(accent, bg):
+    """The bar's item colours (owner, 2026-10-20: more colour): the accent's hue turned round the
+    wheel in HUE_STEP steps, at the accent's chroma and the amber's lightness, so they stay in
+    harmony and move with every wallpaper. hue1 is the accent itself. Red means an alert, so no
+    other hue lands within RED_RANGE of the alert's: one that would moves to that zone's edge.
+    Each is lit until its text reads at 4.5:1 on its own chip (the frame tinted with it)."""
+    _, chroma, start = rgb_oklch(hex_rgb(accent))
+    chroma = max(ACCENT_C[0], chroma)
+    frame = mix(bg, accent, FRAME_TINT)
+    hues = {"hue1": accent}
+    for k in range(1, HUE_COUNT):
+        h = (start + HUE_STEP * k) % 360
+        if hue_dist(h, ALERT_HUE) < RED_RANGE:
+            side = 1 if (h - ALERT_HUE + 180) % 360 - 180 >= 0 else -1
+            h = (ALERT_HUE + side * RED_RANGE) % 360
+        L = ACCENT_L
+        colour = oklch_hex(L, chroma, h)
+        while contrast(colour, mix(frame, colour, CHIP_TINT)) < 4.5 and L < 0.98:
+            L += 0.01
+            colour = oklch_hex(L, chroma, h)
+        hues[f"hue{k + 1}"] = colour
+    return hues
 
 
 # --- reading the image ---
@@ -239,10 +276,11 @@ def build(path):
     L, _, _ = rgb_oklch(hex_rgb(default["ansi"]["normal"]["white"]))
     normal["white"] = oklch_hex(L, rgb_oklch(hex_rgb(ui["fg"]))[1], base_hue or 0)
     wallpaper = {f"c{i + 1}": c for i, c in enumerate(spectrum(path, accent_hue))}
-    return ui, normal, bright, wallpaper
+    hues = spread(ui["accent"], ui["bg"]) if accent_hue is not None else dict(default["hues"])
+    return ui, normal, bright, wallpaper, hues
 
 
-def write(path, ui, normal, bright, wallpaper):
+def write(path, ui, normal, bright, wallpaper, hues):
     def table(name, values, note=""):
         rows = "\n".join(f'{k:<16} = "{v}"' for k, v in values.items())
         return f"[{name}]{note}\n{rows}\n"
@@ -257,7 +295,8 @@ def write(path, ui, normal, bright, wallpaper):
         + table("ui", ui) + "\n"
         + table("ansi.normal", normal) + "\n"
         + table("ansi.bright", bright) + "\n"
-        + table("wallpaper", wallpaper, "  # the image's own colours, in hue order (cava)"))
+        + table("wallpaper", wallpaper, "  # the image's own colours, in hue order (cava)") + "\n"
+        + table("hues", hues, "  # the accent round the colour wheel (the bar's chips)"))
 
 
 def main():
@@ -267,8 +306,8 @@ def main():
         TARGET.write_text(DEFAULT.read_text())
         print("palette.toml restored from palette-default.toml")
         return
-    ui, normal, bright, wallpaper = build(sys.argv[1])
-    write(sys.argv[1], ui, normal, bright, wallpaper)
+    ui, normal, bright, wallpaper, hues = build(sys.argv[1])
+    write(sys.argv[1], ui, normal, bright, wallpaper, hues)
     print(f"accent {ui['accent']}  bg {ui['bg']}  fg {ui['fg']}  "
           f"(accent contrast {contrast(ui['accent'], ui['bg']):.1f})")
 

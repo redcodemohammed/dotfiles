@@ -22,9 +22,12 @@ def camel(name):
 
 
 def theme_qml(palette):
+    # The ui roles, then the bar chips' hues (hue1-hue6). A palette.toml from before the hues
+    # existed has none: the default's stand in until the next wallpaper change.
+    hues = palette.get("hues") or tomllib.loads((ROOT / "palette/palette-default.toml").read_text())["hues"]
     props = "\n".join(
         f'    readonly property color {camel(name)}: "{value}"'
-        for name, value in palette["ui"].items()
+        for name, value in {**palette["ui"], **hues}.items()
     )
     return f"// {HEADER}\npragma Singleton\nimport QtQuick\nimport Quickshell\n\nSingleton {{\n{props}\n}}\n"
 
