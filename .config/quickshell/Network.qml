@@ -9,8 +9,8 @@ import Quickshell.Networking
 // network glyph instead; no Wi-Fi card and no wire: a red network slash. Connected but the
 // internet fails: a "!" top right, red for no internet, light for a sign-in page (NetState).
 // Anything red turns the whole chip red: `ink` is the alert colour then. A VPN
-// on: a small light square bottom right. The
-// block opens the network panel (Bar.qml). Networking loads lazily: down for a moment at start.
+// on: a small light square bottom right. In the
+// quick-settings chip (Bar.qml). Networking loads lazily: down for a moment at start.
 Item {
     id: root
     readonly property var devices: Networking.devices.values

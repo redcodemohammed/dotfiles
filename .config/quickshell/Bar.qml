@@ -48,10 +48,6 @@ PanelWindow {
         top: bar.visible ? bar.implicitHeight : Settings.look.frame
     }
 
-    NetworkPanel { // drops from the network block, flush with the bar's right edge
-        id: networkPanel
-        bar: bar
-    }
     PhoneCall { // while the phone rings: under the phone block, above the panel
         id: phoneCall
         bar: bar
@@ -110,7 +106,7 @@ PanelWindow {
             if (name === "record") recordPanel.toggle()
             else if (name === "sound") quickPanel.openView("sound") // quick settings' sound view
             else if (name === "bluetooth") quickPanel.openView("bluetooth")
-            else if (name === "network") networkPanel.toggle()
+            else if (name === "network") quickPanel.openView("network")
         }
     }
     PomodoroPanel { // drops from the Pomodoro block
@@ -134,8 +130,8 @@ PanelWindow {
     Connections { // the island's Wi-Fi pill, clicked on this screen
         target: NetState
         function onPanelRequested(screen) {
-            if (screen === bar.modelData.name && !networkPanel.visible)
-                networkPanel.toggle()
+            if (screen === bar.modelData.name && quickPanel.shown !== "network")
+                quickPanel.openView("network")
         }
     }
 
@@ -403,18 +399,9 @@ PanelWindow {
             }
         }
 
-        Row { // network, battery (sound and Bluetooth went into quick settings)
+        Row { // battery (sound, network and Bluetooth went into quick settings)
             visible: bar.full || bar.laptop
             spacing: 4
-            BarChip {
-                hue: network.ink
-                clickable: true
-                onClicked: networkPanel.toggle()
-                Network {
-                    id: network
-                    hue: Theme.hue4
-                }
-            }
             BarChip { // laptop only: hidden without a laptop battery
                 visible: battery.device.ready && battery.device.isLaptopBattery
                 hue: battery.ink

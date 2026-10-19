@@ -13,7 +13,7 @@ import Quickshell.Services.UPower
 // volume's › opens the sound view); the battery card with the power profiles (laptop only); the
 // power row (Lock, Log out, Suspend, Reboot, Shut down: .local/bin/power-action, the ones marked
 // asking "Again?" within 3 s) and Settings. Each control in its own hue, idle ones neutral.
-// The views (SoundView, BluetoothView, then Wi-Fi in the next step) go on a StackView: a › pushes
+// The views (SoundView, BluetoothView, WifiView) go on a StackView: a › pushes
 // one (a view can push its own pages: push(component, properties)), its back button or Escape pops it, closing the panel goes back to the top level. The panel
 // keeps the top level's height (owner); a view scrolls inside it. openView(name) opens the panel
 // straight on a view (`qs ipc call panel toggle sound`; again on the same view closes it).
@@ -51,10 +51,11 @@ PopupWindow {
         }
     }
 
-    readonly property var views: ({ sound: soundView, bluetooth: bluetoothView })
+    readonly property var views: ({ sound: soundView, bluetooth: bluetoothView, network: wifiView })
+    // The view on show ("" on the top level or while closed); a view's own pages carry its name.
+    readonly property string shown: visible && stack.currentItem ? (stack.currentItem.viewName ?? "") : ""
     function openView(name) {
-        const shown = stack.currentItem && stack.currentItem.viewName === name
-        if (visible && shown) {
+        if (shown === name) {
             reveal.close()
             return
         }
@@ -71,6 +72,15 @@ PopupWindow {
         BluetoothView {
             onBack: stack.pop()
             onPush: (component, properties) => stack.push(component, properties)
+        }
+    }
+    Component {
+        id: wifiView
+        WifiView {
+            onBack: stack.pop()
+            onPush: (component, properties) => stack.push(component, properties)
+            onCloseRequested: reveal.close()
+            onHideRequested: panel.visible = false
         }
     }
 
@@ -392,6 +402,8 @@ PopupWindow {
             width: parent.width - 32
             spacing: 14
 
+            NetStatusCard { onLoginOpened: reveal.close() } // the internet fails: no internet, or a sign-in page
+
             Grid {
                 width: parent.width
                 columns: 2
@@ -408,6 +420,7 @@ PopupWindow {
                     hue: Theme.hue4
                     on: Networking.wifiEnabled && (panel.wifiNet !== null || panel.wired) || panel.wired
                     drill: true
+                    onOpened: stack.push(wifiView)
                     onToggled: Networking.wifiEnabled = !Networking.wifiEnabled
                 }
                 Tile {

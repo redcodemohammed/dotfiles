@@ -426,7 +426,7 @@ Item {
         id: devicePage
         Item {
             id: page
-            required property var dev
+            required property var dev // null once forgotten, while the page slides out
             readonly property string viewName: "bluetooth"
             property bool armed: false
             Timer {
@@ -436,7 +436,7 @@ Item {
             }
             ViewHeader {
                 id: pageHeader
-                title: page.dev.name || page.dev.deviceName || page.dev.address
+                title: page.dev?.name || page.dev?.deviceName || page.dev?.address
                 onBack: view.back()
             }
             Column {
@@ -448,20 +448,20 @@ Item {
                     width: parent.width
                     height: 64
                     radius: 12
-                    color: page.dev.connected ? Qt.tint(Edge.fill, Qt.rgba(view.hue.r, view.hue.g, view.hue.b, 0.15)) : Edge.control
+                    color: page.dev?.connected ? Qt.tint(Edge.fill, Qt.rgba(view.hue.r, view.hue.g, view.hue.b, 0.15)) : Edge.control
                     IconImage {
                         x: 14
                         anchors.verticalCenter: parent.verticalCenter
                         implicitSize: 28
-                        source: Quickshell.iconPath(page.dev.icon || "bluetooth", "bluetooth")
+                        source: Quickshell.iconPath(page.dev?.icon || "bluetooth", "bluetooth")
                     }
                     Column {
                         x: 56
                         anchors.verticalCenter: parent.verticalCenter
                         spacing: 2
-                        Label { text: page.dev.connected ? "Connected" : "Paired, not connected" }
+                        Label { text: page.dev?.connected ? "Connected" : "Paired, not connected" }
                         Text {
-                            text: page.dev.address + (page.dev.batteryAvailable ? "  ·  " + Math.round(page.dev.battery * 100) + "%" : "")
+                            text: page.dev?.address + (page.dev?.batteryAvailable ? "  ·  " + Math.round(page.dev?.battery * 100) + "%" : "")
                             font.family: "JetBrainsMono Nerd Font"
                             font.pixelSize: 12
                             color: Theme.fgMuted
@@ -479,15 +479,15 @@ Item {
                                 page.armed = true
                                 armTimer.restart()
                             } else {
-                                page.dev.forget()
+                                page.dev?.forget()
                                 view.back()
                             }
                         }
                     }
                     Action {
-                        label: page.dev.connected ? "Disconnect" : "Connect"
-                        primary: !page.dev.connected
-                        onClicked: page.dev.connected ? page.dev.disconnect() : page.dev.connect()
+                        label: page.dev?.connected ? "Disconnect" : "Connect"
+                        primary: !page.dev?.connected
+                        onClicked: page.dev?.connected ? page.dev?.disconnect() : page.dev?.connect()
                     }
                 }
             }
