@@ -137,10 +137,12 @@ PopupWindow {
                     Rectangle { // used of size
                         width: column.width
                         height: 8
-                        color: Theme.bg
+                        radius: height / 2 // a pill (owner, 2026-10-20: rounded)
+                        color: Edge.control
                         Rectangle {
                             width: parent.width * Math.min(100, parent.parent.modelData.percent) / 100
                             height: parent.height
+                            radius: height / 2 // a pill (owner, 2026-10-20: rounded)
                             color: Theme.fgMuted
                         }
                     }

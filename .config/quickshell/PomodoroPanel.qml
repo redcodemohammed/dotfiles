@@ -43,9 +43,8 @@ PopupWindow {
         property bool enabled: true
         signal clicked
         height: 36
-        color: primary ? Theme.surfaceSelected : Theme.surface
-        border.width: 2
-        border.color: Theme.border
+        radius: 8
+        color: primary ? Edge.accentTint : Edge.control
         opacity: enabled ? 1 : 0.4
         Text {
             anchors.centerIn: parent

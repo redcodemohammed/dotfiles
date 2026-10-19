@@ -47,9 +47,8 @@ Item {
         property bool primary
         signal clicked
         height: 40
-        color: primary ? Theme.surfaceSelected : Theme.surface
-        border.width: 2
-        border.color: Theme.border
+        radius: 8
+        color: primary ? Edge.accentTint : Edge.control
         Text {
             anchors.centerIn: parent
             text: parent.label

@@ -16,9 +16,8 @@ Item {
         property bool primary
         signal clicked
         height: 40
-        color: primary ? Theme.surfaceSelected : Theme.surface
-        border.width: 2
-        border.color: Theme.border
+        radius: 8
+        color: primary ? Edge.accentTint : Edge.control
         Text {
             anchors.centerIn: parent
             text: parent.label
@@ -108,9 +107,8 @@ Item {
         Rectangle {
             width: parent.width
             height: output.implicitHeight + 20
-            color: Theme.bg
-            border.width: 2
-            border.color: Theme.border
+            radius: 8
+            color: Theme.bg // a well, darker than the island
 
             Column {
                 id: output

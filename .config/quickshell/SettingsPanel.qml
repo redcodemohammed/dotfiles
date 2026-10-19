@@ -76,9 +76,8 @@ PopupWindow {
         signal clicked
         width: 28
         height: 28
-        color: stepHover.containsMouse && enabled ? Theme.surfaceSelected : Theme.bg
-        border.width: 2
-        border.color: Theme.border
+        radius: 8
+        color: stepHover.containsMouse && enabled ? Edge.controlHover : Edge.control
         Label {
             id: stepText
             anchors.centerIn: parent

@@ -164,9 +164,8 @@ Column {
                 readonly property bool on: root.dnsChoice === index
                 width: (parent.width - 8) / 3
                 height: 32
-                color: area.containsMouse ? Theme.surface : Theme.bg
-                border.width: 2
-                border.color: on ? Theme.accent : Theme.border
+                radius: 8
+                color: on ? Edge.accentTint : area.containsMouse ? Edge.controlHover : Edge.control
                 Text {
                     anchors.centerIn: parent
                     text: dnsButton.modelData.label
@@ -195,9 +194,8 @@ Column {
         visible: root.qrOpen
         width: parent.width
         height: qrColumn.implicitHeight + 28
-        color: "transparent"
-        border.width: 2
-        border.color: Theme.border
+        radius: 12 // a card
+        color: Edge.control
         Column {
             id: qrColumn
             anchors.horizontalCenter: parent.horizontalCenter

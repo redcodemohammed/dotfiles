@@ -1,4 +1,5 @@
 import QtQuick
+import QtQuick.Effects
 import Quickshell.Services.Mpris
 import Quickshell.Services.Pipewire
 
@@ -44,9 +45,8 @@ Item {
         signal pressed()
         width: 40
         height: 40
-        color: on || primary || area.containsMouse ? Theme.surfaceSelected : Theme.surface
-        border.width: 2
-        border.color: on ? Theme.fg : Theme.border
+        radius: 8
+        color: on ? Edge.accentTint : primary || area.containsMouse ? Edge.controlHover : Edge.control
         Text {
             anchors.centerIn: parent
             text: button.glyph
@@ -131,9 +131,8 @@ Item {
             Rectangle { // cover art
                 width: 72
                 height: 72
-                color: Theme.surfaceSelected
-                border.width: 2
-                border.color: Theme.border
+                radius: 8
+                color: Edge.control
                 Text {
                     anchors.centerIn: parent
                     visible: art.status !== Image.Ready
@@ -142,11 +141,26 @@ Item {
                     font.pixelSize: 24
                     color: Theme.fgMuted
                 }
+                Rectangle { // the cover's mask (layer only, not drawn)
+                    id: artMask
+                    anchors.fill: parent
+                    radius: 8
+                    visible: false
+                    layer.enabled: true
+                }
                 Image {
                     id: art
                     anchors.fill: parent
-                    anchors.margins: 2
                     visible: status === Image.Ready
+                    // Rounded like its box: an Image has no radius, so a rounded rectangle masks it
+                    // (MultiEffect's mask: the image shows where the mask is opaque).
+                    layer.enabled: true
+                    layer.effect: MultiEffect {
+                        maskEnabled: true
+                        maskSource: artMask
+                        maskThresholdMin: 0.5
+                        maskSpreadAtMin: 1.0
+                    }
                     source: root.player ? root.player.trackArtUrl : ""
                     sourceSize.width: 136
                     sourceSize.height: 136
@@ -221,9 +235,11 @@ Item {
                 width: length.x - x - 8
                 anchors.verticalCenter: parent.verticalCenter
                 height: 4
+                radius: height / 2 // a pill (owner, 2026-10-20: rounded)
                 color: Theme.border
                 Rectangle {
                     height: 4
+                    radius: height / 2 // a pill (owner, 2026-10-20: rounded)
                     color: Theme.fg
                     width: root.player && root.player.length > 0
                         ? parent.width * Math.max(0, Math.min(root.player.position / root.player.length, 1)) : 0

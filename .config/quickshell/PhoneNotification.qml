@@ -14,9 +14,8 @@ Rectangle {
     readonly property string code: Phone.codeIn(n.title + " " + n.text)
 
     height: col.implicitHeight + 4
-    color: expanded ? Theme.surface : "transparent"
-    border.width: 2
-    border.color: expanded ? Theme.border : "transparent"
+    radius: 8
+    color: expanded ? Edge.control : "transparent"
 
     Column {
         id: col
@@ -42,6 +41,7 @@ Rectangle {
                         anchors.verticalCenter: parent.verticalCenter
                         width: 8
                         height: 8
+                        radius: height / 2 // a pill (owner, 2026-10-20: rounded)
                         color: Theme.accent
                     }
                     Text {

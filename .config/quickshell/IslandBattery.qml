@@ -100,10 +100,12 @@ Item {
         Rectangle { // percent bar: foreground fill on a muted track
             width: parent.width
             height: 4
+            radius: height / 2 // a pill (owner, 2026-10-20: rounded)
             color: Theme.border
             Rectangle {
                 width: parent.width * Math.max(0, Math.min(root.level / 100, 1))
                 height: 4
+                radius: height / 2 // a pill (owner, 2026-10-20: rounded)
                 color: Theme.fg
             }
         }
@@ -128,9 +130,8 @@ Item {
                         || PowerProfiles.hasPerformanceProfile
                     width: (parent.width - 8) / 3
                     height: 40
-                    color: active || hover.containsMouse ? Theme.surfaceSelected : Theme.surface
-                    border.width: 2
-                    border.color: active ? Theme.fg : Theme.border
+                    radius: 8
+                    color: active ? Edge.accentTint : hover.containsMouse ? Edge.controlHover : Edge.control
                     Text {
                         anchors.centerIn: parent
                         text: button.modelData.label

@@ -22,10 +22,12 @@ Item {
     component Bar: Rectangle {
         property real level: 0
         height: 4
+        radius: height / 2 // a pill (owner, 2026-10-20: rounded)
         color: Theme.border
         Rectangle {
             width: parent.width * Math.max(0, Math.min(parent.level, 1))
             height: 4
+            radius: height / 2 // a pill (owner, 2026-10-20: rounded)
             color: Theme.fg
         }
     }

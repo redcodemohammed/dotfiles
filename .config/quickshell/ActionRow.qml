@@ -41,9 +41,8 @@ Flow {
         signal clicked
         width: text.implicitWidth + 24
         height: root.buttonHeight
-        color: primary ? Theme.surfaceSelected : Theme.surface
-        border.width: 2
-        border.color: Theme.border
+        radius: 8
+        color: primary ? Edge.accentTint : Edge.control
         Text {
             id: text
             anchors.centerIn: parent

@@ -74,9 +74,8 @@ Rectangle {
     }
 
     height: body.height + 4
-    color: expanded ? Theme.surface : "transparent"
-    border.width: 2
-    border.color: expanded ? Theme.border : highlighted ? Theme.accent : "transparent"
+    radius: 8
+    color: expanded ? Edge.control : highlighted ? Edge.accentTint : "transparent" // highlighted: the keyboard's row
 
     Column {
         id: body
@@ -222,10 +221,12 @@ Rectangle {
                     anchors.verticalCenter: parent.verticalCenter
                     width: parent.width - x
                     height: 4
+                    radius: height / 2 // a pill (owner, 2026-10-20: rounded)
                     color: Theme.border
                     Rectangle {
                         width: parent.width * 0.6
                         height: 4
+                        radius: height / 2 // a pill (owner, 2026-10-20: rounded)
                         color: Theme.fg
                     }
                 }

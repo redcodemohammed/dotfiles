@@ -65,9 +65,8 @@ PopupWindow {
         signal clicked
         width: chipText.implicitWidth + 16
         height: 28
-        color: chipHover.containsMouse ? Theme.surfaceSelected : Theme.bg
-        border.width: 2
-        border.color: Theme.border
+        radius: 8
+        color: chipHover.containsMouse ? Edge.controlHover : Edge.control
         Text {
             id: chipText
             anchors.centerIn: parent
@@ -92,9 +91,8 @@ PopupWindow {
         property bool lit: false
         signal clicked
         height: 64
-        color: lit || tileHover.containsMouse ? Theme.surfaceSelected : Theme.bg
-        border.width: 2
-        border.color: lit ? Theme.accent : Theme.border
+        radius: 12 // a card
+        color: lit ? Edge.accentTint : tileHover.containsMouse ? Edge.controlHover : Edge.control
         Column {
             anchors.centerIn: parent
             spacing: 4
@@ -185,9 +183,10 @@ PopupWindow {
                         required property string modelData
                         width: 32
                         height: 32
+                        radius: 8
                         color: modelData
-                        border.width: 2
-                        border.color: swatchHover.containsMouse ? Theme.fg : Theme.border
+                        border.width: swatchHover.containsMouse ? 2 : 0 // a ring on hover
+                        border.color: Theme.fg
                         MouseArea {
                             id: swatchHover
                             anchors.fill: parent

@@ -81,9 +81,8 @@ Rectangle {
 
     width: parent.width
     height: body.implicitHeight + 28
-    color: "transparent"
-    border.width: 2
-    border.color: Theme.border
+    radius: 12 // a card
+    color: Edge.control
 
     Column {
         id: body

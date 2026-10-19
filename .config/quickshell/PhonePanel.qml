@@ -166,15 +166,14 @@ PopupWindow {
                         readonly property bool on: panel.tab === modelData.id
                         width: (parent.width - 8) / 3
                         height: 32
-                        color: on ? Theme.accent : Theme.bg
-                        border.width: 2
-                        border.color: on ? Theme.accent : Theme.border
+                        radius: 8
+                        color: on ? Edge.accentTint : Edge.control // filled, like the settings tabs
                         Text {
                             anchors.centerIn: parent
                             text: tabButton.modelData.label
                             font.family: "JetBrainsMono Nerd Font"
                             font.pixelSize: 13
-                            color: tabButton.on ? Theme.textOnAccent : Theme.fgMuted
+                            color: tabButton.on ? Theme.fg : Theme.fgMuted
                         }
                         MouseArea {
                             anchors.fill: parent
@@ -227,9 +226,8 @@ PopupWindow {
                         anchors.right: parent.right
                         width: clearText.implicitWidth + 16
                         height: 24
-                        color: clearArea.containsMouse ? Theme.surface : Theme.bg
-                        border.width: 2
-                        border.color: Theme.border
+                        radius: 6
+                        color: clearArea.containsMouse ? Edge.controlHover : Edge.control
                         Text {
                             id: clearText
                             anchors.centerIn: parent
@@ -350,9 +348,8 @@ PopupWindow {
                             readonly property int pct: t.total > 0 ? Math.round(t.current * 100 / t.total) : 0
                             width: parent.width
                             height: transferCol.implicitHeight + 20
-                            color: "transparent"
-                            border.width: 2
-                            border.color: Theme.border
+                            radius: 12 // a card
+                            color: Edge.control
                             Column {
                                 id: transferCol
                                 x: 10

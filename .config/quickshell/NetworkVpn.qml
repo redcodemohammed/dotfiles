@@ -171,9 +171,8 @@ Column {
                 readonly property bool failed: NetState.vpnFailed === modelData.uuid
                 width: root.width
                 height: vpnBody.height + 4
-                color: expanded ? Theme.surface : "transparent"
-                border.width: 2
-                border.color: expanded ? Theme.border : "transparent"
+                radius: 8
+                color: expanded ? Edge.control : "transparent"
 
                 Column {
                     id: vpnBody

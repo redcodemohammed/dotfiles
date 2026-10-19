@@ -35,9 +35,8 @@ PanelWindow {
         id: body
         width: 420
         height: col.implicitHeight + 28
-        color: Theme.bg
-        border.width: 2
-        border.color: Theme.border
+        radius: 12 // a card in the frame colour (owner, 2026-10-20)
+        color: Edge.fill
 
         Column {
             id: col

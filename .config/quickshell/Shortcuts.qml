@@ -198,9 +198,8 @@ PanelWindow {
         anchors.centerIn: parent
         width: content.implicitWidth + 48
         height: content.implicitHeight + 48
-        color: Theme.surface
-        border.width: 2
-        border.color: Theme.border
+        radius: Settings.look.frameRadius // the frame's own curve, as big as the overlay (owner, 2026-10-20)
+        color: Edge.fill
 
         focus: root.visible
         Keys.onEscapePressed: root.visible = false

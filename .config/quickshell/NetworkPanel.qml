@@ -303,15 +303,14 @@ PopupWindow {
                         readonly property bool on: panel.tab === modelData.id
                         width: (parent.width - 12) / 4
                         height: 32
-                        color: on ? Theme.accent : Theme.bg
-                        border.width: 2
-                        border.color: on ? Theme.accent : Theme.border
+                        radius: 8
+                        color: on ? Edge.accentTint : Edge.control // filled, like the settings tabs
                         Text {
                             anchors.centerIn: parent
                             text: tabButton.modelData.label
                             font.family: "JetBrainsMono Nerd Font"
                             font.pixelSize: 13
-                            color: tabButton.on ? Theme.textOnAccent : Theme.fgMuted
+                            color: tabButton.on ? Theme.fg : Theme.fgMuted
                         }
                         MouseArea {
                             anchors.fill: parent
@@ -327,9 +326,8 @@ PopupWindow {
                 visible: bad || NetState.internet === "portal"
                 width: parent.width
                 height: 52
-                color: "transparent"
-                border.width: 2
-                border.color: bad ? Theme.alert : Theme.border
+                radius: 12 // a card
+                color: bad ? Edge.alertTint : Edge.control
                 Text {
                     x: 10
                     anchors.verticalCenter: parent.verticalCenter

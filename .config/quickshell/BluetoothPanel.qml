@@ -102,9 +102,8 @@ PopupWindow {
         signal clicked
         width: actionText.implicitWidth + 24
         height: 28
-        color: primary ? Theme.accent : actionHover.containsMouse ? Theme.surfaceSelected : Theme.bg
-        border.width: 2
-        border.color: primary ? Theme.accent : Theme.border
+        radius: 8
+        color: primary ? Theme.accent : actionHover.containsMouse ? Edge.controlHover : Edge.control
         Label {
             id: actionText
             anchors.centerIn: parent
@@ -155,9 +154,8 @@ PopupWindow {
                 visible: BtAgent.request !== null || BtAgent.shown !== null
                 width: parent.width
                 height: visible ? promptColumn.implicitHeight + 24 : 0
-                color: Theme.bg
-                border.width: 2
-                border.color: Theme.accent
+                radius: 12 // a card, accent: it waits for you
+                color: Edge.accentTint
                 Column {
                     id: promptColumn
                     x: 12
@@ -238,9 +236,8 @@ PopupWindow {
                         || dev.state === BluetoothDeviceState.Disconnecting
                     width: column.width
                     height: rowBody.height + 4
-                    color: open ? Theme.bg : rowHover.containsMouse ? Theme.surfaceSelected : "transparent"
-                    border.width: 2
-                    border.color: open ? Theme.border : "transparent"
+                    radius: 8
+                    color: open ? Edge.control : rowHover.containsMouse ? Edge.control : "transparent"
 
                     MouseArea {
                         id: rowHover
