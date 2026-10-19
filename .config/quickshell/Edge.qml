@@ -10,4 +10,11 @@ import Quickshell
 Singleton {
     readonly property color fill: Qt.tint(Theme.bg, Qt.rgba(Theme.accent.r, Theme.accent.g, Theme.accent.b, 0.08))
     readonly property color alertFill: Qt.tint(Theme.bg, Qt.rgba(Theme.alert.r, Theme.alert.g, Theme.alert.b, 0.35))
+    // Controls on the frame (panels, the open island; owner, 2026-10-20: rounded, fills instead of
+    // 2px borders): a faint lift of the frame, a little more on hover; a selected, active or
+    // waiting control takes an accent tint, a dangerous one a red tint.
+    readonly property color control: Qt.tint(fill, Qt.rgba(Theme.fg.r, Theme.fg.g, Theme.fg.b, 0.06))
+    readonly property color controlHover: Qt.tint(fill, Qt.rgba(Theme.fg.r, Theme.fg.g, Theme.fg.b, 0.10))
+    readonly property color accentTint: Qt.tint(fill, Qt.rgba(Theme.accent.r, Theme.accent.g, Theme.accent.b, 0.22))
+    readonly property color alertTint: Qt.tint(fill, Qt.rgba(Theme.alert.r, Theme.alert.g, Theme.alert.b, 0.22))
 }

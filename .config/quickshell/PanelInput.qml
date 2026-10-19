@@ -1,7 +1,7 @@
 import QtQuick
 
-// A 40px text field in the network panel (owner's design): 2px border, accent while focused, red
-// with `error`. Optional leading `icon` (search), a clear button (`clearable`), and for a
+// A 40px text field in the network panel (owner's design): rounded 8 on the control fill (owner,
+// 2026-10-20); the 2px outline only as the focus ring, accent while focused, red with `error`. Optional leading `icon` (search), a clear button (`clearable`), and for a
 // `password` an eye button that shows or hides it. edited() on typing, accepted() on Enter,
 // upPressed() / downPressed() for the arrow keys (the network list's keyboard moves). `action`: a
 // small accent button inside the field with that label (the phone panel's Send); it emits accepted().
@@ -23,9 +23,10 @@ Rectangle {
     function focusInput() { input.forceActiveFocus() }
 
     height: 40
-    color: "transparent"
-    border.width: 2
-    border.color: error ? Theme.alert : input.activeFocus ? Theme.accent : Theme.border
+    radius: 8
+    color: Edge.control
+    border.width: error || input.activeFocus ? 2 : 0
+    border.color: error ? Theme.alert : Theme.accent
 
     Text {
         id: lead
@@ -72,6 +73,7 @@ Rectangle {
         anchors.verticalCenter: parent.verticalCenter
         width: actionText.implicitWidth + 16
         height: 24
+        radius: 6
         color: Theme.accent
         Text {
             id: actionText

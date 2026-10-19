@@ -1,7 +1,8 @@
 import QtQuick
 
-// A 40px button in the network panel (owner's design "Network manager"): a 2px border on the panel
-// colour. `primary`: accent fill (Connect, Join); `danger`: red border; `muted`: grey label
+// A 40px button in the network panel (owner's design "Network manager"), rounded 8, a fill and no
+// border (owner, 2026-10-20; a 2px border before). `primary`: accent fill (Connect, Join); `danger`:
+// a red tint and red label; `muted`: grey label
 // (Forget). With an `icon` the glyph and label sit left (Join hidden network), else centred.
 // Without a width it fits its label with 16px each side. `available: false` dims it.
 Rectangle {
@@ -16,9 +17,8 @@ Rectangle {
 
     implicitWidth: content.width + 32
     height: 40
-    color: primary ? Theme.accent : area.containsMouse ? Theme.surface : Theme.bg
-    border.width: 2
-    border.color: primary ? Theme.accent : danger ? Theme.alert : Theme.border
+    radius: 8
+    color: primary ? Theme.accent : danger ? Edge.alertTint : area.containsMouse ? Edge.controlHover : Edge.control
     opacity: available ? 1 : 0.5
 
     Row {
@@ -39,7 +39,7 @@ Rectangle {
             text: button.label
             font.family: "JetBrainsMono Nerd Font"
             font.pixelSize: 13
-            color: button.primary ? Theme.textOnAccent : button.muted ? Theme.fgMuted : Theme.fg
+            color: button.primary ? Theme.textOnAccent : button.danger ? Theme.alert : button.muted ? Theme.fgMuted : Theme.fg
         }
     }
 

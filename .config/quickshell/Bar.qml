@@ -160,9 +160,9 @@ PanelWindow {
         hue: Theme.hue1
         clickable: true
         onClicked: Quickshell.execDetached(["vicinae", "toggle"])
-        Text {
-            text: Icons.magnifyingGlass
-            font.family: Icons.fill
+        Text { // the Arch logo (owner, 2026-10-20; a magnifying glass before): Nerd Font's nf-linux-archlinux
+            text: "\uf303"
+            font.family: "JetBrainsMono Nerd Font"
             font.pixelSize: 16
             color: Theme.hue1
         }

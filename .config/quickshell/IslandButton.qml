@@ -1,7 +1,7 @@
 import QtQuick
 
-// A 40px island button (design: 2px border, square). `on`: lit like a selected toggle (light
-// border on surface-selected); `danger`: red border (Stop and save, Start recording);
+// A 40px island button, rounded 8 on a fill (owner, 2026-10-20; square with a 2px border before).
+// `on`: lit like a selected toggle (an accent tint); `danger`: a red tint (Stop and save, Start recording);
 // `available: false` dims it and ignores clicks. Hover lightens it.
 Rectangle {
     id: button
@@ -12,9 +12,8 @@ Rectangle {
     signal pressed()
 
     height: 40
-    color: on || area.containsMouse ? Theme.surfaceSelected : Theme.surface
-    border.width: 2
-    border.color: danger ? Theme.alert : on ? Theme.fg : Theme.border
+    radius: 8
+    color: danger ? Edge.alertTint : on ? Edge.accentTint : area.containsMouse ? Edge.controlHover : Edge.control
 
     Text {
         anchors.centerIn: parent

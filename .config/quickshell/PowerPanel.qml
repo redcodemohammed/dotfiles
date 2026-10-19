@@ -45,9 +45,8 @@ PopupWindow {
         signal clicked
         width: chipText.implicitWidth + 16
         height: 28
-        color: chipHover.containsMouse ? Theme.surfaceSelected : Theme.bg
-        border.width: 2
-        border.color: Theme.border
+        radius: 8
+        color: chipHover.containsMouse ? Edge.controlHover : Edge.control
         Text {
             id: chipText
             anchors.centerIn: parent
@@ -90,9 +89,8 @@ PopupWindow {
         property bool confirm: false
         readonly property bool waiting: panel.armed === action
         height: 64
-        color: waiting ? Theme.surfaceSelected : hover.containsMouse ? Theme.surfaceSelected : Theme.bg
-        border.width: 2
-        border.color: waiting ? Theme.accent : Theme.border
+        radius: 12 // a card
+        color: waiting ? Edge.accentTint : hover.containsMouse ? Edge.controlHover : Edge.control
         Column {
             anchors.centerIn: parent
             spacing: 4
