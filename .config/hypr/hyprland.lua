@@ -315,7 +315,7 @@ hl.config({
         disable_splash_rendering = true, -- no splash text at the bottom of the screen
         background_color        = palette.bg,
         -- If the lock screen crashes, a new one may take over the session lock: start the
-        -- Quickshell lock again (HANDOFF section 7; hyprlock, the old fallback, is gone).
+        -- Quickshell lock again (README, Recovery).
         allow_session_lock_restore = true,
     },
 })

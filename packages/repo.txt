@@ -51,6 +51,14 @@ tmux
 wl-clipboard
 ffmpeg
 qrencode
+# Linking the configs; the secrets provider Vicinae and Electron apps use
+stow
+gnome-keyring
+# Media keys and the island's media, Bluetooth panel, battery's power profiles
+playerctl
+bluez
+bluez-utils
+power-profiles-daemon
 # Login screen and boot splash (greeter/, plymouth/; boot-colours)
 greetd
 greetd-agreety

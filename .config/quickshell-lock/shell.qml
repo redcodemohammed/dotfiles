@@ -8,7 +8,7 @@ import Quickshell.Services.Pam
 // Lock screen. Its own Quickshell instance, run by SUPER + Escape, so a crash here
 // never takes the bar down and bar reloads never touch a running lock.
 // PAM: ~/dotfiles/pam/quickshell-lock. If it crashes, start it again: it takes over the lock
-// (Hyprland's allow_session_lock_restore; HANDOFF section 7). hyprlock was removed 2026-10-15.
+// (Hyprland's allow_session_lock_restore; README, Recovery). hyprlock was removed 2026-10-15.
 ShellRoot {
     id: root
 

@@ -1,5 +1,5 @@
-# AUR. Bootstrap yay first (see HANDOFF.md), then: yay -S --needed $(grep -v -e "^#" -e "^$" packages/aur.txt)
-# Read each PKGBUILD before installing (notes in HANDOFF.md).
+# AUR. Bootstrap yay first (see the README), then: yay -S --needed $(grep -v -e "^#" -e "^$" packages/aur.txt)
+# Read each PKGBUILD before installing (notes in the README).
 vicinae-bin
 ttf-phosphor-icons
 vazirmatn-fonts

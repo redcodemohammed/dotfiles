@@ -21,12 +21,8 @@ _darcs
 ^/LICENSE.*
 ^/COPYING
 
-# Hyprland project files: they live in the repo, not in ~
-^/CLAUDE\.md
-^/HANDOFF\.md
-^/pkglist-before\.txt
-^/spec
-^/design-system
+# Repo files: they live in the repo, not in ~
+^/docs
 ^/palette
 ^/packages
 ^/setup

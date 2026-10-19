@@ -4,7 +4,7 @@
 # makes it the default, puts the plymouth hook after systemd in /etc/mkinitcpio.conf, adds
 # `splash` to GRUB's kernel line, rebuilds the initramfs and grub.cfg. Run it again after a
 # wallpaper change. The first run keeps *.pre-plymouth copies of /etc/mkinitcpio.conf,
-# /etc/default/grub and the initramfs images; undo steps are in HANDOFF.
+# /etc/default/grub and the initramfs images; undo steps are in the README.
 set -euo pipefail
 [ "$(id -u)" -eq 0 ] || { echo "plymouth/install.sh: run it with sudo" >&2; exit 1; }
 src=$(cd "$(dirname "$0")" && pwd)

@@ -3,7 +3,7 @@
 # (owner's choice, 2026-10-15). Builds it with make-theme.py into /boot/grub/themes/hypr, points
 # GRUB_THEME at it in /etc/default/grub and regenerates /boot/grub/grub.cfg. Run it again after a
 # wallpaper change. The first run keeps /etc/default/grub.pre-hypr-theme and
-# /boot/grub/grub.cfg.pre-hypr-theme. Undo: copy the first back, then grub-mkconfig (HANDOFF).
+# /boot/grub/grub.cfg.pre-hypr-theme. Undo: copy the first back, then grub-mkconfig -o /boot/grub/grub.cfg (README).
 set -euo pipefail
 [ "$(id -u)" -eq 0 ] || { echo "grub/install.sh: run it with sudo" >&2; exit 1; }
 src=$(cd "$(dirname "$0")" && pwd)
