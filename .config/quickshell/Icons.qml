@@ -45,6 +45,7 @@ Singleton {
     readonly property string thermometer: "\ue5cc" // system panel: CPU temperature
     readonly property string signOut: "\ue42a" // power panel: Log out
     readonly property string moon: "\ue330" // power panel: Sleep
+    readonly property string gear: "\ue270" // quick settings: Settings
     readonly property string eyedropper: "\ue568" // tools panel: Pick colour
     readonly property string textT: "\ue48a" // tools panel: Text from screen
     readonly property string timer: "\ue492" // Pomodoro focus

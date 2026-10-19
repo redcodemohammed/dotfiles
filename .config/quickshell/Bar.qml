@@ -72,6 +72,12 @@ PanelWindow {
         block: powerBlock
         onSettingsRequested: { settingsPanel.closedAt = 0; settingsPanel.toggle() }
     }
+    QuickPanel { // quick settings (owner, 2026-10-20): from the chip at the bar's right end
+        id: quickPanel
+        bar: bar
+        block: quickBlock
+        onSettingsRequested: { settingsPanel.closedAt = 0; settingsPanel.toggle() }
+    }
     SettingsPanel { // from the power panel's Settings button, under the same block
         id: settingsPanel
         bar: bar
@@ -476,6 +482,49 @@ PanelWindow {
                     font.family: Icons.regular
                     font.pixelSize: 16
                     color: Theme.hue5
+                }
+            }
+        }
+
+        // Quick settings (owner, 2026-10-20, the "Quick settings panel" design): one neutral chip
+        // with the sound, network, Bluetooth (while on), battery (laptop) and power icons, each in
+        // its hue; red when the network fails or the battery is critical. Opens QuickPanel. While
+        // it is built it sits after the old chips, which go as their views move into the panel.
+        BarChip {
+            id: quickBlock
+            readonly property bool alert: quickNetwork.failing || quickBattery.critical
+            neutral: !alert
+            hue: Theme.alert
+            padding: 10
+            clickable: true
+            onClicked: quickPanel.toggle()
+            Row {
+                spacing: 10
+                Volume {
+                    anchors.verticalCenter: parent.verticalCenter
+                    hue: Theme.hue6
+                }
+                Network {
+                    id: quickNetwork
+                    anchors.verticalCenter: parent.verticalCenter
+                    hue: Theme.hue4
+                }
+                BluetoothStatus {
+                    anchors.verticalCenter: parent.verticalCenter
+                    visible: on
+                    hue: Theme.hue5
+                }
+                Battery {
+                    id: quickBattery
+                    anchors.verticalCenter: parent.verticalCenter
+                    hue: Theme.hue3
+                }
+                Text {
+                    anchors.verticalCenter: parent.verticalCenter
+                    text: Icons.power
+                    font.family: Icons.regular
+                    font.pixelSize: 16
+                    color: Theme.hue1
                 }
             }
         }
