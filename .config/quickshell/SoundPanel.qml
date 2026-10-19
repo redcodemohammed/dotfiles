@@ -5,7 +5,8 @@ import Quickshell
 // place of the island view it opened before: IslandVolume's expanded view (volume, mic and
 // brightness levels, the output and input device lists; a click picks the default). The volume
 // keys still show the island's compact pill. Tabs (owner, 2026-10-17): Devices (that view) and
-// Apps (each app playing or recording: AppStream.qml, Sound.qml).
+// Apps (each app playing or recording: AppStream.qml, Sound.qml). It comes out of the frame under
+// the chip (EdgePanel.qml, owner 2026-10-20).
 PopupWindow {
     id: panel
     required property var bar
@@ -13,10 +14,11 @@ PopupWindow {
 
     anchor.window: bar
     anchor.item: block
-    anchor.rect.x: block.width - implicitWidth
-    anchor.rect.y: block.height + 4
-    implicitWidth: body.width
-    implicitHeight: body.height
+    anchor.rect.x: block.width + reveal.r - implicitWidth // the body's right edge on the chip's
+    anchor.rect.y: block.height + 6 // the band's bottom edge
+    implicitWidth: reveal.implicitWidth
+    implicitHeight: reveal.implicitHeight
+    mask: Region { item: reveal.area }
     color: "transparent"
     grabFocus: false // Reveal's focus grab
     visible: false
@@ -36,14 +38,11 @@ PopupWindow {
     }
     property string tab: "devices"
 
-    Reveal { id: reveal; window: panel; target: body } // slides in and out like a window
-    Rectangle {
-        id: body
-        width: 340
-        height: tabs.height + 8 + (panel.tab === "devices" ? IslandState.volumeHeight : apps.implicitHeight + 24)
-        color: Theme.surface
-        border.width: 2
-        border.color: Theme.border
+    EdgePanel {
+        id: reveal
+        window: panel
+        bodyWidth: 340
+        bodyHeight: tabs.height + 8 + (panel.tab === "devices" ? IslandState.volumeHeight : apps.implicitHeight + 24)
 
         focus: true
         Keys.onEscapePressed: reveal.close()
