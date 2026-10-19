@@ -5,7 +5,7 @@ import Quickshell.Io
 
 // The desktop's entrance (owner, 2026-10-17): at login and after unlocking, the wallpaper fades up
 // from the background colour (EntranceCover.qml) and the bar blocks drop in from above on the
-// window spring, left to right (BarBlock.qml). A Quickshell reload doesn't play it: `played`
+// window spring, left to right (BarChip.qml). A Quickshell reload doesn't play it: `played`
 // lives in PersistentProperties, which keep their values across reloads but start fresh with a
 // new process (a login). At login the sheet goes up first, then this starts hyprpaper under it
 // and waits (up to 3 s) for its layer before playing: started by Hyprland next to Quickshell,

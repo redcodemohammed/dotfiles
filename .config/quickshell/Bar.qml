@@ -5,7 +5,8 @@ import Quickshell.Services.SystemTray
 
 // Top bar, one per screen: the frame's top side (Frame.qml, owner, 2026-10-20; it floated 6px
 // from the top and sides before). The bar window is transparent over the frame's band; each
-// widget sits on its own block in the bar colour, 6px apart (owner, 2026-10-15). The bar centre belongs to the island, a notch from the top edge.
+// widget sits on its own coloured chip (BarChip.qml). The workspaces take the centre, the launcher and
+// the compact island the left end (owner, 2026-10-20).
 // Profiles (spec, "Monitors and bars"): the main screen (monitors.lua's `main`) gets the full bar, the others a
 // slim one (workspaces, window title, clock; the laptop's adds network and battery). A screen on
 // its own gets the full bar, and so does the laptop when the G5 is away. Screens are matched by
@@ -147,38 +148,37 @@ PanelWindow {
         }
     }
 
-    BarBlock { // the launcher at the band's left end (owner, 2026-10-20): Vicinae, like SUPER + /
+    // Chips (BarChip.qml, owner 2026-10-20): each item its own hue from the palette (hue1-hue6,
+    // the accent round the colour wheel), placed so no two neighbours share one; 4px between the
+    // chips of a group, 10px between groups. Red stays the alert's: a chip turns red while it
+    // alerts (its widget's `ink`).
+    BarChip { // the launcher at the band's left end (owner, 2026-10-20): Vicinae, like SUPER + /
         id: launcherBlock
         anchors.left: parent.left
         y: 6
-        padding: 6
+        hue: Theme.hue1
         clickable: true
         onClicked: Quickshell.execDetached(["vicinae", "toggle"])
-        Rectangle {
-            width: 20
-            height: 20
-            color: Theme.accent
-            Text {
-                anchors.centerIn: parent
-                text: Icons.magnifyingGlass
-                font.family: Icons.fill
-                font.pixelSize: 14
-                color: Theme.textOnAccent
-            }
+        Text {
+            text: Icons.magnifyingGlass
+            font.family: Icons.fill
+            font.pixelSize: 16
+            color: Theme.hue1
         }
     }
 
-    BarBlock { // centred (owner, 2026-10-20): the left end is the launcher's and the island's
+    BarChip { // centred (owner, 2026-10-20): the left end is the launcher's and the island's
         id: workspacesBlock
         anchors.horizontalCenter: parent.horizontalCenter
         y: 6
-        padding: 6 // the 20px workspaces sit 4px clear of the 2px border, as top and bottom (owner)
+        neutral: true // its active workspace is the accent's
+        padding: 6 // the 20px workspaces 6px clear of the chip's ends, as top and bottom
         Workspaces {
             screen: bar.modelData
         }
     }
 
-    // The compact island (owner, 2026-10-20: in the band on a block, so it never covers a
+    // The compact island (owner, 2026-10-20: in the band on a chip, so it never covers a
     // window): after the launcher, on the focused screen, while a state shows and isn't open
     // (the open form is Island.qml's, growing out of the corner). Its slot grows from nothing on
     // the window spring and the title after it slides along. It gets the room left of the
@@ -191,7 +191,7 @@ PanelWindow {
         readonly property var monitor: Hyprland.monitorFor(bar.modelData)
         readonly property bool shown: monitor !== null && monitor.focused
             && IslandState.kind !== "" && !IslandState.open && IslandState.size[0] > 0
-        readonly property real room: workspacesBlock.x - x - 12 // 6 before the block, 6 before the workspaces
+        readonly property real room: workspacesBlock.x - x - 20 // 10 before the chip, 10 before the workspaces
         // What it shows is kept while it shrinks away, so it leaves with its content.
         property string kind: ""
         property real boxWidth: 0
@@ -203,24 +203,27 @@ PanelWindow {
         }
         readonly property var live: [shown, IslandState.kind, IslandState.size]
         onLiveChanged: keep()
-        readonly property real contentWidth: Math.max(0, Math.min(boxWidth, room - 8)) // the block's 4px padding
+        readonly property real contentWidth: Math.max(0, Math.min(boxWidth, room - 8)) // the chip's 4px padding
+        readonly property var info: IslandState.active ? IslandState.active.data : ({})
+        readonly property bool alert: kind === "record" || (kind === "build" && info.failed)
+            || (kind === "battery" && IslandState.batteryCritical) // as the open island's (Island.qml)
 
-        width: shown ? contentWidth + 8 + 6 : 0
+        width: shown ? contentWidth + 8 + 10 : 0
         clip: true
         Behavior on width {
             enabled: Settings.look.animations
             NumberAnimation { duration: 300; easing.type: Easing.BezierSpline; easing.bezierCurve: [0.34, 1.3, 0.64, 1, 1, 1] } // hyprland.lua "spring"
         }
 
-        BarBlock {
-            x: 6
+        BarChip {
+            x: 10
             padding: 4
+            hue: islandSlot.alert ? Theme.alert : Theme.hue2 // not the launcher's, its neighbour
             clickable: true
             onClicked: IslandState.click(bar.modelData.name) // opens it, out of the corner
             Item {
                 width: islandSlot.contentWidth
                 height: 24
-                readonly property var info: IslandState.active ? IslandState.active.data : ({})
                 IslandVolume {
                     anchors.fill: parent
                     visible: islandSlot.kind === "volume" || islandSlot.kind === "brightness"
@@ -255,18 +258,19 @@ PanelWindow {
                     anchors.fill: parent
                     visible: islandSlot.kind === "build"
                     open: false
-                    info: parent.info
+                    info: islandSlot.info
                 }
             }
         }
     }
 
-    BarBlock { // the focused window's title, after the island; hidden when there's no room
+    BarChip { // the focused window's title, after the island; hidden when there's no room
         id: titleBlock
         anchors.left: islandSlot.right
-        anchors.leftMargin: 6
+        anchors.leftMargin: 10
         y: 6
-        readonly property real room: workspacesBlock.x - x - 6
+        neutral: true
+        readonly property real room: workspacesBlock.x - x - 10
         visible: title.text !== "" && room > 64
         WindowTitle {
             id: title
@@ -275,25 +279,27 @@ PanelWindow {
         }
     }
 
-    // Right zone (owner, 2026-10-17: 13 blocks became 5): related items share one block, each a
-    // BarCell with its own click and hover; a cell's panel drops under it. Groups: the tray behind
-    // a chevron, layout and clock, phone / Pomodoro / record / capture, sound / network /
-    // Bluetooth / battery, notifications and power. A group hides when all its cells do (its
-    // conditions, not its cells' visible: a child of a hidden block reads as hidden).
+    // Right zone, in groups (owner, 2026-10-17; separate chips since 2026-10-20): the tray behind
+    // a chevron; layout and clock; phone / Pomodoro / record / capture; system; sound / network /
+    // Bluetooth / battery; tools; notifications and power. A chip's panel drops under it. A group
+    // hides when all its chips do (its conditions, not its chips' visible: a child of a hidden row
+    // reads as hidden), so the 10px gaps don't double up.
     property bool trayOpen: false
     Row {
         anchors.right: parent.right
         y: 6
         height: 32
-        spacing: 6
+        spacing: 10
 
-        BarBlock { // the tray behind a chevron (main bar only, spec): a click unfolds it inline
+        BarChip { // the tray behind a chevron (main bar only, spec): a click unfolds it inline
             visible: bar.full && SystemTray.items.values.length > 0
-            padding: 2
+            neutral: true // the apps' icons bring their own colours
+            clickable: true
+            onClicked: bar.trayOpen = !bar.trayOpen
             Row {
                 Item { // unfolds on the window spring, folds on it reversed (owner: animate it)
-                    height: 28
-                    width: bar.trayOpen ? trayCell.implicitWidth : 0
+                    height: 24
+                    width: bar.trayOpen ? tray.implicitWidth + 8 : 0
                     visible: width > 0
                     clip: true
                     Behavior on width {
@@ -305,164 +311,186 @@ PanelWindow {
                                 : [0.36, 0, 0.66, -0.3, 1, 1] // "springBack"
                         }
                     }
-                    BarCell {
-                        id: trayCell
+                    Tray {
+                        id: tray
                         anchors.right: parent.right // revealed from the chevron outwards
+                        anchors.rightMargin: 8
+                        anchors.verticalCenter: parent.verticalCenter
+                        window: bar
                         opacity: bar.trayOpen ? 1 : 0
                         Behavior on opacity {
                             enabled: Settings.look.animations
                             NumberAnimation { duration: 150 }
                         }
-                        Tray {
-                            window: bar
-                        }
                     }
                 }
-                BarCell {
-                    clickable: true
-                    onClicked: bar.trayOpen = !bar.trayOpen
-                    Text {
-                        text: bar.trayOpen ? Icons.caretRight : Icons.caretLeft
-                        font.family: Icons.regular
-                        font.pixelSize: 16
-                        color: Theme.fgMuted
-                    }
-                }
-            }
-        }
-
-        BarBlock { // keyboard layout and the clock
-            padding: 2
-            Row {
-                BarCell {
-                    visible: bar.full && keyboardLayout.keymap !== ""
-                    KeyboardLayout {
-                        id: keyboardLayout
-                    }
-                }
-                BarCell {
-                    Clock {}
-                }
-            }
-        }
-
-        BarBlock { // phone, Pomodoro, recording, and mic / camera while live
-            visible: bar.full
-            padding: 2
-            Row {
-                BarCell { // the phone bridge (owner's design): while a phone is paired
-                    id: phoneBlock
-                    visible: Phone.paired
-                    clickable: true
-                    onClicked: phonePanel.toggle()
-                    PhoneStatus {}
-                }
-                BarCell { // Pomodoro: glyph and time left
-                    id: pomodoroBlock
-                    clickable: true
-                    onClicked: pomodoroPanel.toggle()
-                    PomodoroStatus {}
-                }
-                BarCell { // screen recording: muted when idle, red while recording
-                    id: recordBlock
-                    clickable: true
-                    onClicked: recordPanel.toggle()
-                    Text {
-                        text: Icons.record
-                        font.family: Recording.active ? Icons.fill : Icons.regular
-                        font.pixelSize: 16
-                        color: Recording.active ? Theme.alert : Theme.fgMuted
-                    }
-                }
-                BarCell { // mic and camera: red, only while something captures (spec)
-                    visible: capture.live
-                    CaptureIndicator {
-                        id: capture
-                    }
-                }
-            }
-        }
-
-        BarBlock { // CPU, memory, root disk (owner, 2026-10-18); main bar only
-            visible: bar.full
-            padding: 2
-            BarCell {
-                id: systemBlock
-                clickable: true
-                onClicked: systemPanel.toggle()
-                SystemStatus {}
-            }
-        }
-
-        BarBlock { // sound, network, Bluetooth, battery
-            visible: bar.full || bar.laptop
-            padding: 2
-            Row {
-                BarCell {
-                    id: volumeBlock
-                    visible: bar.full && volume.sink !== null
-                    clickable: true
-                    onClicked: soundPanel.toggle()
-                    Volume {
-                        id: volume
-                    }
-                }
-                BarCell {
-                    clickable: true
-                    onClicked: networkPanel.toggle()
-                    Network {}
-                }
-                BarCell { // hidden without an adapter
-                    id: bluetoothBlock
-                    visible: bar.full && bluetooth.adapter !== null
-                    clickable: true
-                    onClicked: bluetoothPanel.toggle()
-                    BluetoothStatus {
-                        id: bluetooth
-                    }
-                }
-                BarCell { // laptop only: hidden without a laptop battery
-                    visible: battery.device.ready && battery.device.isLaptopBattery
-                    Battery {
-                        id: battery
-                    }
-                }
-            }
-        }
-
-        BarBlock { // tools (owner, 2026-10-18: its own block, apart from power)
-            padding: 2
-            BarCell {
-                id: toolsBlock
-                clickable: true
-                onClicked: toolsPanel.toggle()
-                Text { // accent while Keep awake holds the idle chain
-                    text: Icons.wrench
-                    font.family: Tools.keepAwake ? Icons.fill : Icons.regular
+                Text {
+                    anchors.verticalCenter: parent.verticalCenter
+                    text: bar.trayOpen ? Icons.caretRight : Icons.caretLeft
+                    font.family: Icons.regular
                     font.pixelSize: 16
-                    color: Tools.keepAwake ? Theme.accent : Theme.fgMuted
+                    color: Theme.fgMuted
                 }
             }
         }
 
-        BarBlock { // notifications and power
-            padding: 2
-            Row {
-                BarCell {
-                    id: bellBlock
-                    visible: bar.full
-                    NotificationCount {}
+        Row { // keyboard layout and the clock
+            spacing: 4
+            BarChip {
+                visible: bar.full && keyboardLayout.keymap !== ""
+                hue: keyboardLayout.ink
+                KeyboardLayout {
+                    id: keyboardLayout
+                    hue: Theme.hue5
                 }
-                BarCell { // power panel: power options and settings
-                    id: powerBlock
-                    clickable: true
-                    onClicked: powerPanel.toggle()
-                    Text {
-                        text: Icons.power
-                        font.family: Icons.regular
-                        font.pixelSize: 16
-                        color: Theme.fgMuted
-                    }
+            }
+            BarChip {
+                hue: clock.ink
+                Clock {
+                    id: clock
+                    hue: Theme.hue6
+                }
+            }
+        }
+
+        Row { // phone, Pomodoro, recording, and mic / camera while live
+            visible: bar.full
+            spacing: 4
+            BarChip { // the phone bridge (owner's design): while a phone is paired
+                id: phoneBlock
+                visible: Phone.paired
+                hue: phoneStatus.ink
+                clickable: true
+                onClicked: phonePanel.toggle()
+                PhoneStatus {
+                    id: phoneStatus
+                    hue: Theme.hue4
+                }
+            }
+            BarChip { // Pomodoro: glyph and time left
+                id: pomodoroBlock
+                hue: pomodoroStatus.ink
+                clickable: true
+                onClicked: pomodoroPanel.toggle()
+                PomodoroStatus {
+                    id: pomodoroStatus
+                    hue: Theme.hue1 // a tomato
+                }
+            }
+            BarChip { // screen recording: neutral when idle, red while recording
+                id: recordBlock
+                neutral: !Recording.active
+                hue: Theme.alert
+                clickable: true
+                onClicked: recordPanel.toggle()
+                Text {
+                    text: Icons.record
+                    font.family: Recording.active ? Icons.fill : Icons.regular
+                    font.pixelSize: 16
+                    color: Recording.active ? Theme.alert : Theme.fgMuted
+                }
+            }
+            BarChip { // mic and camera: red, only while something captures (spec)
+                visible: capture.live
+                hue: capture.ink
+                CaptureIndicator {
+                    id: capture
+                }
+            }
+        }
+
+        BarChip { // CPU, memory, root disk (owner, 2026-10-18); main bar only
+            id: systemBlock
+            visible: bar.full
+            hue: systemStatus.ink
+            clickable: true
+            onClicked: systemPanel.toggle()
+            SystemStatus {
+                id: systemStatus
+                hue: Theme.hue2
+            }
+        }
+
+        Row { // sound, network, Bluetooth, battery
+            visible: bar.full || bar.laptop
+            spacing: 4
+            BarChip {
+                id: volumeBlock
+                visible: bar.full && volume.sink !== null
+                hue: volume.ink
+                clickable: true
+                onClicked: soundPanel.toggle()
+                Volume {
+                    id: volume
+                    hue: Theme.hue6
+                }
+            }
+            BarChip {
+                hue: network.ink
+                clickable: true
+                onClicked: networkPanel.toggle()
+                Network {
+                    id: network
+                    hue: Theme.hue4
+                }
+            }
+            BarChip { // hidden without an adapter
+                id: bluetoothBlock
+                visible: bar.full && bluetooth.adapter !== null
+                hue: bluetooth.ink
+                clickable: true
+                onClicked: bluetoothPanel.toggle()
+                BluetoothStatus {
+                    id: bluetooth
+                    hue: Theme.hue5
+                }
+            }
+            BarChip { // laptop only: hidden without a laptop battery
+                visible: battery.device.ready && battery.device.isLaptopBattery
+                hue: battery.ink
+                Battery {
+                    id: battery
+                    hue: Theme.hue3
+                }
+            }
+        }
+
+        BarChip { // tools (owner, 2026-10-18: its own chip, apart from power)
+            id: toolsBlock
+            hue: Theme.hue2
+            clickable: true
+            onClicked: toolsPanel.toggle()
+            Text { // full colour and filled while Keep awake holds the idle chain, dimmed otherwise
+                text: Icons.wrench
+                font.family: Tools.keepAwake ? Icons.fill : Icons.regular
+                font.pixelSize: 16
+                color: Tools.keepAwake ? Theme.hue2 : Qt.rgba(Theme.hue2.r, Theme.hue2.g, Theme.hue2.b, 0.6)
+            }
+        }
+
+        Row { // notifications and power
+            spacing: 4
+            BarChip {
+                id: bellBlock
+                visible: bar.full
+                hue: notificationCount.ink
+                clickable: true // the bell's own area takes most clicks (right click: Do Not Disturb)
+                onClicked: Notifs.toggleInbox()
+                NotificationCount {
+                    id: notificationCount
+                    hue: Theme.hue1
+                }
+            }
+            BarChip { // power panel: power options and settings
+                id: powerBlock
+                hue: Theme.hue5
+                clickable: true
+                onClicked: powerPanel.toggle()
+                Text {
+                    text: Icons.power
+                    font.family: Icons.regular
+                    font.pixelSize: 16
+                    color: Theme.hue5
                 }
             }
         }

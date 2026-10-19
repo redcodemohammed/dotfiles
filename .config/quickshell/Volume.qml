@@ -1,8 +1,11 @@
 import QtQuick
 import Quickshell.Services.Pipewire
 
-// Default output: icon plus number, both gray. Muting changes the glyph, not the color.
+// Default output: icon plus number, in its chip's hue. Muting changes the glyph, not the color.
 Row {
+    id: root
+    property color hue: Theme.fgMuted
+    readonly property color ink: hue
     readonly property var sink: Pipewire.defaultAudioSink
     readonly property real volume: sink && sink.audio ? sink.audio.volume : 0
     readonly property bool muted: sink && sink.audio ? sink.audio.muted : false
@@ -23,7 +26,7 @@ Row {
             : Icons.speakerHigh
         font.family: Icons.regular
         font.pixelSize: 16
-        color: Theme.fgMuted
+        color: root.ink
     }
 
     Text {
@@ -31,6 +34,6 @@ Row {
         text: Math.round(parent.volume * 100)
         font.family: "JetBrainsMono Nerd Font"
         font.pixelSize: 13
-        color: Theme.fgMuted
+        color: root.ink
     }
 }

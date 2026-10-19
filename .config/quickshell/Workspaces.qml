@@ -4,7 +4,7 @@ import Quickshell.Hyprland
 
 // Workspaces 1 to N (the settings panel's "Workspaces per screen", 5 by default), each its number
 // and an icon per window (WorkspaceSquare.qml; owner, 2026-10-17: icons instead of bare numbers).
-// Active: amber number square on a lighter group. A click goes to a workspace; the wheel over the
+// Active: filled with its own hue (WorkspaceSquare.qml). A click goes to a workspace; the wheel over the
 // block steps through the existing ones. hyprsplit gives each monitor its own ID range by its
 // priority (hyprland.lua: hs.monitor_priority, from monitors.lua's workspace_order; with 5: 1-5,
 // 6-10, 11-15), so a monitor shows the workspaces of its range in slots 1 to N. A screen that goes

@@ -1,8 +1,11 @@
 import QtQuick
 
 // The bar's system block (owner, 2026-10-18): CPU, memory and root disk use, each a glyph and a
-// number in percent, gray like the battery. A click opens the system panel (SystemPanel.qml).
+// number in percent, in its chip's hue. A click opens the system panel (SystemPanel.qml).
 Row {
+    id: root
+    property color hue: Theme.fgMuted
+    readonly property color ink: hue
     spacing: 8
 
     component Reading: Row {
@@ -14,14 +17,14 @@ Row {
             text: parent.glyph
             font.family: Icons.regular
             font.pixelSize: 16
-            color: Theme.fgMuted
+            color: root.ink
         }
         Text {
             anchors.verticalCenter: parent.verticalCenter
             text: Math.round(parent.value)
             font.family: "JetBrainsMono Nerd Font"
             font.pixelSize: 13
-            color: Theme.fgMuted
+            color: root.ink
         }
     }
 

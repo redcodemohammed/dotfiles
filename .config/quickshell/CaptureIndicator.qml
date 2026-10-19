@@ -15,6 +15,7 @@ Row {
         && g.target.type === PwNodeType.AudioInStream && g.source.type === PwNodeType.AudioSource)
     property bool cameraLive: false
     readonly property bool live: micLive || cameraLive
+    readonly property color ink: Theme.alert // its chip is red
 
     spacing: 4
 
