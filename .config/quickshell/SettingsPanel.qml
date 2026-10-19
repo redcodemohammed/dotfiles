@@ -245,6 +245,12 @@ PopupWindow {
                 on: Settings.bar.islandMedia
                 onPicked: (on) => Settings.bar.islandMedia = on
             }
+            Stepper { // the same on every screen: hyprsplit has one count (SUPER + 1-9, 0 is the 10th)
+                label: "Workspaces per screen"
+                value: Settings.bar.workspaces
+                low: 1; high: 10
+                onPicked: (v) => Settings.bar.workspaces = v
+            }
             Text { // where the rest lives
                 width: parent.width
                 topPadding: 4

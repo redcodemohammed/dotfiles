@@ -29,7 +29,8 @@ Singleton {
     }
 
     // Look (step 4a), Input (4b), Bar & island (4c), Power (4d). Defaults are today's values. Bar & island
-    // is read by the shell alone (Clock, Bar, IslandState): no generated file.
+    // is read by the shell alone (Clock, Bar, IslandState), except the workspace count, which
+    // Hyprland needs too (hyprsplit, the SUPER + digit binds): it goes into hypr_settings.lua.
     readonly property alias look: adapter.look
     readonly property alias input: adapter.input
     readonly property alias bar: adapter.bar
@@ -70,6 +71,7 @@ Singleton {
                 property bool seconds: false
                 property bool otherScreens: true // bars on the screens without the full bar
                 property bool islandMedia: true  // the island shows what plays
+                property int workspaces: 5       // per screen, 1-10 (hyprsplit's num_workspaces)
             }
             property JsonObject power: JsonObject {
                 property int lockAfter: 5      // min idle, 2-30
@@ -103,6 +105,7 @@ Singleton {
             + "    sensitivity    = " + (i.pointerSpeed / 10).toFixed(1) + ",\n"
             + "    natural_scroll = " + i.naturalScroll + ",\n"
             + "    tap_to_click   = " + i.tapToClick + ",\n"
+            + "    workspaces     = " + adapter.bar.workspaces + ",\n"
             + "}\n"
     }
     function alacrittyText() {
