@@ -1,4 +1,5 @@
 import QtQuick
+import QtQuick.Controls
 import Quickshell
 
 // Tools panel (owner, 2026-10-17; the "Dev tools panel" design since 2026-10-20): comes out of the
@@ -12,8 +13,9 @@ import Quickshell
 // that fits tinted blue, one that failed red; Decode JWT, Format JSON, then Base64 and URL as
 // split buttons, encode (↑) and decode (↓). Generate: the value itself on each row, UUID, ISO
 // and Unix time (live) and lorem ipsum; a click copies what is shown, then a new UUID comes.
-// Localhost: your dev servers' ports (known runtimes only, dev-ports); a LAN one shows a QR of
-// http://<LAN address>:<port> for the phone, a localhost-only one says to start it with --host.
+// Localhost: one row (how many servers, how many on the LAN) pushing LocalhostView.qml on a
+// StackView, as quick settings' views: it slides in from the right, back or Escape pops it,
+// closing returns to the top level, the panel keeps the top level's height.
 // The note line under it all reports each result: green done, red failed, neutral otherwise.
 PopupWindow {
     id: panel
@@ -43,8 +45,7 @@ PopupWindow {
             closedAt = Date.now()
             say("", "")
             Tools.failed = ""
-            localOpen = false
-            Tools.hideQr()
+            stack.pop(null, StackView.Immediate)
         } else {
             now = new Date()
             Tools.peek()
@@ -69,8 +70,22 @@ PopupWindow {
         interval: panel.noteKind === "error" ? 4000 : 2000
         onTriggered: panel.say("", "")
     }
+    // qs ipc call tools qr <port>: the Localhost view with that server open.
+    function openLocalhost(port) {
+        stack.pop(null, StackView.Immediate)
+        stack.push(localhostView, { openPort: port }, visible ? StackView.PushTransition : StackView.Immediate)
+        visible = true
+    }
+    Component {
+        id: localhostView
+        LocalhostView { onBack: stack.pop() }
+    }
     Connections {
         target: Tools
+        function onLocalhostRequested(screen, port) {
+            if (screen === panel.bar.modelData.name)
+                panel.openLocalhost(port)
+        }
         function onClipDone(message, ok) { // an error's reason goes on a second line
             const cut = ok ? -1 : message.indexOf(": ")
             if (cut > 0)
@@ -102,7 +117,6 @@ PopupWindow {
 
     property string lastColour: ""
     property string hoverColour: ""
-    property bool localOpen: false
 
     // Buttons on a card: one step lighter than the card itself.
     readonly property color lift: Qt.tint(Edge.fill, Qt.rgba(Theme.fg.r, Theme.fg.g, Theme.fg.b, 0.12))
@@ -297,254 +311,267 @@ PopupWindow {
         bodyHeight: column.implicitHeight + 24
 
         focus: true
-        Keys.onEscapePressed: reveal.close()
+        Keys.onEscapePressed: stack.depth > 1 ? stack.pop() : reveal.close()
 
-        Column {
-            id: column
-            x: 16
-            y: 8
-            width: parent.width - 32
-            spacing: 14
+        // A view slides in from the right over the top level, and back out.
+        StackView {
+            id: stack
+            width: parent.width
+            height: reveal.bodyHeight
+            clip: true
+            initialItem: topLevel
+            readonly property int pace: Settings.look.animations ? 250 : 0
+            pushEnter: Transition { XAnimator { from: stack.width; to: 0; duration: stack.pace; easing.type: Easing.OutCubic } }
+            pushExit: Transition { XAnimator { from: 0; to: -stack.width / 3; duration: stack.pace; easing.type: Easing.OutCubic } }
+            popEnter: Transition { XAnimator { from: -stack.width / 3; to: 0; duration: stack.pace; easing.type: Easing.OutCubic } }
+            popExit: Transition { XAnimator { from: 0; to: stack.width; duration: stack.pace; easing.type: Easing.OutCubic } }
+        }
 
-            Column { // the screen tools and the recent colours
-                width: parent.width
-                spacing: 8
-                Row {
+        Item { // the top level
+            id: topLevel
+            Column {
+                id: column
+                x: 16
+                y: 8
+                width: stack.width - 32
+                spacing: 14
+
+                Column { // the screen tools and the recent colours
                     width: parent.width
                     spacing: 8
-                    readonly property real cell: (width - spacing) / 2
-                    ToolTile {
-                        width: parent.cell
-                        glyph: Icons.eyedropper
-                        hue: Theme.hue1
-                        label: "Pick colour"
-                        status: "From the screen"
-                        onClicked: {
-                            panel.visible = false
-                            Tools.pickColour()
-                        }
-                    }
-                    ToolTile {
-                        width: parent.cell
-                        glyph: Icons.textT
-                        hue: Theme.hue4
-                        label: "Read text"
-                        status: "Region to clipboard"
-                        onClicked: {
-                            panel.visible = false
-                            Tools.readText()
-                        }
-                    }
-                }
-                Item {
-                    visible: Tools.colours.length > 0
-                    width: parent.width
-                    height: 36
                     Row {
-                        x: 4
-                        anchors.verticalCenter: parent.verticalCenter
+                        width: parent.width
                         spacing: 8
-                        Repeater {
-                            model: Tools.colours
-                            Rectangle {
-                                id: swatch
-                                required property string modelData
-                                width: 28
-                                height: 28
-                                radius: 8
-                                color: modelData
-                                Rectangle { // the last one copied: a ring in its own colour
-                                    visible: panel.lastColour === swatch.modelData
-                                    anchors.fill: parent
-                                    anchors.margins: -4
-                                    radius: 11
-                                    color: "transparent"
-                                    border.width: 2
-                                    border.color: swatch.modelData
-                                }
-                                MouseArea {
-                                    anchors.fill: parent
-                                    hoverEnabled: true
-                                    onContainsMouseChanged: panel.hoverColour = containsMouse ? swatch.modelData : ""
-                                    onClicked: {
-                                        Tools.copy(swatch.modelData)
-                                        panel.lastColour = swatch.modelData
-                                        panel.say("ok", "Copied " + swatch.modelData)
+                        readonly property real cell: (width - spacing) / 2
+                        ToolTile {
+                            width: parent.cell
+                            glyph: Icons.eyedropper
+                            hue: Theme.hue1
+                            label: "Pick colour"
+                            status: "From the screen"
+                            onClicked: {
+                                panel.visible = false
+                                Tools.pickColour()
+                            }
+                        }
+                        ToolTile {
+                            width: parent.cell
+                            glyph: Icons.textT
+                            hue: Theme.hue4
+                            label: "Read text"
+                            status: "Region to clipboard"
+                            onClicked: {
+                                panel.visible = false
+                                Tools.readText()
+                            }
+                        }
+                    }
+                    Item {
+                        visible: Tools.colours.length > 0
+                        width: parent.width
+                        height: 36
+                        Row {
+                            x: 4
+                            anchors.verticalCenter: parent.verticalCenter
+                            spacing: 8
+                            Repeater {
+                                model: Tools.colours
+                                Rectangle {
+                                    id: swatch
+                                    required property string modelData
+                                    width: 28
+                                    height: 28
+                                    radius: 8
+                                    color: modelData
+                                    Rectangle { // the last one copied: a ring in its own colour
+                                        visible: panel.lastColour === swatch.modelData
+                                        anchors.fill: parent
+                                        anchors.margins: -4
+                                        radius: 11
+                                        color: "transparent"
+                                        border.width: 2
+                                        border.color: swatch.modelData
+                                    }
+                                    MouseArea {
+                                        anchors.fill: parent
+                                        hoverEnabled: true
+                                        onContainsMouseChanged: panel.hoverColour = containsMouse ? swatch.modelData : ""
+                                        onClicked: {
+                                            Tools.copy(swatch.modelData)
+                                            panel.lastColour = swatch.modelData
+                                            panel.say("ok", "Copied " + swatch.modelData)
+                                        }
                                     }
                                 }
                             }
                         }
-                    }
-                    Text {
-                        anchors.right: parent.right
-                        anchors.rightMargin: 4
-                        anchors.verticalCenter: parent.verticalCenter
-                        text: panel.hoverColour || panel.lastColour || Tools.colours[0] || ""
-                        font.family: "JetBrainsMono Nerd Font"
-                        font.pixelSize: 12
-                        color: Theme.fgMuted
+                        Text {
+                            anchors.right: parent.right
+                            anchors.rightMargin: 4
+                            anchors.verticalCenter: parent.verticalCenter
+                            text: panel.hoverColour || panel.lastColour || Tools.colours[0] || ""
+                            font.family: "JetBrainsMono Nerd Font"
+                            font.pixelSize: 12
+                            color: Theme.fgMuted
+                        }
                     }
                 }
-            }
 
-            Column { // the clipboard in, the result back
-                width: parent.width
-                spacing: 6
-                ToolCaption { text: "Clipboard" }
-                Rectangle {
+                Column { // the clipboard in, the result back
                     width: parent.width
-                    height: clipColumn.implicitHeight + 24
-                    radius: 12
-                    color: Edge.control
-                    Column {
-                        id: clipColumn
-                        x: 12
-                        y: 12
-                        width: parent.width - 24
-                        spacing: 10
-                        Item { // what it holds: a JWT's header or a URL itself, else its kind and size
-                            width: parent.width
-                            height: 20
-                            readonly property var cb: Tools.clipboard
-                            Text {
-                                anchors.verticalCenter: parent.verticalCenter
-                                text: Icons.clipboardText
-                                font.family: Icons.regular
-                                font.pixelSize: 16
-                                color: panel.detected ? Theme.hue5 : Theme.fgMuted
-                            }
-                            Text {
-                                x: 26
-                                width: badge.x - x - 8
-                                anchors.verticalCenter: parent.verticalCenter
-                                elide: Text.ElideRight
-                                readonly property string count: parent.cb.size + (parent.cb.size === 1 ? " character" : " characters")
-                                text: parent.cb.kind === "jwt" || parent.cb.kind === "url" ? parent.cb.preview[0] ?? ""
-                                    : parent.cb.kind === "json" ? parent.cb.preview.length + (parent.cb.preview.length === 1 ? " line" : " lines")
-                                    : parent.cb.kind === "empty" ? "The clipboard is empty"
-                                    : parent.cb.kind === "binary" ? "Not text (an image or a file)"
-                                    : parent.cb.kind === "" ? "Reading the clipboard" : count
-                                font.family: "JetBrainsMono Nerd Font"
-                                font.pixelSize: 12
-                                color: parent.cb.kind === "jwt" || parent.cb.kind === "url" ? Theme.fg : Theme.fgMuted
-                            }
-                            Rectangle {
-                                id: badge
-                                visible: badgeText.text !== ""
-                                anchors.right: parent.right
-                                anchors.verticalCenter: parent.verticalCenter
-                                width: visible ? badgeText.implicitWidth + 16 : 0
+                    spacing: 6
+                    ToolCaption { text: "Clipboard" }
+                    Rectangle {
+                        width: parent.width
+                        height: clipColumn.implicitHeight + 24
+                        radius: 12
+                        color: Edge.control
+                        Column {
+                            id: clipColumn
+                            x: 12
+                            y: 12
+                            width: parent.width - 24
+                            spacing: 10
+                            Item { // what it holds: a JWT's header or a URL itself, else its kind and size
+                                width: parent.width
                                 height: 20
-                                radius: 6
-                                color: panel.detected ? panel.tint(Theme.hue5, 0.15) : panel.lift
+                                readonly property var cb: Tools.clipboard
                                 Text {
-                                    id: badgeText
-                                    anchors.centerIn: parent
-                                    text: ({ jwt: "JWT", json: "JSON", base64: "Base64", url: "URL", text: "Text" })[parent.parent.cb.kind] ?? ""
-                                    font.family: "JetBrainsMono Nerd Font"
-                                    font.pixelSize: 11
+                                    anchors.verticalCenter: parent.verticalCenter
+                                    text: Icons.clipboardText
+                                    font.family: Icons.regular
+                                    font.pixelSize: 16
                                     color: panel.detected ? Theme.hue5 : Theme.fgMuted
+                                }
+                                Text {
+                                    x: 26
+                                    width: badge.x - x - 8
+                                    anchors.verticalCenter: parent.verticalCenter
+                                    elide: Text.ElideRight
+                                    readonly property string count: parent.cb.size + (parent.cb.size === 1 ? " character" : " characters")
+                                    text: parent.cb.kind === "jwt" || parent.cb.kind === "url" ? parent.cb.preview[0] ?? ""
+                                        : parent.cb.kind === "json" ? parent.cb.preview.length + (parent.cb.preview.length === 1 ? " line" : " lines")
+                                        : parent.cb.kind === "empty" ? "The clipboard is empty"
+                                        : parent.cb.kind === "binary" ? "Not text (an image or a file)"
+                                        : parent.cb.kind === "" ? "Reading the clipboard" : count
+                                    font.family: "JetBrainsMono Nerd Font"
+                                    font.pixelSize: 12
+                                    color: parent.cb.kind === "jwt" || parent.cb.kind === "url" ? Theme.fg : Theme.fgMuted
+                                }
+                                Rectangle {
+                                    id: badge
+                                    visible: badgeText.text !== ""
+                                    anchors.right: parent.right
+                                    anchors.verticalCenter: parent.verticalCenter
+                                    width: visible ? badgeText.implicitWidth + 16 : 0
+                                    height: 20
+                                    radius: 6
+                                    color: panel.detected ? panel.tint(Theme.hue5, 0.15) : panel.lift
+                                    Text {
+                                        id: badgeText
+                                        anchors.centerIn: parent
+                                        text: ({ jwt: "JWT", json: "JSON", base64: "Base64", url: "URL", text: "Text" })[parent.parent.cb.kind] ?? ""
+                                        font.family: "JetBrainsMono Nerd Font"
+                                        font.pixelSize: 11
+                                        color: panel.detected ? Theme.hue5 : Theme.fgMuted
+                                    }
+                                }
+                            }
+                            Rectangle { // JSON: its first lines (formatted after Format JSON)
+                                visible: Tools.clipboard.kind === "json"
+                                width: parent.width
+                                height: jsonText.implicitHeight + 20
+                                radius: 8
+                                color: Edge.fill
+                                clip: true
+                                Text {
+                                    id: jsonText
+                                    x: 10
+                                    y: 10
+                                    width: parent.width - 20
+                                    elide: Text.ElideRight
+                                    text: (Tools.clipboard.preview ?? []).join("\n")
+                                    textFormat: Text.PlainText
+                                    font.family: "JetBrainsMono Nerd Font"
+                                    font.pixelSize: 12
+                                    lineHeight: 1.2
+                                    color: Theme.fgMuted
+                                }
+                            }
+                            Grid {
+                                width: parent.width
+                                columns: 2
+                                spacing: 6
+                                readonly property real cell: (width - spacing) / 2
+                                CardButton {
+                                    width: parent.cell
+                                    glyph: Icons.key
+                                    label: "Decode JWT"
+                                    action: "jwt"
+                                }
+                                CardButton {
+                                    width: parent.cell
+                                    label: "Format JSON"
+                                    action: "json"
+                                }
+                                SplitButton {
+                                    width: parent.cell
+                                    label: "Base64"
+                                    encode: "b64e"
+                                    decode: "b64d"
+                                }
+                                SplitButton {
+                                    width: parent.cell
+                                    label: "URL"
+                                    encode: "urle"
+                                    decode: "urld"
                                 }
                             }
                         }
-                        Rectangle { // JSON: its first lines (formatted after Format JSON)
-                            visible: Tools.clipboard.kind === "json"
-                            width: parent.width
-                            height: jsonText.implicitHeight + 20
-                            radius: 8
-                            color: Edge.fill
-                            clip: true
-                            Text {
-                                id: jsonText
-                                x: 10
-                                y: 10
-                                width: parent.width - 20
-                                elide: Text.ElideRight
-                                text: (Tools.clipboard.preview ?? []).join("\n")
-                                textFormat: Text.PlainText
-                                font.family: "JetBrainsMono Nerd Font"
-                                font.pixelSize: 12
-                                lineHeight: 1.2
-                                color: Theme.fgMuted
-                            }
-                        }
-                        Grid {
-                            width: parent.width
-                            columns: 2
-                            spacing: 6
-                            readonly property real cell: (width - spacing) / 2
-                            CardButton {
-                                width: parent.cell
-                                glyph: Icons.key
-                                label: "Decode JWT"
-                                action: "jwt"
-                            }
-                            CardButton {
-                                width: parent.cell
-                                label: "Format JSON"
-                                action: "json"
-                            }
-                            SplitButton {
-                                width: parent.cell
-                                label: "Base64"
-                                encode: "b64e"
-                                decode: "b64d"
-                            }
-                            SplitButton {
-                                width: parent.cell
-                                label: "URL"
-                                encode: "urle"
-                                decode: "urld"
-                            }
-                        }
                     }
                 }
-            }
 
-            Column { // the values themselves: a click copies what is shown
-                width: parent.width
-                spacing: 6
-                ToolCaption { text: "Generate · click to copy" }
-                Rectangle {
+                Column { // the values themselves: a click copies what is shown
                     width: parent.width
-                    height: genColumn.implicitHeight + 12
-                    radius: 12
-                    color: Edge.control
-                    Column {
-                        id: genColumn
-                        x: 6
-                        y: 6
-                        width: parent.width - 12
-                        spacing: 2
-                        GenRow {
-                            label: "UUID"
-                            value: Tools.uuid
-                            done: "Copied UUID"
-                            onCopied: Tools.freshUuid()
-                        }
-                        GenRow {
-                            label: "ISO"
-                            value: panel.iso(panel.now)
-                            done: "Copied ISO time"
-                        }
-                        GenRow {
-                            label: "Unix"
-                            value: String(Math.floor(panel.now.getTime() / 1000))
-                            done: "Copied Unix time"
-                        }
-                        GenRow {
-                            label: "Lorem"
-                            value: Tools.lorem
-                            done: "Copied lorem ipsum"
+                    spacing: 6
+                    ToolCaption { text: "Generate · click to copy" }
+                    Rectangle {
+                        width: parent.width
+                        height: genColumn.implicitHeight + 12
+                        radius: 12
+                        color: Edge.control
+                        Column {
+                            id: genColumn
+                            x: 6
+                            y: 6
+                            width: parent.width - 12
+                            spacing: 2
+                            GenRow {
+                                label: "UUID"
+                                value: Tools.uuid
+                                done: "Copied UUID"
+                                onCopied: Tools.freshUuid()
+                            }
+                            GenRow {
+                                label: "ISO"
+                                value: panel.iso(panel.now)
+                                done: "Copied ISO time"
+                            }
+                            GenRow {
+                                label: "Unix"
+                                value: String(Math.floor(panel.now.getTime() / 1000))
+                                done: "Copied Unix time"
+                            }
+                            GenRow {
+                                label: "Lorem"
+                                value: Tools.lorem
+                                done: "Copied lorem ipsum"
+                            }
                         }
                     }
                 }
-            }
 
-            Column { // your dev servers (a view of its own in the next step)
-                width: parent.width
-                spacing: 4
-                Rectangle {
+                Rectangle { // your dev servers: pushes the Localhost view
                     width: parent.width
                     height: 48
                     radius: 12
@@ -581,7 +608,7 @@ PopupWindow {
                         anchors.right: parent.right
                         anchors.rightMargin: 10
                         anchors.verticalCenter: parent.verticalCenter
-                        text: panel.localOpen ? Icons.caretUp : Icons.caretRight
+                        text: Icons.caretRight
                         font.family: Icons.regular
                         font.pixelSize: 14
                         color: Theme.fgMuted
@@ -590,132 +617,63 @@ PopupWindow {
                         id: localHover
                         anchors.fill: parent
                         hoverEnabled: true
-                        onClicked: panel.localOpen = !panel.localOpen
+                        onClicked: stack.push(localhostView)
                     }
                 }
 
-                Repeater { // one row per dev server port
-                    model: panel.localOpen ? Tools.ports : []
-                    Rectangle {
-                        required property var modelData
-                        width: column.width
-                        height: 28
-                        radius: 8
-                        color: portHover.containsMouse && modelData.lan ? Edge.controlHover : "transparent"
-                        Text {
-                            x: 8
-                            anchors.verticalCenter: parent.verticalCenter
-                            width: parent.width - 16 - hint.implicitWidth
-                            elide: Text.ElideRight
-                            text: ":" + modelData.port + "  " + modelData.name + " · " + modelData.folder
-                            font.family: "JetBrainsMono Nerd Font"
-                            font.pixelSize: 12
-                            color: modelData.lan ? Theme.fg : Theme.fgMuted
-                        }
-                        Text {
-                            id: hint
-                            anchors.right: parent.right
-                            anchors.rightMargin: 8
-                            anchors.verticalCenter: parent.verticalCenter
-                            text: modelData.lan ? "QR" : "local only" // bound to 127.0.0.1: start it with --host to reach it
-                            font.family: "JetBrainsMono Nerd Font"
-                            font.pixelSize: 12
-                            color: modelData.lan ? Theme.hue3 : Theme.fgDim
-                        }
-                        MouseArea {
-                            id: portHover
-                            anchors.fill: parent
-                            hoverEnabled: true
-                            enabled: parent.modelData.lan
-                            onClicked: Tools.showQr(parent.modelData.port)
-                        }
-                    }
-                }
-
-                Column { // the QR for the chosen port, with its address
-                    visible: panel.localOpen && Tools.qrImage !== ""
+                Rectangle { // the note line; an error's reason on a second line
+                    visible: panel.note !== ""
+                    readonly property bool twoLines: panel.noteKind === "error" && panel.noteDetail !== ""
                     width: parent.width
-                    spacing: 6
-                    Image {
-                        anchors.horizontalCenter: parent.horizontalCenter
-                        width: 160
-                        height: 160
-                        smooth: false // crisp modules: a scaled QR must stay readable
-                        source: Tools.qrImage
+                    height: twoLines ? reason.y + reason.height + 9 : 32
+                    radius: 8
+                    color: panel.noteKind === "ok" ? panel.tint(Theme.hue3, 0.15)
+                        : panel.noteKind === "error" ? Edge.alertTint : Edge.control
+                    Text {
+                        id: noteIcon
+                        x: 10
+                        y: 9
+                        text: panel.noteKind === "ok" ? Icons.check : panel.noteKind === "error" ? Icons.warningCircle : Icons.info
+                        font.family: Icons.regular
+                        font.pixelSize: 14
+                        color: panel.noteKind === "ok" ? Theme.hue3 : panel.noteKind === "error" ? Theme.alert : Theme.fgMuted
                     }
-                    Row {
-                        anchors.horizontalCenter: parent.horizontalCenter
-                        spacing: 8
-                        Text {
-                            anchors.verticalCenter: parent.verticalCenter
-                            text: Tools.qrUrl
-                            font.family: "JetBrainsMono Nerd Font"
-                            font.pixelSize: 12
-                            color: Theme.fg
-                        }
-                        PanelButton {
-                            label: "Copy"
-                            onPressed: {
-                                Tools.copy(Tools.qrUrl)
-                                panel.say("ok", "Copied the link", Tools.qrUrl)
-                            }
-                        }
+                    Text {
+                        id: noteText
+                        x: 32
+                        y: 8
+                        width: Math.min(implicitWidth, parent.width - x - 10)
+                        elide: Text.ElideRight
+                        text: panel.note
+                        font.family: "JetBrainsMono Nerd Font"
+                        font.pixelSize: 12
+                        color: panel.noteKind === "error" ? Theme.alert : Theme.fg
                     }
-                }
-            }
-
-            Rectangle { // the note line; an error's reason on a second line
-                visible: panel.note !== ""
-                readonly property bool twoLines: panel.noteKind === "error" && panel.noteDetail !== ""
-                width: parent.width
-                height: twoLines ? reason.y + reason.height + 9 : 32
-                radius: 8
-                color: panel.noteKind === "ok" ? panel.tint(Theme.hue3, 0.15)
-                    : panel.noteKind === "error" ? Edge.alertTint : Edge.control
-                Text {
-                    id: noteIcon
-                    x: 10
-                    y: 9
-                    text: panel.noteKind === "ok" ? Icons.check : panel.noteKind === "error" ? Icons.warningCircle : Icons.info
-                    font.family: Icons.regular
-                    font.pixelSize: 14
-                    color: panel.noteKind === "ok" ? Theme.hue3 : panel.noteKind === "error" ? Theme.alert : Theme.fgMuted
-                }
-                Text {
-                    id: noteText
-                    x: 32
-                    y: 8
-                    width: Math.min(implicitWidth, parent.width - x - 10)
-                    elide: Text.ElideRight
-                    text: panel.note
-                    font.family: "JetBrainsMono Nerd Font"
-                    font.pixelSize: 12
-                    color: panel.noteKind === "error" ? Theme.alert : Theme.fg
-                }
-                Text {
-                    id: reason
-                    visible: parent.twoLines
-                    x: 32
-                    y: noteText.y + noteText.height + 2
-                    width: parent.width - x - 10
-                    wrapMode: Text.Wrap
-                    text: panel.noteDetail
-                    font.family: "JetBrainsMono Nerd Font"
-                    font.pixelSize: 12
-                    color: Theme.fgMuted
-                }
-                Text {
-                    visible: !parent.twoLines
-                    anchors.right: parent.right
-                    anchors.rightMargin: 10
-                    y: 8
-                    width: Math.max(0, parent.width - noteText.x - noteText.width - 22)
-                    horizontalAlignment: Text.AlignRight
-                    elide: Text.ElideMiddle
-                    text: panel.noteDetail
-                    font.family: "JetBrainsMono Nerd Font"
-                    font.pixelSize: 12
-                    color: Theme.fgMuted
+                    Text {
+                        id: reason
+                        visible: parent.twoLines
+                        x: 32
+                        y: noteText.y + noteText.height + 2
+                        width: parent.width - x - 10
+                        wrapMode: Text.Wrap
+                        text: panel.noteDetail
+                        font.family: "JetBrainsMono Nerd Font"
+                        font.pixelSize: 12
+                        color: Theme.fgMuted
+                    }
+                    Text {
+                        visible: !parent.twoLines
+                        anchors.right: parent.right
+                        anchors.rightMargin: 10
+                        y: 8
+                        width: Math.max(0, parent.width - noteText.x - noteText.width - 22)
+                        horizontalAlignment: Text.AlignRight
+                        elide: Text.ElideMiddle
+                        text: panel.noteDetail
+                        font.family: "JetBrainsMono Nerd Font"
+                        font.pixelSize: 12
+                        color: Theme.fgMuted
+                    }
                 }
             }
         }

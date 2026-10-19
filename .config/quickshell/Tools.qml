@@ -12,6 +12,7 @@ import Quickshell.Io
 Singleton {
     id: root
     signal panelRequested(string screen)
+    signal localhostRequested(string screen, int port) // the panel's Localhost view, that server open
 
     readonly property string bin: Quickshell.env("HOME") + "/.local/bin/"
     property bool keepAwake: false
@@ -89,7 +90,8 @@ Singleton {
         stdout: StdioCollector { onStreamFinished: root.lorem = text.trim() }
     }
 
-    // Localhost QR: the dev servers (dev-ports, read when the panel opens), then lan-qr for one.
+    // Localhost QR: the dev servers (dev-ports, read when the panel opens and by its Localhost
+    // view), then lan-qr for one.
     property var ports: [] // [{port, name, pid, folder, lan}]
     property string qrUrl: ""
     property string qrImage: ""
@@ -149,7 +151,12 @@ Singleton {
             if (monitor)
                 root.panelRequested(monitor.name)
         }
-        // qs ipc call tools qr 5173: the panel's QR for that port (open the panel to see it)
-        function qr(port: int): void { root.showQr(port) }
+        // qs ipc call tools qr 5173: the panel on the focused screen at its Localhost view, with
+        // that server's QR
+        function qr(port: int): void {
+            const monitor = Hyprland.focusedMonitor
+            if (monitor)
+                root.localhostRequested(monitor.name, port)
+        }
     }
 }
