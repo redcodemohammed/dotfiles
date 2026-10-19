@@ -1,0 +1,8 @@
+# /etc/udev/rules.d/90-rgb-keyboard.rules: the AULA F87 Pro (258a:010c) as a systemd device
+# named aula-kb, so openrgb-kb.service runs only while it is plugged in: started when it
+# appears (SYSTEMD_USER_WANTS), stopped when it goes (the unit BindsTo= the device). Before,
+# the service restarted every 5 s while the keyboard was unplugged. ACTION!="remove", not "add":
+# a USB device's later "bind" event would otherwise drop the tag and the alias, and systemd would
+# take the device for gone a moment after it came. Runs nothing as root. Install:
+#   sudo install -m644 ~/dotfiles/udev/90-rgb-keyboard.rules /etc/udev/rules.d/ && sudo udevadm control --reload
+ACTION!="remove", SUBSYSTEM=="usb", ENV{DEVTYPE}=="usb_device", ATTR{idVendor}=="258a", ATTR{idProduct}=="010c", TAG+="systemd", ENV{SYSTEMD_ALIAS}+="/dev/aula-kb", ENV{SYSTEMD_USER_WANTS}+="openrgb-kb.service"

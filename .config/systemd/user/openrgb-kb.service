@@ -2,14 +2,21 @@
 Description=Keyboard RGB in the theme accent (OpenRGB, AULA F87 Pro)
 # Direct mode reverts when OpenRGB exits; --server keeps it running and its driver
 # refreshes the keyboard every second. KB_COLOR comes from palette/generate.py.
+# Only while the keyboard is plugged in (udev/90-rgb-keyboard.rules names it aula-kb): started
+# when it appears, stopped when it goes (BindsTo), so a re-plug gets a fresh server (OpenRGB
+# doesn't notice a re-plug itself) and nothing retries while it is away.
+BindsTo=dev-aula\x2dkb.device
+After=dev-aula\x2dkb.device graphical-session.target
 PartOf=graphical-session.target
-After=graphical-session.target
+# The keyboard's hidraw node can lag its USB device by a moment: a few quick retries (below), then stop.
+StartLimitBurst=5
+StartLimitIntervalSec=30
 
 [Service]
 EnvironmentFile=%h/.config/openrgb-kb/color.env
 ExecStart=/usr/bin/openrgb --server --device "AULA F87 Pro" --mode direct --color ${KB_COLOR}
 Restart=on-failure
-RestartSec=5
+RestartSec=2
 
 [Install]
 WantedBy=graphical-session.target
