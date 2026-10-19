@@ -21,8 +21,8 @@ PanelWindow {
     readonly property bool fullscreen: monitor && monitor.activeWorkspace
         ? monitor.activeWorkspace.hasFullscreen : false
 
-    readonly property int barTop: 6     // the bar floats this far down (Bar.qml margins)
-    readonly property int barHeight: 32 // Bar.qml implicitHeight
+    readonly property int barTop: 6     // the bar's blocks sit this far down its band (Bar.qml)
+    readonly property int barHeight: 32 // the blocks' height (BarBlock.qml)
     readonly property int edge: 2       // notch border; its top line sits off-screen
 
     // Shown, or still sliding out. What the notch shows is kept while it slides out, so it

@@ -157,6 +157,18 @@ PopupWindow {
                 onPicked: (v) => Settings.look.gapsEdge = v
             }
             Stepper {
+                label: "Frame width"
+                value: Settings.look.frame
+                low: 4; high: 24; step: 2; unit: " px"
+                onPicked: (v) => Settings.look.frame = v
+            }
+            Stepper { // windows round to this minus the edge gap, so the two curves nest
+                label: "Frame corners"
+                value: Settings.look.frameRadius
+                low: 0; high: 32; step: 2; unit: " px"
+                onPicked: (v) => Settings.look.frameRadius = v
+            }
+            Stepper {
                 label: "Border"
                 value: Settings.look.border
                 low: 1; high: 4; unit: " px" // not 0: the border shows which window has focus

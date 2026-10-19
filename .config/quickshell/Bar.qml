@@ -2,9 +2,9 @@ import QtQuick
 import Quickshell
 import Quickshell.Services.SystemTray
 
-// Top bar, one per screen: 32px tall, floating 6px from the screen's top and sides. The bar is
-// transparent; each widget sits on its own block in the bar colour, 6px apart, so the widgets
-// float (owner, 2026-10-15). The bar centre belongs to the island, a notch from the top edge.
+// Top bar, one per screen: the frame's top side (Frame.qml, owner, 2026-10-20; it floated 6px
+// from the top and sides before). The bar window is transparent over the frame's band; each
+// widget sits on its own block in the bar colour, 6px apart (owner, 2026-10-15). The bar centre belongs to the island, a notch from the top edge.
 // Profiles (spec, "Monitors and bars"): the main screen (monitors.lua's `main`) gets the full bar, the others a
 // slim one (workspaces, window title, clock; the laptop's adds network and battery). A screen on
 // its own gets the full bar, and so does the laptop when the G5 is away. Screens are matched by
@@ -32,14 +32,19 @@ PanelWindow {
         left: true
         right: true
     }
-    // Floats 6px from the screen's top and sides, like the window gaps (owner, 2026-10-15).
+    // Flush with the top: 44px, the 32px blocks 6px from its top and bottom, its ends in line
+    // with the frame's sides. Its height is the strip Hyprland keeps windows out of.
     margins {
-        top: 6
-        left: 6
-        right: 6
+        left: Settings.look.frame
+        right: Settings.look.frame
     }
-    implicitHeight: 32
+    implicitHeight: 44
     color: "transparent"
+
+    Frame { // on every screen; without a bar its top is as wide as its sides
+        screen: bar.modelData
+        top: bar.visible ? bar.implicitHeight : Settings.look.frame
+    }
 
     NetworkPanel { // drops from the network block, flush with the bar's right edge
         id: networkPanel
@@ -144,6 +149,7 @@ PanelWindow {
     BarBlock {
         id: workspacesBlock
         anchors.left: parent.left
+        y: 6
         padding: 6 // the 20px workspaces sit 4px clear of the 2px border, as top and bottom (owner)
         Workspaces {
             screen: bar.modelData
@@ -153,6 +159,7 @@ PanelWindow {
     BarBlock {
         anchors.left: workspacesBlock.right
         anchors.leftMargin: 6
+        y: 6
         visible: title.text !== ""
         WindowTitle {
             id: title
@@ -168,7 +175,8 @@ PanelWindow {
     property bool trayOpen: false
     Row {
         anchors.right: parent.right
-        height: parent.height
+        y: 6
+        height: 32
         spacing: 6
 
         BarBlock { // the tray behind a chevron (main bar only, spec): a click unfolds it inline

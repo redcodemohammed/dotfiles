@@ -53,6 +53,8 @@ Singleton {
             property JsonObject look: JsonObject {
                 property int gapsBetween: 6  // px between two windows, 0-24 step 2
                 property int gapsEdge: 6     // px at the screen edges and the bar, 0-24
+                property int frame: 10       // px, the frame's sides and bottom (Frame.qml), 4-24 step 2
+                property int frameRadius: 18 // px, its inner corners, 0-32 step 2; windows round to this minus gapsEdge
                 property int border: 2       // px, 1-4 (never 0: the border shows focus)
                 property bool blur: true
                 property int blurSize: 6     // 2-12
@@ -96,6 +98,8 @@ Singleton {
             + "return {\n"
             + "    gaps_in     = " + Math.round(l.gapsBetween / 2) + ",\n"
             + "    gaps_out    = " + l.gapsEdge + ",\n"
+            + "    frame       = " + l.frame + ",\n"
+            + "    frame_radius = " + l.frameRadius + ",\n"
             + "    border_size = " + l.border + ",\n"
             + "    blur        = " + l.blur + ",\n"
             + "    blur_size   = " + l.blurSize + ",\n"

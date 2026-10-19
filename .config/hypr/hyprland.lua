@@ -171,6 +171,7 @@ local settings = {
     gaps_in = 3, gaps_out = 6, border_size = 2, blur = true, blur_size = 6, animations = true,
     repeat_delay = 600, repeat_rate = 25, sensitivity = 0, natural_scroll = true, tap_to_click = true,
     workspaces = 5, -- per screen (hyprsplit), 1-10: the digit keys
+    frame = 10, frame_radius = 18, -- the shell's frame (Frame.qml): its sides' width, its inner corners
 }
 do
     local ok, user = pcall(require, "hypr_settings")
@@ -186,7 +187,14 @@ hl.config({
         -- 6px between any two things, screen edges and bar included (owner, 2026-10-15: outer
         -- gaps once the wallpaper went in; the spec had 4 between and 0 at the edges).
         gaps_in  = settings.gaps_in, -- per window edge: two neighbours end up twice this apart
-        gaps_out = settings.gaps_out,
+        -- The shell's frame (owner, 2026-10-20) covers the sides and bottom: the gap starts at its
+        -- inside edge. The top is the bar's own reserved strip, so it keeps the plain gap.
+        gaps_out = {
+            top    = settings.gaps_out,
+            left   = settings.gaps_out + settings.frame,
+            right  = settings.gaps_out + settings.frame,
+            bottom = settings.gaps_out + settings.frame,
+        },
 
         -- 2px border: amber on the focused window, muted on the rest. No dimming.
         border_size = settings.border_size,
@@ -204,11 +212,13 @@ hl.config({
         layout = "dwindle",
     },
 
-    -- Sharp and flat: no rounding, no shadow. Blur behind see-through windows (owner, 2026-10-17,
+    -- Rounded, to nest inside the frame's corners (owner, 2026-10-20; it was sharp): a window sits
+    -- gaps_out inside the frame, so its radius is the frame's minus that gap, and the two curves
+    -- share a centre. No shadow. Blur behind see-through windows (owner, 2026-10-17,
     -- overriding the spec's "no blur, no transparency"): only apps that are transparent get it
     -- (Alacritty 0.9, Vicinae 0.9 with the layer rule below); everything opaque looks as before.
     decoration = {
-        rounding       = 0,
+        rounding       = math.max(0, settings.frame_radius - settings.gaps_out),
         rounding_power = 2,
 
         -- Change transparency of focused and unfocused windows
