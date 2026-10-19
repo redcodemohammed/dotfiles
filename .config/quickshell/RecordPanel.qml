@@ -12,12 +12,13 @@ PopupWindow {
 
     anchor.window: bar
     anchor.item: block
-    anchor.rect.x: block.width - implicitWidth
-    anchor.rect.y: block.height + 4
-    implicitWidth: body.width
-    implicitHeight: body.height
+    anchor.rect.x: block.width + reveal.overhang - implicitWidth // the body's right edge on the chip's
+    anchor.rect.y: block.height + 6
+    implicitWidth: reveal.implicitWidth
+    implicitHeight: reveal.implicitHeight
+    mask: Region { item: reveal.area }
     color: "transparent"
-    grabFocus: false // Reveal's focus grab
+    grabFocus: false // EdgePanel's focus grab
     visible: false
 
     property double closedAt: 0
@@ -29,7 +30,6 @@ PopupWindow {
     }
     onVisibleChanged: if (!visible) closedAt = Date.now()
 
-    Reveal { id: reveal; window: panel; target: body } // slides in and out like a window
     Connections {
         target: Recording
         function onActiveChanged() {
@@ -38,13 +38,11 @@ PopupWindow {
         }
     }
 
-    Rectangle {
-        id: body
-        width: 340
-        height: Recording.active ? 172 : 324
-        color: Theme.surface
-        border.width: 2
-        border.color: Theme.border
+    EdgePanel { // comes out of the frame under its chip (owner, 2026-10-20)
+        id: reveal
+        window: panel
+        bodyWidth: 340
+        bodyHeight: Recording.active ? 172 : 324
 
         focus: true
         Keys.onEscapePressed: reveal.close()

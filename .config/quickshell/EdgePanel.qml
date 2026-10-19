@@ -2,7 +2,7 @@ import QtQuick
 import QtQuick.Shapes
 import Quickshell.Hyprland
 
-// A bar panel that comes out of the frame (owner, 2026-10-20; Reveal.qml slid a bordered surface
+// A bar panel that comes out of the frame (owner, 2026-10-20; Reveal.qml, now gone, slid a bordered surface
 // before): the panel's body hangs from the band's bottom edge under its chip, in the frame's
 // colour (Edge.fill), its bottom corners rounded and its top joined to the band by an inward curve
 // on either side, as the open island joins the corner. Open: it grows down out of the band on the
@@ -14,18 +14,24 @@ import Quickshell.Hyprland
 // Inside the panel: `EdgePanel { id: reveal; window: panel; bodyWidth: ..; bodyHeight: .. }` holding
 // the content; the popup takes its size, `mask: Region { item: reveal.area }`, and is anchored so
 // its top is the band's bottom edge (anchor.rect.y: block.height + 6, the chip 6px under the
-// band's top) and the body lines up with the chip (the curves stick out `r` either side).
+// band's top) and the body lines up with the chip: anchor.rect.x: block.width + reveal.overhang -
+// implicitWidth (the curves stick out `r` either side).
+// `atRight`: a panel at the bar's right end (network, power, settings) has its right side on the
+// frame's side, in the same colour, so it merges into it: no curve into the band there, and its
+// bottom joins the side with an inward curve, as the open island joins the left one.
 Item {
     id: edge
     required property var window // the PopupWindow
-    default property alias content: body.data
+    default property alias content: inner.data
     property real bodyWidth: 300
     property real bodyHeight: 200
     readonly property int r: Settings.look.frameRadius
     readonly property alias area: body // the panel's own box: the popup's input region
     readonly property bool closing: shrinking
+    property bool atRight: false
+    readonly property int overhang: atRight ? 0 : r // how far it sticks out right of its chip
 
-    implicitWidth: bodyWidth + 2 * r
+    implicitWidth: bodyWidth + r + overhang
     implicitHeight: bodyHeight + 32 // room for the spring's overshoot
 
     property bool open: false
@@ -83,7 +89,8 @@ Item {
     }
 
     // The drawing: the body from x r to r + bodyWidth, its bottom corners rounded, and the inward
-    // curves at the top into the band. One radius for all four, the frame's, smaller while the
+    // curves at the top into the band (atRight: the right one is none, and the bottom right curves
+    // inward into the frame's side instead). One radius for all four, the frame's, smaller while the
     // body is too short for it.
     Shape {
         id: drawing
@@ -93,23 +100,24 @@ Item {
         readonly property real rr: Math.min(edge.r, h / 2, edge.bodyWidth / 2)
         readonly property real bodyLeft: edge.r
         readonly property real bodyRight: edge.r + edge.bodyWidth
+        readonly property real rt: edge.atRight ? 0 : rr // the top right curve
         ShapePath {
             fillColor: Edge.fill
             strokeColor: "transparent"
             strokeWidth: 0
             startX: drawing.bodyLeft - drawing.rr
             startY: 0
-            PathLine { x: drawing.bodyRight + drawing.rr; y: 0 }
+            PathLine { x: drawing.bodyRight + drawing.rt; y: 0 }
             PathArc { // inward, into the band
-                x: drawing.bodyRight; y: drawing.rr
-                radiusX: drawing.rr; radiusY: drawing.rr
+                x: drawing.bodyRight; y: drawing.rt
+                radiusX: drawing.rt; radiusY: drawing.rt
                 direction: PathArc.Counterclockwise
             }
-            PathLine { x: drawing.bodyRight; y: drawing.h - drawing.rr }
-            PathArc {
+            PathLine { x: drawing.bodyRight; y: edge.atRight ? drawing.h + drawing.rr : drawing.h - drawing.rr }
+            PathArc { // the body's corner; atRight: inward, into the frame's side
                 x: drawing.bodyRight - drawing.rr; y: drawing.h
                 radiusX: drawing.rr; radiusY: drawing.rr
-                direction: PathArc.Clockwise
+                direction: edge.atRight ? PathArc.Counterclockwise : PathArc.Clockwise
             }
             PathLine { x: drawing.bodyLeft + drawing.rr; y: drawing.h }
             PathArc {
@@ -127,10 +135,15 @@ Item {
     }
 
     Item {
-        id: body // the content at its full size, revealed from the top as the body grows
+        id: body // the panel's box, growing: clips the content
         x: edge.r
         width: edge.bodyWidth
         height: Math.max(0, edge.h)
         clip: true
+        Item {
+            id: inner // the content at its full size, revealed from the top as the body grows
+            width: edge.bodyWidth
+            height: edge.bodyHeight
+        }
     }
 }

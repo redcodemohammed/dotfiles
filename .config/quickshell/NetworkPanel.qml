@@ -19,11 +19,12 @@ PopupWindow {
 
     anchor.window: bar
     anchor.rect.x: bar.width - implicitWidth
-    anchor.rect.y: bar.height + 4
-    implicitWidth: 400
-    implicitHeight: body.height
+    anchor.rect.y: bar.height // the band's bottom edge
+    implicitWidth: reveal.implicitWidth
+    implicitHeight: reveal.implicitHeight
+    mask: Region { item: reveal.area }
     color: "transparent"
-    grabFocus: false // an outside click goes through Reveal's focus grab, so closing can slide
+    grabFocus: false // an outside click goes through EdgePanel's focus grab, so closing can slide
     visible: false
 
     property double closedAt: 0
@@ -263,15 +264,13 @@ PopupWindow {
         }
     }
 
-    Reveal { id: reveal; window: panel; target: body } // slides in and out like a window
 
-    Rectangle {
-        id: body
-        width: 400
-        height: content.implicitHeight + 28
-        color: Theme.bg
-        border.width: 2
-        border.color: Theme.border
+    EdgePanel { // comes out of the frame under its chip (owner, 2026-10-20)
+        id: reveal
+        window: panel
+        atRight: true // at the bar's right end: merges into the frame's side
+        bodyWidth: 400
+        bodyHeight: content.implicitHeight + 28
         focus: true
         Keys.onEscapePressed: reveal.close()
 

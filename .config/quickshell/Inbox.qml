@@ -19,13 +19,14 @@ PopupWindow {
     id: root
     required property var bar
     required property var block
+    property bool atRight: false // hung from the power chip at the bar's right end (a slim bar)
     readonly property var monitor: Hyprland.monitorFor(bar.screen)
 
     anchor.window: bar
     anchor.item: block
-    anchor.rect.x: block.width - implicitWidth
-    anchor.rect.y: block.height + 4
-    grabFocus: false // Reveal's focus grab
+    anchor.rect.x: block.width + reveal.overhang - implicitWidth // the body's right edge on the chip's
+    anchor.rect.y: block.height + 6 // the band's bottom edge
+    grabFocus: false // EdgePanel's focus grab
     visible: false
     color: "transparent"
 
@@ -54,7 +55,8 @@ PopupWindow {
     }
     // 360 as designed; wider when a notification's actions (ActionRow) need it for one line:
     // 12 + 24 icon + 12 left, 12 right, 2 + 2 frame.
-    implicitWidth: Math.min(Math.max(360, widestActions + 64), bar.screen.width - 12)
+    implicitWidth: reveal.implicitWidth
+    readonly property real bodyWidth: Math.min(Math.max(360, widestActions + 64), bar.screen.width - 12 - 2 * reveal.r)
     readonly property real widestActions: {
         let widest = 0
         for (const child of list.contentItem.children)
@@ -62,18 +64,17 @@ PopupWindow {
                 widest = Math.max(widest, child.actionsWidth)
         return widest
     }
-    implicitHeight: Math.min(frame.implicitHeight, bar.screen.height - 38 - 12) // bar reserves 38; 6px gap above and below
+    implicitHeight: reveal.implicitHeight
+    mask: Region { item: reveal.area }
 
-    Reveal { id: reveal; window: root; target: frame } // slides in and out like a window
-
-    Rectangle {
-        id: frame
-        width: parent.width
-        height: parent.height
-        implicitHeight: Math.max(list.contentHeight, 44) + 4 + footer.height
-        color: Theme.surface
-        border.width: 2
-        border.color: Theme.border
+    EdgePanel { // comes out of the frame under the bell (owner, 2026-10-20)
+        id: reveal
+        window: root
+        atRight: root.atRight
+        bodyWidth: root.bodyWidth
+        // At most the screen under the band, less the frame's bottom side and the spring's room.
+        bodyHeight: Math.min(Math.max(list.contentHeight, 44) + 4 + footer.height,
+            root.bar.screen.height - root.bar.height - Settings.look.frame - 32)
 
         focus: true
         Keys.onPressed: event => {

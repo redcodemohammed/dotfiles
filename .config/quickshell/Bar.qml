@@ -60,6 +60,7 @@ PanelWindow {
     Inbox { // drops from the bell (Notifs.inboxOpen); a slim bar has no bell: from the power block
         bar: bar
         block: bellBlock.visible ? bellBlock : powerBlock
+        atRight: !bellBlock.visible
     }
     ToolsPanel { // drops from the tools block (wrench); SUPER + X (Tools.qml)
         id: toolsPanel
