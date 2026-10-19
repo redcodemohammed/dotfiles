@@ -1,8 +1,9 @@
 import QtQuick
 import Quickshell
 
-// Settings panel (owner, 2026-10-17): opened from the power panel's Settings button (or
-// `qs ipc call settings toggle`), it drops from the same power block, 360 wide. Values live in
+// Settings panel (owner, 2026-10-17): opened from quick settings' Settings button (or
+// `qs ipc call settings toggle`), it drops from the same chip (owner, 2026-10-20; the power
+// block before), 360 wide. Values live in
 // Settings.qml; a change is saved at once and reaches Hyprland and Alacritty 300 ms later.
 // Tabs: Look (4a), Input (4b), Bar & island (4c), Power (4d: the idle chain).
 PopupWindow {

@@ -1,7 +1,7 @@
 import QtQuick
 import Quickshell
 
-// Tools panel (owner, 2026-10-17; power moved to PowerPanel.qml 2026-10-18): drops from the
+// Tools panel (owner, 2026-10-17; power moved out 2026-10-18, now in QuickPanel.qml): drops from the
 // bar's tools block (wrench), 360 wide, 4px under the bar, its right edge on the block's. Closes
 // on an outside click or Escape; SUPER + X toggles it (Tools.qml).
 // Tools (step 2): Pick colour (the panel closes, hyprpicker; recent colours below as swatches, a

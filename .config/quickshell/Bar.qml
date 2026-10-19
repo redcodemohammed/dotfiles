@@ -62,22 +62,16 @@ PanelWindow {
         bar: bar
         block: toolsBlock
     }
-    PowerPanel { // drops from the power block at the far right
-        id: powerPanel
-        bar: bar
-        block: powerBlock
-        onSettingsRequested: { settingsPanel.closedAt = 0; settingsPanel.toggle() }
-    }
     QuickPanel { // quick settings (owner, 2026-10-20): from the chip at the bar's right end
         id: quickPanel
         bar: bar
         block: quickBlock
         onSettingsRequested: { settingsPanel.closedAt = 0; settingsPanel.toggle() }
     }
-    SettingsPanel { // from the power panel's Settings button, under the same block
+    SettingsPanel { // from quick settings' Settings button, under the same chip
         id: settingsPanel
         bar: bar
-        block: powerBlock
+        block: quickBlock
     }
     Connections {
         target: Settings
@@ -290,9 +284,9 @@ PanelWindow {
     }
 
     // Right zone, in groups (owner, 2026-10-17; separate chips since 2026-10-20): the tray behind
-    // a chevron; the clock; phone / Pomodoro / record / capture; sound / network / Bluetooth /
-    // battery; tools; power (owner, 2026-10-20: the layout and system chips went, the bell is the
-    // Arch chip). A chip's panel drops under it. A group
+    // a chevron; the clock; phone / Pomodoro / record / capture; tools; quick settings (owner,
+    // 2026-10-20: the layout and system chips went, the bell is the Arch chip, sound, network,
+    // Bluetooth, battery and power are the one quick-settings chip). A chip's panel drops under it. A group
     // hides when all its chips do (its conditions, not its chips' visible: a child of a hidden row
     // reads as hidden), so the 10px gaps don't double up.
     property bool trayOpen: false
@@ -399,19 +393,6 @@ PanelWindow {
             }
         }
 
-        Row { // battery (sound, network and Bluetooth went into quick settings)
-            visible: bar.full || bar.laptop
-            spacing: 4
-            BarChip { // laptop only: hidden without a laptop battery
-                visible: battery.device.ready && battery.device.isLaptopBattery
-                hue: battery.ink
-                Battery {
-                    id: battery
-                    hue: Theme.hue3
-                }
-            }
-        }
-
         BarChip { // tools (owner, 2026-10-18: its own chip, apart from power)
             id: toolsBlock
             hue: Theme.hue2
@@ -425,26 +406,11 @@ PanelWindow {
             }
         }
 
-        Row { // power (the bell went to the Arch chip, owner 2026-10-20)
-            spacing: 4
-            BarChip { // power panel: power options and settings
-                id: powerBlock
-                hue: Theme.hue5
-                clickable: true
-                onClicked: powerPanel.toggle()
-                Text {
-                    text: Icons.power
-                    font.family: Icons.regular
-                    font.pixelSize: 16
-                    color: Theme.hue5
-                }
-            }
-        }
-
         // Quick settings (owner, 2026-10-20, the "Quick settings panel" design): one neutral chip
         // with the sound, network, Bluetooth (while on), battery (laptop) and power icons, each in
-        // its hue; red when the network fails or the battery is critical. Opens QuickPanel. While
-        // it is built it sits after the old chips, which go as their views move into the panel.
+        // its hue; red when the network fails or the battery is critical. Opens QuickPanel, and
+        // the settings panel hangs from it too. It took the sound, network, Bluetooth, battery
+        // and power chips' places.
         BarChip {
             id: quickBlock
             readonly property bool alert: quickNetwork.failing || quickBattery.critical
