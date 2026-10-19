@@ -5,8 +5,8 @@ import Quickshell.Widgets
 
 // One app's audio stream in the sound panel's Apps tab (owner, 2026-10-17). The app's icon
 // (a click mutes it; muted: dimmed, with the slash glyph over it), its name and what it plays,
-// the level in %, a slider (click, drag or scroll), and the device it uses: a click opens the
-// list, Default follows the system default. Playback streams pick an output, recording ones an
+// the level in %, a slider (click, drag or scroll), and the device it uses as a pill: a click opens
+// the list, Default follows the system default. Playback streams pick an output, recording ones an
 // input. The device is moved with WirePlumber's target.object in PipeWire's default metadata
 // (`pw-metadata <id> target.object <device>`; deleted for Default), which moves the stream at
 // once (tested 2026-10-17); `targets` (Sound.qml) holds what is set.
@@ -92,83 +92,121 @@ Column {
         }
     }
 
-    // Level: a track and its fill; click or drag sets it, the wheel steps 5%.
+    // Level and device on one line (owner, 2026-10-20, with quick settings' look): a pill track
+    // in the stream's hue with a round knob (click or drag sets it, the wheel steps 5%), then the
+    // device as a small pill; a click on it lists the devices under it as rounded rows, the one
+    // in use tinted.
+    readonly property color hue: recording ? Theme.hue1 : Theme.hue6
+    readonly property color lift: Qt.tint(Edge.fill, Qt.rgba(Theme.fg.r, Theme.fg.g, Theme.fg.b, 0.12)) // on the apps card
+    readonly property color liftHover: Qt.tint(Edge.fill, Qt.rgba(Theme.fg.r, Theme.fg.g, Theme.fg.b, 0.18))
     Item {
         width: parent.width
-        height: 16
-        Rectangle {
-            anchors.verticalCenter: parent.verticalCenter
-            width: parent.width
-            height: 4
-            color: Theme.border
+        height: 28
+        Item {
+            id: track
+            width: parent.width - devicePill.width - 12
+            height: parent.height
             Rectangle {
-                width: parent.width * (row.muted ? 0 : row.level)
-                height: parent.height
-                color: Theme.fg
-            }
-        }
-        MouseArea {
-            anchors.fill: parent
-            onPressed: mouse => row.setLevel(mouse.x / width)
-            onPositionChanged: mouse => { if (pressed) row.setLevel(mouse.x / width) }
-            onWheel: wheel => row.setLevel(row.level + (wheel.angleDelta.y > 0 ? 0.05 : -0.05))
-        }
-    }
-
-    // The device: the current one, a click lists the others.
-    Rectangle {
-        width: parent.width
-        height: 24
-        color: deviceHover.containsMouse ? Theme.surfaceSelected : "transparent"
-        Text {
-            x: 4
-            anchors.verticalCenter: parent.verticalCenter
-            width: parent.width - 8
-            elide: Text.ElideRight
-            text: (row.recording ? "Input: " : "Output: ")
-                + (row.current ? (row.current.nickname || row.current.description) : "Default")
-            font.family: "JetBrainsMono Nerd Font"
-            font.pixelSize: 12
-            color: Theme.fgMuted
-        }
-        MouseArea {
-            id: deviceHover
-            anchors.fill: parent
-            hoverEnabled: true
-            onClicked: row.picking = !row.picking
-        }
-    }
-    Repeater {
-        model: row.picking ? [null].concat(row.devices) : []
-        Rectangle {
-            required property var modelData
-            readonly property bool chosen: modelData === row.current
-            width: row.width
-            height: 24
-            color: pickHover.containsMouse ? Theme.surfaceSelected : "transparent"
-            Rectangle {
-                width: 2
-                height: parent.height
-                visible: parent.chosen
-                color: Theme.accent
-            }
-            Text {
-                x: 12
                 anchors.verticalCenter: parent.verticalCenter
-                width: parent.width - 16
-                elide: Text.ElideRight
-                text: parent.modelData ? (parent.modelData.nickname || parent.modelData.description) : "Default"
-                font.family: "JetBrainsMono Nerd Font"
-                font.pixelSize: 12
+                width: parent.width
+                height: 8
+                radius: 4
+                color: row.lift
+                Rectangle {
+                    visible: !row.muted
+                    width: Math.max(height, parent.width * row.level)
+                    height: parent.height
+                    radius: 4
+                    color: row.hue
+                }
+            }
+            Rectangle { // the knob
+                x: (parent.width - width) * (row.muted ? 0 : Math.min(row.level, 1))
+                anchors.verticalCenter: parent.verticalCenter
+                width: 14
+                height: 14
+                radius: 7
                 color: Theme.fg
             }
             MouseArea {
-                id: pickHover
+                anchors.fill: parent
+                onPressed: mouse => row.setLevel(mouse.x / width)
+                onPositionChanged: mouse => { if (pressed) row.setLevel(mouse.x / width) }
+                onWheel: wheel => row.setLevel(row.level + (wheel.angleDelta.y > 0 ? 0.05 : -0.05))
+            }
+        }
+        Rectangle { // the device in use
+            id: devicePill
+            anchors.right: parent.right
+            anchors.verticalCenter: parent.verticalCenter
+            width: Math.min(pillRow.implicitWidth + 20, 130)
+            height: 24
+            radius: height / 2
+            color: row.picking ? Qt.tint(Edge.fill, Qt.rgba(row.hue.r, row.hue.g, row.hue.b, 0.22))
+                : pillHover.containsMouse ? row.liftHover : row.lift
+            Row {
+                id: pillRow
+                x: 10
+                anchors.verticalCenter: parent.verticalCenter
+                spacing: 6
+                Text {
+                    anchors.verticalCenter: parent.verticalCenter
+                    text: row.recording ? Icons.microphone : Icons.speakerHigh
+                    font.family: Icons.regular
+                    font.pixelSize: 12
+                    color: row.hue
+                }
+                Text {
+                    anchors.verticalCenter: parent.verticalCenter
+                    width: Math.min(implicitWidth, 130 - 20 - 18)
+                    elide: Text.ElideRight
+                    text: row.current ? (row.current.nickname || row.current.description) : "Default"
+                    font.family: "JetBrainsMono Nerd Font"
+                    font.pixelSize: 11
+                    color: Theme.fg
+                }
+            }
+            MouseArea {
+                id: pillHover
                 anchors.fill: parent
                 hoverEnabled: true
-                onClicked: {
-                    Sound.route(row.node, parent.modelData)
-                    row.picking = false
+                onClicked: row.picking = !row.picking
+            }
+        }
+    }
+    Column { // the devices, while picking
+        visible: row.picking
+        width: parent.width
+        spacing: 4
+        topPadding: 4
+        Repeater {
+            model: row.picking ? [null].concat(row.devices) : []
+            Rectangle {
+                required property var modelData
+                readonly property bool chosen: modelData === row.current
+                width: row.width
+                height: 32
+                radius: 8
+                color: chosen ? Qt.tint(Edge.fill, Qt.rgba(row.hue.r, row.hue.g, row.hue.b, pickHover.containsMouse ? 0.25 : 0.15))
+                    : pickHover.containsMouse ? row.liftHover : row.lift
+                Text {
+                    x: 12
+                    anchors.verticalCenter: parent.verticalCenter
+                    width: parent.width - 24
+                    elide: Text.ElideRight
+                    text: parent.modelData ? (parent.modelData.nickname || parent.modelData.description) : "Default"
+                    font.family: "JetBrainsMono Nerd Font"
+                    font.pixelSize: 12
+                    color: parent.chosen ? row.hue : Theme.fg
+                }
+                MouseArea {
+                    id: pickHover
+                    anchors.fill: parent
+                    hoverEnabled: true
+                    onClicked: {
+                        Sound.route(row.node, parent.modelData)
+                        row.picking = false
+                    }
                 }
             }
         }

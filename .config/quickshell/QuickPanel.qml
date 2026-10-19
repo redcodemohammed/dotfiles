@@ -1,4 +1,5 @@
 import QtQuick
+import QtQuick.Controls
 import Quickshell
 import Quickshell.Bluetooth
 import Quickshell.Networking
@@ -12,7 +13,10 @@ import Quickshell.Services.UPower
 // volume's › opens the sound view); the battery card with the power profiles (laptop only); the
 // power row (Lock, Log out, Suspend, Reboot, Shut down: .local/bin/power-action, the ones marked
 // asking "Again?" within 3 s) and Settings. Each control in its own hue, idle ones neutral.
-// The views (sound, Bluetooth, Wi-Fi) come in the next steps; their › do nothing yet.
+// The views (SoundView, then Bluetooth and Wi-Fi in the next steps) go on a StackView: a › pushes
+// one, its back button or Escape pops it, closing the panel goes back to the top level. The panel
+// keeps the top level's height (owner); a view scrolls inside it. openView(name) opens the panel
+// straight on a view (`qs ipc call panel toggle sound`; again on the same view closes it).
 PopupWindow {
     id: panel
     required property var bar
@@ -41,7 +45,26 @@ PopupWindow {
         if (!visible) {
             closedAt = Date.now()
             armed = ""
+            stack.pop(null, StackView.Immediate)
+        } else {
+            Sound.readTargets()
         }
+    }
+
+    readonly property var views: ({ sound: soundView })
+    function openView(name) {
+        const shown = stack.currentItem && stack.currentItem.viewName === name
+        if (visible && shown) {
+            reveal.close()
+            return
+        }
+        stack.pop(null, StackView.Immediate)
+        stack.push(views[name], {}, visible ? StackView.PushTransition : StackView.Immediate)
+        visible = true
+    }
+    Component {
+        id: soundView
+        SoundView { onBack: stack.pop() }
     }
 
     // What the tiles and levels read.
@@ -334,11 +357,27 @@ PopupWindow {
         window: panel
         atRight: true // at the bar's right end: merges into the frame's side
         bodyWidth: 380
-        bodyHeight: column.implicitHeight + 24
+        bodyHeight: column.implicitHeight + 24 // the top level's; views scroll in it
 
         focus: true
-        Keys.onEscapePressed: reveal.close()
+        Keys.onEscapePressed: stack.depth > 1 ? stack.pop() : reveal.close()
 
+        // A view slides in from the right over the top level, and back out.
+        StackView {
+            id: stack
+            width: parent.width
+            height: reveal.bodyHeight
+            clip: true
+            initialItem: topLevel
+            readonly property int pace: Settings.look.animations ? 250 : 0
+            pushEnter: Transition { XAnimator { from: stack.width; to: 0; duration: stack.pace; easing.type: Easing.OutCubic } }
+            pushExit: Transition { XAnimator { from: 0; to: -stack.width / 3; duration: stack.pace; easing.type: Easing.OutCubic } }
+            popEnter: Transition { XAnimator { from: -stack.width / 3; to: 0; duration: stack.pace; easing.type: Easing.OutCubic } }
+            popExit: Transition { XAnimator { from: 0; to: stack.width; duration: stack.pace; easing.type: Easing.OutCubic } }
+        }
+
+        Item {
+            id: topLevel
         Column {
             id: column
             x: 16
@@ -407,6 +446,7 @@ PopupWindow {
                     off: audio ? audio.muted : false
                     mutable: true
                     drill: true
+                    onOpened: stack.push(soundView)
                     onMoved: v => audio.volume = v
                     onMuteToggled: audio.muted = !audio.muted
                 }
@@ -519,6 +559,7 @@ PopupWindow {
                 Power { width: parent.cell; glyph: Icons.power; action: "poweroff"; confirm: true; ink: Theme.hue1 }
                 Power { width: parent.cell; glyph: Icons.gear; action: "settings"; ink: Theme.fgMuted }
             }
+        }
         }
     }
 }

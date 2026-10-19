@@ -107,18 +107,13 @@ PanelWindow {
         bar: bar
         block: bluetoothBlock
     }
-    SoundPanel { // drops from the volume block
-        id: soundPanel
-        bar: bar
-        block: volumeBlock
-    }
     Connections {
         target: Panels
         function onToggleRequested(name, screen) {
             if (screen !== bar.modelData.name)
                 return
             if (name === "record") recordPanel.toggle()
-            else if (name === "sound") soundPanel.toggle()
+            else if (name === "sound") quickPanel.openView("sound") // quick settings' sound view
             else if (name === "bluetooth") bluetoothPanel.toggle()
             else if (name === "network") networkPanel.toggle()
         }
@@ -413,20 +408,9 @@ PanelWindow {
             }
         }
 
-        Row { // sound, network, Bluetooth, battery
+        Row { // network, Bluetooth, battery (sound went into quick settings)
             visible: bar.full || bar.laptop
             spacing: 4
-            BarChip {
-                id: volumeBlock
-                visible: bar.full && volume.sink !== null
-                hue: volume.ink
-                clickable: true
-                onClicked: soundPanel.toggle()
-                Volume {
-                    id: volume
-                    hue: Theme.hue6
-                }
-            }
             BarChip {
                 hue: network.ink
                 clickable: true
