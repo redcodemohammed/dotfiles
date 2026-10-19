@@ -30,7 +30,9 @@ PanelWindow {
         anchors.fill: parent
         preferredRendererType: Shape.CurveRenderer // smooth curves without multisampling
         ShapePath {
-            fillColor: Theme.bg
+            // The bar colour with 15% of the accent mixed in, so it follows the wallpaper (owner,
+            // 2026-10-20: Theme.bg and Theme.surface were too alike on a dark palette to see).
+            fillColor: Qt.tint(Theme.bg, Qt.rgba(Theme.accent.r, Theme.accent.g, Theme.accent.b, 0.15))
             strokeColor: "transparent"
             strokeWidth: 0
             fillRule: ShapePath.OddEvenFill
