@@ -10,7 +10,7 @@ import Quickshell.Io
 // panel is closed is answered no.
 Singleton {
     id: root
-    property bool panelOpen: false   // set by BluetoothPanel
+    property bool panelOpen: false   // set by BluetoothView (quick settings) while it is open
     property var request: null       // { kind: confirm|authorize|passkey|pin, address, code }
     property var shown: null         // { address, code }: type this on the device
 

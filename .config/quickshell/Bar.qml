@@ -102,11 +102,6 @@ PanelWindow {
         bar: bar
         block: recordBlock
     }
-    BluetoothPanel { // drops from the Bluetooth block
-        id: bluetoothPanel
-        bar: bar
-        block: bluetoothBlock
-    }
     Connections {
         target: Panels
         function onToggleRequested(name, screen) {
@@ -114,7 +109,7 @@ PanelWindow {
                 return
             if (name === "record") recordPanel.toggle()
             else if (name === "sound") quickPanel.openView("sound") // quick settings' sound view
-            else if (name === "bluetooth") bluetoothPanel.toggle()
+            else if (name === "bluetooth") quickPanel.openView("bluetooth")
             else if (name === "network") networkPanel.toggle()
         }
     }
@@ -408,7 +403,7 @@ PanelWindow {
             }
         }
 
-        Row { // network, Bluetooth, battery (sound went into quick settings)
+        Row { // network, battery (sound and Bluetooth went into quick settings)
             visible: bar.full || bar.laptop
             spacing: 4
             BarChip {
@@ -418,17 +413,6 @@ PanelWindow {
                 Network {
                     id: network
                     hue: Theme.hue4
-                }
-            }
-            BarChip { // hidden without an adapter
-                id: bluetoothBlock
-                visible: bar.full && bluetooth.adapter !== null
-                hue: bluetooth.ink
-                clickable: true
-                onClicked: bluetoothPanel.toggle()
-                BluetoothStatus {
-                    id: bluetooth
-                    hue: Theme.hue5
                 }
             }
             BarChip { // laptop only: hidden without a laptop battery

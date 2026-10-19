@@ -3,7 +3,7 @@ import Quickshell.Bluetooth
 
 // The bar's Bluetooth item (spec: "Connected?", icon only, in its chip's hue). Off or blocked: the slash glyph;
 // on: the plain glyph; a device connected: the connected glyph. The state changes the glyph, not
-// the colour. Its block hides without an adapter and opens the Bluetooth panel (BluetoothPanel.qml).
+// the colour. In the quick-settings chip, shown while Bluetooth is on (Bar.qml).
 // Named BluetoothStatus so it doesn't shadow Quickshell.Bluetooth's Bluetooth singleton.
 Text {
     property color hue: Theme.fgMuted

@@ -13,8 +13,8 @@ import Quickshell.Services.UPower
 // volume's › opens the sound view); the battery card with the power profiles (laptop only); the
 // power row (Lock, Log out, Suspend, Reboot, Shut down: .local/bin/power-action, the ones marked
 // asking "Again?" within 3 s) and Settings. Each control in its own hue, idle ones neutral.
-// The views (SoundView, then Bluetooth and Wi-Fi in the next steps) go on a StackView: a › pushes
-// one, its back button or Escape pops it, closing the panel goes back to the top level. The panel
+// The views (SoundView, BluetoothView, then Wi-Fi in the next step) go on a StackView: a › pushes
+// one (a view can push its own pages: push(component, properties)), its back button or Escape pops it, closing the panel goes back to the top level. The panel
 // keeps the top level's height (owner); a view scrolls inside it. openView(name) opens the panel
 // straight on a view (`qs ipc call panel toggle sound`; again on the same view closes it).
 PopupWindow {
@@ -51,7 +51,7 @@ PopupWindow {
         }
     }
 
-    readonly property var views: ({ sound: soundView })
+    readonly property var views: ({ sound: soundView, bluetooth: bluetoothView })
     function openView(name) {
         const shown = stack.currentItem && stack.currentItem.viewName === name
         if (visible && shown) {
@@ -65,6 +65,13 @@ PopupWindow {
     Component {
         id: soundView
         SoundView { onBack: stack.pop() }
+    }
+    Component {
+        id: bluetoothView
+        BluetoothView {
+            onBack: stack.pop()
+            onPush: (component, properties) => stack.push(component, properties)
+        }
     }
 
     // What the tiles and levels read.
@@ -412,6 +419,7 @@ PopupWindow {
                     hue: Theme.hue5
                     on: panel.btOn
                     drill: true
+                    onOpened: stack.push(bluetoothView)
                     onToggled: panel.adapter.enabled = !panel.btOn
                 }
                 Tile {
