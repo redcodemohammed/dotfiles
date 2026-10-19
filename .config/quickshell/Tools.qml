@@ -7,7 +7,8 @@ import Quickshell.Io
 // The tools panel's shared side (owner, 2026-10-17): SUPER + X opens it on the focused screen
 // (`qs ipc call tools toggle`); each bar's ToolsPanel listens for its own screen's name.
 // Step 2: runs the screen tools (.local/bin/pick-colour, screen-ocr, keep-awake), keeps the
-// keep-awake state (the bar's power glyph turns accent while it is on) and the recent colours.
+// keep-awake state (the bar's wrench lights up while it is on; its switch is in quick settings)
+// and the recent colours.
 Singleton {
     id: root
     signal panelRequested(string screen)
@@ -31,7 +32,7 @@ Singleton {
 
     // Step 3, web dev tools. clip(action): .local/bin/clip-tool on the clipboard; its line (or
     // its error) comes back through clipDone for the panel's note.
-    signal clipDone(string message)
+    signal clipDone(string message, bool ok)
     function clip(action) {
         if (clipper.running) return
         clipper.command = [bin + "clip-tool", action]
@@ -41,7 +42,25 @@ Singleton {
         id: clipper
         stdout: StdioCollector { id: clipOut }
         stderr: StdioCollector { id: clipErr }
-        onExited: (code) => root.clipDone(code === 0 ? clipOut.text.trim() : clipErr.text.trim() || "Failed")
+        onExited: (code) => root.clipDone(code === 0 ? clipOut.text.trim() : clipErr.text.trim() || "Failed", code === 0)
+    }
+
+    // The values the panel's Generate list shows, so a click copies exactly what is on screen
+    // (owner, 2026-10-20): a UUID from clip-tool (a new one after each copy) and its lorem ipsum.
+    // The times are worked out in the panel, live.
+    property string uuid: ""
+    property string lorem: ""
+    function freshUuid() { if (!uuidMaker.running) uuidMaker.running = true }
+    Process {
+        id: uuidMaker
+        running: true
+        command: [root.bin + "clip-tool", "uuid", "--stdout"]
+        stdout: StdioCollector { onStreamFinished: root.uuid = text.trim() }
+    }
+    Process {
+        running: true
+        command: [root.bin + "clip-tool", "lorem", "--stdout"]
+        stdout: StdioCollector { onStreamFinished: root.lorem = text.trim() }
     }
 
     // Localhost QR: the dev servers (dev-ports, read when the panel opens), then lan-qr for one.

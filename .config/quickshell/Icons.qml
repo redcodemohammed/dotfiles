@@ -48,6 +48,9 @@ Singleton {
     readonly property string gear: "\ue270" // quick settings: Settings
     readonly property string dotsThree: "\ue1fe" // Wi-Fi view: more
     readonly property string broadcast: "\ue0f2" // Wi-Fi view: Hotspot
+    readonly property string copy: "\ue1ca" // tools: copy a value
+    readonly property string key: "\ue2d6" // tools: Decode JWT
+    readonly property string info: "\ue2ce" // tools: a note that is neither done nor failed
     readonly property string eyedropper: "\ue568" // tools panel: Pick colour
     readonly property string textT: "\ue48a" // tools panel: Text from screen
     readonly property string timer: "\ue492" // Pomodoro focus
