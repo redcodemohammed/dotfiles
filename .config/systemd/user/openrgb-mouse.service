@@ -1,0 +1,15 @@
+[Unit]
+Description=Vertical mouse RGB in the theme accent (OpenRGB, Instant USB Gaming Mouse)
+# Runs ~/.local/bin/rgb-mouse once. No RemainAfterExit: the unit goes back to inactive, so
+# every start runs it again: at login, from wallpaper-apply, and from udev when the mouse is
+# plugged in (udev/90-rgb-mouse.rules, SYSTEMD_USER_WANTS).
+PartOf=graphical-session.target
+After=graphical-session.target
+ConditionPathExists=/usr/bin/openrgb
+
+[Service]
+Type=oneshot
+ExecStart=%h/.local/bin/rgb-mouse
+
+[Install]
+WantedBy=graphical-session.target

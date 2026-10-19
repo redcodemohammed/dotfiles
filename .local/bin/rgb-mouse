@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+# rgb-mouse: the vertical mouse (Instant USB Gaming Mouse, 30fa:1440) in the theme accent
+# (owner, 2026-10-19). Solid (Direct) for an image wallpaper, a slow Breathing for a video
+# (~/.config/hypr/wallpaper-video exists). The mouse saves nothing: it forgets the colour when
+# unplugged, so openrgb-mouse.service runs this at login, after a wallpaper change
+# (wallpaper-apply) and when the mouse is plugged in (udev/90-rgb-mouse.rules).
+# Found by its description: its OpenRGB name is empty and its number depends on what is plugged in.
+# The colour is the keyboard's (KB_COLOR, palette/generate.py). No mouse: nothing to do.
+set -euo pipefail
+. "$HOME/.config/openrgb-kb/color.env"
+index=$(openrgb --noautoconnect --list-detailed 2>/dev/null \
+    | awk '/^[0-9]+:/ { n = $1; sub(":", "", n) } /Description: *Instant USB Gaming Mouse/ { print n; exit }')
+[ -n "$index" ] || exit 0
+if [ -e "$HOME/.config/hypr/wallpaper-video" ]; then
+    openrgb --noautoconnect --device "$index" --mode breathing --color "$KB_COLOR" --speed 15 >/dev/null
+else
+    openrgb --noautoconnect --device "$index" --mode direct --color "$KB_COLOR" >/dev/null
+fi

@@ -71,6 +71,7 @@ mkdir -p "$HOME/.cache/hypr" && touch "$HOME/.cache/hypr/palette-stamp" # open f
 pkill -USR2 -x cava >/dev/null 2>&1 || true                    # cava: SIGUSR2 reloads its colours
 systemctl --user try-restart openrgb-kb.service >/dev/null 2>&1 || true  # keyboard RGB (color.env)
 systemctl --user try-restart legion-kb.service >/dev/null 2>&1 || true   # the laptop's keyboard, same colour
+systemctl --user start --no-block openrgb-mouse.service >/dev/null 2>&1 || true # vertical mouse: solid, or breathing for a video
 notify-send -a Wallpaper "Wallpaper" "$what" >/dev/null 2>&1 || true
 # The boot screens keep their own copy of the palette: remind, with an "Apply now" button.
 setsid -f "$HOME/.local/bin/boot-colours" --remind >/dev/null 2>&1 </dev/null || true

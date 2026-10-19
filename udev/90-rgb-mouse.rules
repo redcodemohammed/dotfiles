@@ -1,0 +1,6 @@
+# /etc/udev/rules.d/90-rgb-mouse.rules: when the vertical mouse (Instant USB Gaming Mouse,
+# 30fa:1440) appears, the logged-in user's systemd starts openrgb-mouse.service, which gives it
+# the theme colour again (it forgets it when unplugged). Runs nothing as root. After OpenRGB's
+# 60-openrgb.rules, which gives the user access to the mouse. Install:
+#   sudo install -m644 ~/dotfiles/udev/90-rgb-mouse.rules /etc/udev/rules.d/ && sudo udevadm control --reload
+ACTION=="add", SUBSYSTEM=="hidraw", ATTRS{idVendor}=="30fa", ATTRS{idProduct}=="1440", TAG+="systemd", ENV{SYSTEMD_USER_WANTS}+="openrgb-mouse.service"
