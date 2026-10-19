@@ -1,5 +1,6 @@
 import QtQuick
 import Quickshell
+import Quickshell.Hyprland
 import Quickshell.Services.SystemTray
 
 // Top bar, one per screen: the frame's top side (Frame.qml, owner, 2026-10-20; it floated 6px
@@ -146,9 +147,30 @@ PanelWindow {
         }
     }
 
-    BarBlock {
-        id: workspacesBlock
+    BarBlock { // the launcher at the band's left end (owner, 2026-10-20): Vicinae, like SUPER + /
+        id: launcherBlock
         anchors.left: parent.left
+        y: 6
+        padding: 6
+        clickable: true
+        onClicked: Quickshell.execDetached(["vicinae", "toggle"])
+        Rectangle {
+            width: 20
+            height: 20
+            color: Theme.accent
+            Text {
+                anchors.centerIn: parent
+                text: Icons.magnifyingGlass
+                font.family: Icons.fill
+                font.pixelSize: 14
+                color: Theme.textOnAccent
+            }
+        }
+    }
+
+    BarBlock { // centred (owner, 2026-10-20): the left end is the launcher's and the island's
+        id: workspacesBlock
+        anchors.horizontalCenter: parent.horizontalCenter
         y: 6
         padding: 6 // the 20px workspaces sit 4px clear of the 2px border, as top and bottom (owner)
         Workspaces {
@@ -156,14 +178,100 @@ PanelWindow {
         }
     }
 
-    BarBlock {
-        anchors.left: workspacesBlock.right
+    // The compact island (owner, 2026-10-20: in the band on a block, so it never covers a
+    // window): after the launcher, on the focused screen, while a state shows and isn't open
+    // (the open form is Island.qml's, growing out of the corner). Its slot grows from nothing on
+    // the window spring and the title after it slides along. It gets the room left of the
+    // workspaces at most; a state's content elides in less (media's compact is 640px wide).
+    Item {
+        id: islandSlot
+        anchors.left: launcherBlock.right
+        y: 6
+        height: 32
+        readonly property var monitor: Hyprland.monitorFor(bar.modelData)
+        readonly property bool shown: monitor !== null && monitor.focused
+            && IslandState.kind !== "" && !IslandState.open && IslandState.size[0] > 0
+        readonly property real room: workspacesBlock.x - x - 12 // 6 before the block, 6 before the workspaces
+        // What it shows is kept while it shrinks away, so it leaves with its content.
+        property string kind: ""
+        property real boxWidth: 0
+        function keep() {
+            if (!shown)
+                return
+            kind = IslandState.kind
+            boxWidth = IslandState.size[0]
+        }
+        readonly property var live: [shown, IslandState.kind, IslandState.size]
+        onLiveChanged: keep()
+        readonly property real contentWidth: Math.max(0, Math.min(boxWidth, room - 8)) // the block's 4px padding
+
+        width: shown ? contentWidth + 8 + 6 : 0
+        clip: true
+        Behavior on width {
+            enabled: Settings.look.animations
+            NumberAnimation { duration: 300; easing.type: Easing.BezierSpline; easing.bezierCurve: [0.34, 1.3, 0.64, 1, 1, 1] } // hyprland.lua "spring"
+        }
+
+        BarBlock {
+            x: 6
+            padding: 4
+            clickable: true
+            onClicked: IslandState.click(bar.modelData.name) // opens it, out of the corner
+            Item {
+                width: islandSlot.contentWidth
+                height: 24
+                readonly property var info: IslandState.active ? IslandState.active.data : ({})
+                IslandVolume {
+                    anchors.fill: parent
+                    visible: islandSlot.kind === "volume" || islandSlot.kind === "brightness"
+                    open: false
+                }
+                IslandBattery {
+                    anchors.fill: parent
+                    visible: islandSlot.kind === "battery"
+                    open: false
+                }
+                IslandConnect {
+                    anchors.fill: parent
+                    visible: islandSlot.kind === "connect"
+                }
+                IslandTimer {
+                    anchors.fill: parent
+                    visible: islandSlot.kind === "timer"
+                    open: false
+                }
+                IslandRecord {
+                    anchors.fill: parent
+                    visible: islandSlot.kind === "record"
+                    open: false
+                    setup: false
+                }
+                IslandMedia {
+                    anchors.fill: parent
+                    visible: islandSlot.kind === "media"
+                    open: false
+                }
+                IslandBuild {
+                    anchors.fill: parent
+                    visible: islandSlot.kind === "build"
+                    open: false
+                    info: parent.info
+                }
+            }
+        }
+    }
+
+    BarBlock { // the focused window's title, after the island; hidden when there's no room
+        id: titleBlock
+        anchors.left: islandSlot.right
         anchors.leftMargin: 6
         y: 6
-        visible: title.text !== ""
+        readonly property real room: workspacesBlock.x - x - 6
+        visible: title.text !== "" && room > 64
         WindowTitle {
             id: title
             screen: bar.modelData
+            maxWidth: titleBlock.room - 2 * titleBlock.padding
         }
     }
 
