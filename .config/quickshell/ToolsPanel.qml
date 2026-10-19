@@ -7,7 +7,9 @@ import Quickshell
 // Screen: Pick colour (the panel closes, hyprpicker) and Read text (OCR a region), two tiles; the
 // recent colours below as swatches, a click copies one (the last copied ringed, its hex at the
 // end). Keep awake left the panel: its switch is in quick settings, the wrench lights up while on.
-// Clipboard (the clipboard in, the result back): Decode JWT, Format JSON, then Base64 and URL as
+// Clipboard (the clipboard in, the result back): what it holds (clip-tool peek: a badge, a
+// preview only for a JWT's header, JSON and URL-encoded text, owner 2026-10-20), the transform
+// that fits tinted blue, one that failed red; Decode JWT, Format JSON, then Base64 and URL as
 // split buttons, encode (↑) and decode (↓). Generate: the value itself on each row, UUID, ISO
 // and Unix time (live) and lorem ipsum; a click copies what is shown, then a new UUID comes.
 // Localhost: your dev servers' ports (known runtimes only, dev-ports); a LAN one shows a QR of
@@ -40,10 +42,12 @@ PopupWindow {
         if (!visible) {
             closedAt = Date.now()
             say("", "")
+            Tools.failed = ""
             localOpen = false
             Tools.hideQr()
         } else {
             now = new Date()
+            Tools.peek()
             Tools.readPorts()
         }
     }
@@ -67,8 +71,18 @@ PopupWindow {
     }
     Connections {
         target: Tools
-        function onClipDone(message, ok) { panel.say(ok ? "ok" : "error", message) }
+        function onClipDone(message, ok) { // an error's reason goes on a second line
+            const cut = ok ? -1 : message.indexOf(": ")
+            if (cut > 0)
+                panel.say("error", message.slice(0, cut), message.slice(cut + 2))
+            else
+                panel.say(ok ? "ok" : "error", message)
+        }
     }
+
+    // The transform that fits what the clipboard holds.
+    readonly property string suggested: ({ jwt: "jwt", json: "json", base64: "b64d", url: "urld" })[Tools.clipboard.kind] ?? ""
+    readonly property bool detected: suggested !== ""
 
     // The times on the Generate list tick while the panel is open.
     property var now: new Date()
@@ -158,12 +172,16 @@ PopupWindow {
         property string label
         property string glyph
         property string corners: ""
-        signal clicked
+        property string action // clip-tool's: run on a click, tinted when it fits or failed
+        readonly property bool fits: panel.suggested === action
+        readonly property bool failed: Tools.failed === action
         height: 32
         Rectangle { // radius 8 on the outer corners, 3 where the halves meet
             anchors.fill: parent
             radius: cardButton.corners === "" ? 8 : 3
-            color: cardHover.containsMouse ? panel.liftHover : panel.lift
+            color: cardButton.failed ? Edge.alertTint
+                : cardButton.fits ? panel.tint(Theme.hue5, cardHover.containsMouse ? 0.25 : 0.15)
+                : cardHover.containsMouse ? panel.liftHover : panel.lift
             Rectangle {
                 visible: cardButton.corners !== ""
                 x: cardButton.corners === "left" ? 0 : parent.width - width
@@ -180,23 +198,23 @@ PopupWindow {
                 visible: cardButton.glyph !== ""
                 anchors.verticalCenter: parent.verticalCenter
                 text: cardButton.glyph
-                font.family: Icons.regular
+                font.family: cardButton.fits ? Icons.fill : Icons.regular
                 font.pixelSize: 14
-                color: Theme.hue5
+                color: cardButton.failed ? Theme.alert : Theme.hue5
             }
             Text {
                 anchors.verticalCenter: parent.verticalCenter
                 text: cardButton.label
                 font.family: "JetBrainsMono Nerd Font"
                 font.pixelSize: 12
-                color: Theme.fg
+                color: cardButton.failed ? Theme.alert : cardButton.fits ? Theme.fg : Theme.fgMuted
             }
         }
         MouseArea {
             id: cardHover
             anchors.fill: parent
             hoverEnabled: true
-            onClicked: cardButton.clicked()
+            onClicked: Tools.clip(cardButton.action)
         }
     }
     // Encode and decode side by side: the wide half encodes, the narrow one decodes.
@@ -210,13 +228,13 @@ PopupWindow {
             width: split.width - 46
             corners: "left"
             label: split.label + " ↑"
-            onClicked: Tools.clip(split.encode)
+            action: split.encode
         }
         CardButton {
             width: 44
             corners: "right"
             label: "↓"
-            onClicked: Tools.clip(split.decode)
+            action: split.decode
         }
     }
 
@@ -384,20 +402,69 @@ PopupWindow {
                         y: 12
                         width: parent.width - 24
                         spacing: 10
-                        Row {
-                            spacing: 10
+                        Item { // what it holds: a JWT's header or a URL itself, else its kind and size
+                            width: parent.width
+                            height: 20
+                            readonly property var cb: Tools.clipboard
                             Text {
                                 anchors.verticalCenter: parent.verticalCenter
                                 text: Icons.clipboardText
                                 font.family: Icons.regular
                                 font.pixelSize: 16
-                                color: Theme.hue5
+                                color: panel.detected ? Theme.hue5 : Theme.fgMuted
                             }
                             Text {
+                                x: 26
+                                width: badge.x - x - 8
                                 anchors.verticalCenter: parent.verticalCenter
-                                text: "Transform it, the result is copied"
+                                elide: Text.ElideRight
+                                readonly property string count: parent.cb.size + (parent.cb.size === 1 ? " character" : " characters")
+                                text: parent.cb.kind === "jwt" || parent.cb.kind === "url" ? parent.cb.preview[0] ?? ""
+                                    : parent.cb.kind === "json" ? parent.cb.preview.length + (parent.cb.preview.length === 1 ? " line" : " lines")
+                                    : parent.cb.kind === "empty" ? "The clipboard is empty"
+                                    : parent.cb.kind === "binary" ? "Not text (an image or a file)"
+                                    : parent.cb.kind === "" ? "Reading the clipboard" : count
                                 font.family: "JetBrainsMono Nerd Font"
                                 font.pixelSize: 12
+                                color: parent.cb.kind === "jwt" || parent.cb.kind === "url" ? Theme.fg : Theme.fgMuted
+                            }
+                            Rectangle {
+                                id: badge
+                                visible: badgeText.text !== ""
+                                anchors.right: parent.right
+                                anchors.verticalCenter: parent.verticalCenter
+                                width: visible ? badgeText.implicitWidth + 16 : 0
+                                height: 20
+                                radius: 6
+                                color: panel.detected ? panel.tint(Theme.hue5, 0.15) : panel.lift
+                                Text {
+                                    id: badgeText
+                                    anchors.centerIn: parent
+                                    text: ({ jwt: "JWT", json: "JSON", base64: "Base64", url: "URL", text: "Text" })[parent.parent.cb.kind] ?? ""
+                                    font.family: "JetBrainsMono Nerd Font"
+                                    font.pixelSize: 11
+                                    color: panel.detected ? Theme.hue5 : Theme.fgMuted
+                                }
+                            }
+                        }
+                        Rectangle { // JSON: its first lines (formatted after Format JSON)
+                            visible: Tools.clipboard.kind === "json"
+                            width: parent.width
+                            height: jsonText.implicitHeight + 20
+                            radius: 8
+                            color: Edge.fill
+                            clip: true
+                            Text {
+                                id: jsonText
+                                x: 10
+                                y: 10
+                                width: parent.width - 20
+                                elide: Text.ElideRight
+                                text: (Tools.clipboard.preview ?? []).join("\n")
+                                textFormat: Text.PlainText
+                                font.family: "JetBrainsMono Nerd Font"
+                                font.pixelSize: 12
+                                lineHeight: 1.2
                                 color: Theme.fgMuted
                             }
                         }
@@ -410,12 +477,12 @@ PopupWindow {
                                 width: parent.cell
                                 glyph: Icons.key
                                 label: "Decode JWT"
-                                onClicked: Tools.clip("jwt")
+                                action: "jwt"
                             }
                             CardButton {
                                 width: parent.cell
                                 label: "Format JSON"
-                                onClicked: Tools.clip("json")
+                                action: "json"
                             }
                             SplitButton {
                                 width: parent.cell
@@ -597,17 +664,18 @@ PopupWindow {
                 }
             }
 
-            Rectangle { // the note line
+            Rectangle { // the note line; an error's reason on a second line
                 visible: panel.note !== ""
+                readonly property bool twoLines: panel.noteKind === "error" && panel.noteDetail !== ""
                 width: parent.width
-                height: 32
+                height: twoLines ? reason.y + reason.height + 9 : 32
                 radius: 8
                 color: panel.noteKind === "ok" ? panel.tint(Theme.hue3, 0.15)
                     : panel.noteKind === "error" ? Edge.alertTint : Edge.control
                 Text {
                     id: noteIcon
                     x: 10
-                    anchors.verticalCenter: parent.verticalCenter
+                    y: 9
                     text: panel.noteKind === "ok" ? Icons.check : panel.noteKind === "error" ? Icons.warningCircle : Icons.info
                     font.family: Icons.regular
                     font.pixelSize: 14
@@ -616,8 +684,8 @@ PopupWindow {
                 Text {
                     id: noteText
                     x: 32
+                    y: 8
                     width: Math.min(implicitWidth, parent.width - x - 10)
-                    anchors.verticalCenter: parent.verticalCenter
                     elide: Text.ElideRight
                     text: panel.note
                     font.family: "JetBrainsMono Nerd Font"
@@ -625,9 +693,22 @@ PopupWindow {
                     color: panel.noteKind === "error" ? Theme.alert : Theme.fg
                 }
                 Text {
+                    id: reason
+                    visible: parent.twoLines
+                    x: 32
+                    y: noteText.y + noteText.height + 2
+                    width: parent.width - x - 10
+                    wrapMode: Text.Wrap
+                    text: panel.noteDetail
+                    font.family: "JetBrainsMono Nerd Font"
+                    font.pixelSize: 12
+                    color: Theme.fgMuted
+                }
+                Text {
+                    visible: !parent.twoLines
                     anchors.right: parent.right
                     anchors.rightMargin: 10
-                    anchors.verticalCenter: parent.verticalCenter
+                    y: 8
                     width: Math.max(0, parent.width - noteText.x - noteText.width - 22)
                     horizontalAlignment: Text.AlignRight
                     elide: Text.ElideMiddle

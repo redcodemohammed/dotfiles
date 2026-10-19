@@ -11,10 +11,15 @@ Generators copy something new:
 Prints one line saying what was copied; on bad input prints why on stderr, exits 1, and leaves
 the clipboard alone. --stdout: read stdin and print the result instead (no clipboard), for
 pipelines (`curl ... | clip-tool json --stdout`) and tests.
+  peek   what the clipboard holds, for the tools panel's card (2026-10-20): one JSON line,
+         {kind: jwt|json|base64|url|text|empty|binary, preview: [lines], size: characters}.
+         The preview is only for a JWT (its header part), JSON (up to 6 lines) and URL-encoded
+         text: never plain text or base64, which may be a password just copied.
 """
 import base64
 import datetime
 import json
+import re
 import subprocess
 import sys
 import time
@@ -59,7 +64,7 @@ def run(action: str) -> tuple[str, str]:
         try:
             value = json.loads(paste())
         except json.JSONDecodeError as err:
-            sys.exit(f"Not JSON: {err.msg} (line {err.lineno})")
+            sys.exit(f"Clipboard isn't JSON: {err.msg} at line {err.lineno}, column {err.colno}")
         out = json.dumps(value, indent=2, ensure_ascii=False)
         return out, f"Formatted JSON ({out.count(chr(10)) + 1} lines)"
     if action == "jwt":
@@ -101,7 +106,61 @@ def run(action: str) -> tuple[str, str]:
     sys.exit(__doc__)
 
 
+def short(line: str, width: int = 60) -> str:
+    return line if len(line) <= width else line[:width - 1] + "…"
+
+
+def kind_of(text: str) -> str:
+    parts = text.split(".")
+    if len(parts) == 3 and all(parts):
+        try:
+            if all(isinstance(json.loads(b64decode(p).decode("utf-8")), dict) for p in parts[:2]):
+                return "jwt"
+        except (ValueError, UnicodeDecodeError):
+            pass
+    if text[0] in "{[":
+        try:
+            json.loads(text)
+            return "json"
+        except json.JSONDecodeError:
+            pass
+    if re.search(r"%[0-9A-Fa-f]{2}", text) and urllib.parse.unquote(text) != text:
+        return "url"
+    packed = "".join(text.split())
+    if len(packed) >= 8 and re.fullmatch(r"[A-Za-z0-9+/_-]+={0,2}", packed):
+        try:
+            decoded = b64decode(packed).decode("utf-8")
+            if decoded and all(c.isprintable() or c in "\n\t" for c in decoded):
+                return "base64"
+        except (ValueError, UnicodeDecodeError):
+            pass
+    return "text"
+
+
+def peek() -> dict:
+    out = subprocess.run(["wl-paste", "-n", "-t", "text"], capture_output=True)
+    if out.returncode != 0 or not out.stdout.strip():
+        return {"kind": "empty", "preview": [], "size": 0}
+    try:
+        text = out.stdout.decode("utf-8").strip()
+    except UnicodeDecodeError:
+        return {"kind": "binary", "preview": [], "size": 0}
+    kind = kind_of(text)
+    preview = []
+    if kind == "jwt":
+        preview = [short(text.split(".")[0] + ".…")]
+    elif kind == "json":
+        lines = text.splitlines()
+        preview = [short(line, 42) for line in lines[:6]] + (["…"] if len(lines) > 6 else [])  # the card's width
+    elif kind == "url":
+        preview = [short(text.splitlines()[0])]
+    return {"kind": kind, "preview": preview, "size": len(text)}
+
+
 def main():
+    if sys.argv[1:] == ["peek"]:
+        print(json.dumps(peek(), ensure_ascii=False))
+        return
     if len(sys.argv) not in (2, 3) or (len(sys.argv) == 3 and not STDOUT):
         sys.exit(__doc__)
     text, message = run(sys.argv[1])

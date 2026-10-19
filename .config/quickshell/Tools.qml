@@ -32,17 +32,43 @@ Singleton {
 
     // Step 3, web dev tools. clip(action): .local/bin/clip-tool on the clipboard; its line (or
     // its error) comes back through clipDone for the panel's note.
+    // `failed` names the action that failed last, for the panel's red button ("" once another
+    // runs or the panel closes).
     signal clipDone(string message, bool ok)
+    property string failed: ""
     function clip(action) {
         if (clipper.running) return
+        failed = ""
+        clipper.action = action
         clipper.command = [bin + "clip-tool", action]
         clipper.running = true
     }
     Process {
         id: clipper
+        property string action
         stdout: StdioCollector { id: clipOut }
         stderr: StdioCollector { id: clipErr }
-        onExited: (code) => root.clipDone(code === 0 ? clipOut.text.trim() : clipErr.text.trim() || "Failed", code === 0)
+        onExited: (code) => {
+            root.failed = code === 0 ? "" : action
+            root.clipDone(code === 0 ? clipOut.text.trim() : clipErr.text.trim() || "Failed", code === 0)
+            if (code === 0)
+                root.peek()
+        }
+    }
+
+    // What the clipboard holds (clip-tool peek), read when the panel opens and after each
+    // transform: { kind, preview: [lines], size }. The preview is only for a JWT's header, JSON
+    // and URL-encoded text (owner, 2026-10-20), never plain text or base64.
+    property var clipboard: ({ kind: "", preview: [], size: 0 })
+    function peek() { if (!peeker.running) peeker.running = true }
+    Process {
+        id: peeker
+        command: [root.bin + "clip-tool", "peek"]
+        stdout: StdioCollector {
+            onStreamFinished: {
+                try { root.clipboard = JSON.parse(text) } catch (err) { root.clipboard = { kind: "", preview: [], size: 0 } }
+            }
+        }
     }
 
     // The values the panel's Generate list shows, so a click copies exactly what is on screen
