@@ -65,7 +65,7 @@ ShellRoot {
         locked: false // set by lockDelay, after the entrance sheet is drawn
 
         WlSessionLockSurface {
-            color: Theme.bg
+            color: Edge.fill // the frame's colour, under LockContent's frame
             LockContent {
                 anchors.fill: parent
                 shell: root
