@@ -120,6 +120,9 @@ hl.on("hyprland.start", function ()
     hl.exec_cmd("sh -c 'sleep 5; pgrep -x hyprpaper >/dev/null || pgrep -x mpvpaper >/dev/null || exec ~/.local/bin/wallpaper-start'")
     -- Boot screens still on an older palette: a reminder once the bar (notifications) is up.
     hl.exec_cmd("sleep 15 && ~/.local/bin/boot-colours --remind")
+    -- Workspaces saved with a right click on their pill (owner, 2026-10-20): their windows open
+    -- again once the screens are up. A save for a screen that isn't there is skipped.
+    hl.exec_cmd("sleep 4 && ~/.local/bin/workspace-session restore")
 end)
 
 

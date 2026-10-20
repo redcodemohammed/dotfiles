@@ -1,0 +1,441 @@
+#!/usr/bin/env python3
+"""workspace-session: save a workspace's windows and open them again at login (owner, 2026-10-20).
+
+  workspace-session save <id> [<number>]    save workspace <id>'s windows (replaces its save)
+  workspace-session forget <id> [<number>]  drop workspace <id>'s save
+  workspace-session restore                 open every saved workspace again (Hyprland's autostart)
+  workspace-session list                    the saved workspace IDs
+
+A right click on a workspace pill in the bar saves it, or forgets its save when it is empty; a
+dot on the pill marks a saved one. <number> is only for the notification ("workspace 2"): the
+ID is hyprsplit's (11 is the second screen's first workspace).
+
+Saved per window, in ~/.local/state/workspace-session/<id>.json: the app and how it was started
+(/proc/<pid>/cmdline; a Flatpak: flatpak run <its ID>), floating with its place and size (relative to its screen) or its tiled
+order, fullscreen or maximised. A terminal (Alacritty) also saves the folder and the program
+running in it: plain `alacritty -e fish` from its shell, the tmux one (SUPER + Return) from the
+session's active pane. Hyprland can't see inside an app: its tabs and files come back only if it
+restores them itself.
+
+Restore (at login only): a saved workspace whose screen is missing is skipped. An open window of
+the same app (a terminal: running the same program) is moved there; what is missing is launched
+onto it. A terminal reopens in its folder; its program runs again only if it is in RERUN, else it
+is typed at the prompt without Enter. Once every window is there (slow starters get 30 s), each
+workspace's tiling is rebuilt (owner, 2026-10-20: order and sizes as saved). Dwindle has no list
+of places: a new tiled window splits the focused one. The saved rectangles always cut in two by
+one full-length line, each half again (split_tree), so the tiled windows are floated, then tiled
+back one by one: focus the window to split, `preselect` the side, tile the next; then each cut is
+resized to its saved place. That needs focus, so each saved workspace shows for a moment; the
+screens go back to their workspaces after.
+"""
+import json
+import os
+import shlex
+import subprocess
+import sys
+import time
+from pathlib import Path
+
+# Programs a restored terminal runs again; any other command is only typed at the prompt.
+RERUN = {"cava", "peaclock"}
+
+STATE = Path(os.environ.get("XDG_STATE_HOME", Path.home() / ".local/state")) / "workspace-session"
+INDEX = STATE / "index.json"  # the saved IDs, for the bar's dots
+
+
+def hypr(*args):
+    return json.loads(subprocess.run(["hyprctl", *args, "-j"], capture_output=True, text=True, check=True).stdout)
+
+
+def hypr_eval(code):
+    subprocess.run(["hyprctl", "eval", code], capture_output=True, text=True)
+
+
+def lua(value):
+    """A Python string as a Lua string literal."""
+    return json.dumps(value, ensure_ascii=False)  # Lua has no \uXXXX escapes
+
+
+def notify(text):
+    subprocess.run(["notify-send", "-a", "Workspaces", "-i", "view-grid-symbolic", text], capture_output=True)
+
+
+def children(pid):
+    out = []
+    for task in Path(f"/proc/{pid}/task").glob("*"):
+        try:
+            out += [int(c) for c in (task / "children").read_text().split()]
+        except OSError:
+            pass
+    return out
+
+
+def cmdline(pid):
+    try:
+        return [a for a in Path(f"/proc/{pid}/cmdline").read_bytes().decode(errors="replace").split("\0") if a]
+    except OSError:
+        return []
+
+
+def launch_command(pid):
+    """How to start a window's app again: its command line, or `flatpak run <id>` for a Flatpak
+    (its command line is a path inside the sandbox)."""
+    try:
+        info = Path(f"/proc/{pid}/root/.flatpak-info").read_text()
+    except OSError:
+        return cmdline(pid)
+    app = next((line.split("=", 1)[1].strip() for line in info.splitlines() if line.startswith("name=")), "")
+    return ["flatpak", "run", app] if app else cmdline(pid)
+
+
+def cwd(pid):
+    try:
+        return os.readlink(f"/proc/{pid}/cwd")
+    except OSError:
+        return str(Path.home())
+
+
+def terminal_state(pid):
+    """What a terminal window holds: {mode: fish|tmux, cwd, command} (command: [] at a bare prompt)."""
+    for child in children(pid):
+        argv = cmdline(child)
+        if not argv:
+            continue
+        name = Path(argv[0]).name
+        if name == "tmux":
+            # The tmux client: its session's active pane.
+            clients = subprocess.run(["tmux", "list-clients", "-F", "#{client_pid}\t#{session_name}"],
+                                     capture_output=True, text=True).stdout.splitlines()
+            session = next((line.split("\t", 1)[1] for line in clients if line.split("\t")[0] == str(child)), None)
+            if session is None:
+                return {"mode": "tmux", "cwd": str(Path.home()), "command": []}
+            pane = subprocess.run(["tmux", "display", "-p", "-t", session, "#{pane_pid}\t#{pane_current_path}"],
+                                  capture_output=True, text=True).stdout.strip().split("\t")
+            if len(pane) != 2:
+                return {"mode": "tmux", "cwd": str(Path.home()), "command": []}
+            shell, path = pane
+            running = children(int(shell))
+            return {"mode": "tmux", "cwd": path, "command": cmdline(running[0]) if running else []}
+        # A shell (alacritty -e fish): the program in front of it, if any.
+        running = children(child)
+        target = running[0] if running else child
+        return {"mode": "fish", "cwd": cwd(target), "command": cmdline(running[0]) if running else []}
+    return {"mode": "fish", "cwd": cwd(pid), "command": []}
+
+
+def write_index():
+    ids = sorted(int(p.stem) for p in STATE.glob("*.json") if p.stem.isdigit())
+    INDEX.write_text(json.dumps(ids))
+
+
+def save(ws, number):
+    monitors = {m["id"]: m for m in hypr("monitors")}
+    clients = [c for c in hypr("clients") if c["workspace"]["id"] == ws and c["mapped"] and not c["hidden"]]
+    if not clients:
+        forget(ws, number)
+        return
+    # Tiled ones in reading order (top to bottom, then left to right); floating ones after.
+    clients.sort(key=lambda c: (c["floating"], c["at"][1], c["at"][0]))
+    monitor = monitors.get(clients[0]["monitor"], {})
+    windows = []
+    for c in clients:
+        m = monitors.get(c["monitor"], monitor)
+        w = {
+            "class": c["class"],
+            "command": launch_command(c["pid"]),
+            "floating": c["floating"],
+            "at": [c["at"][0] - m.get("x", 0), c["at"][1] - m.get("y", 0)],
+            "size": c["size"],
+            "fullscreen": c["fullscreen"],  # 1 maximised, 2 fullscreen
+        }
+        if c["class"].lower() == "alacritty":
+            w["terminal"] = terminal_state(c["pid"])
+        windows.append(w)
+    STATE.mkdir(parents=True, exist_ok=True)
+    (STATE / f"{ws}.json").write_text(json.dumps({"workspace": ws, "number": number, "monitor": monitor.get("name", ""),
+                                                  "saved": time.strftime("%Y-%m-%dT%H:%M:%S"), "windows": windows}, indent=2))
+    write_index()
+    count = len(windows)
+    notify(f"Saved {count} window{'s' if count != 1 else ''} on workspace {number}: they open again at login")
+
+
+def forget(ws, number):
+    path = STATE / f"{ws}.json"
+    if path.exists():
+        path.unlink()
+        STATE.mkdir(parents=True, exist_ok=True)
+        write_index()
+        notify(f"Workspace {number} won't open again at login")
+
+
+def program(argv):
+    return Path(argv[0]).name if argv else ""
+
+
+def terminal_launch(t):
+    """The command that reopens a saved terminal, and what to type into it after (tmux)."""
+    command, folder = t.get("command", []), t.get("cwd") or str(Path.home())
+    if not Path(folder).is_dir():
+        folder = str(Path.home())
+    rerun = program(command) in RERUN
+    if t.get("mode") == "tmux":
+        # Its tmux session starts in the terminal's folder; the command goes in by send-keys.
+        return ["alacritty", "--working-directory", folder], command, rerun
+    line = shlex.join(command)
+    if not command:
+        init = ""
+    elif rerun:
+        init = line  # fish runs it before its first prompt; quitting it leaves the shell
+    else:  # typed at the first prompt, not run
+        init = ("function __ws_prefill --on-event fish_prompt; commandline -r " + shlex.quote(line)
+                + "; functions -e __ws_prefill; end")
+    argv = ["alacritty", "--working-directory", folder, "-e", "fish"] + (["-C", init] if init else [])
+    return argv, [], False
+
+
+def place(address, w, monitor):
+    """Put an open window in its saved state: floating at its place and size, or tiled."""
+    sel = lua("address:" + address)
+    hypr_eval(f"hl.dispatch(hl.dsp.window.float({{ action = {lua('enable' if w['floating'] else 'disable')}, window = {sel} }}))")
+    if w["floating"]:
+        hypr_eval(f"hl.dispatch(hl.dsp.window.resize({{ x = {w['size'][0]}, y = {w['size'][1]}, window = {sel} }}))")
+        hypr_eval(f"hl.dispatch(hl.dsp.window.move({{ x = {monitor['x'] + w['at'][0]}, y = {monitor['y'] + w['at'][1]}, window = {sel} }}))")
+    if w["fullscreen"]:
+        mode = "fullscreen" if w["fullscreen"] == 2 else "maximized"
+        hypr_eval(f"hl.dispatch(hl.dsp.window.fullscreen({{ mode = {lua(mode)}, action = 'set', window = {sel} }}))")
+
+
+def on_its_screen(ws, monitor):
+    """Hyprland makes a new workspace on the focused screen: move it to the saved one."""
+    here = next((w["monitor"] for w in hypr("workspaces") if w["id"] == ws), None)
+    if here is not None and here != monitor["name"]:
+        hypr_eval(f"hl.dispatch(hl.dsp.workspace.move({{ workspace = {ws}, monitor = {lua(monitor['name'])} }}))")
+
+
+def tmux_session_of(alacritty_pid):
+    """The tmux session a new terminal started (its client is the terminal's child)."""
+    for child in children(alacritty_pid):
+        clients = subprocess.run(["tmux", "list-clients", "-F", "#{client_pid}\t#{session_name}"],
+                                 capture_output=True, text=True).stdout.splitlines()
+        for line in clients:
+            pid, _, session = line.partition("\t")
+            if pid == str(child):
+                return session
+    return None
+
+
+def split_tree(items):
+    """A dwindle layout's split tree from its windows' rectangles: items are (key, x, y, w, h).
+    A leaf is a key; a split is (direction, first, second), "r" for side by side (first on the
+    left), "d" for one above the other. None if no full-length cut splits them."""
+    if len(items) == 1:
+        return items[0][0]
+    for direction, pos, size in (("r", 1, 3), ("d", 2, 4)):
+        for cut in sorted({i[pos] for i in items}):
+            first = [i for i in items if i[pos] + i[size] <= cut + 2]
+            second = [i for i in items if i[pos] >= cut - 2]
+            if first and second and len(first) + len(second) == len(items):
+                a, b = split_tree(first), split_tree(second)
+                if a is not None and b is not None:
+                    return (direction, a, b)
+    return None
+
+
+def leaves(node):
+    return [node] if not isinstance(node, tuple) else leaves(node[1]) + leaves(node[2])
+
+
+def retile(placed, monitor):
+    """Rebuild one workspace's tiling: placed is [(saved window, address)], its screen showing it."""
+    tiled = [(w, a) for w, a in placed if not w["floating"]]
+    if len(tiled) < 2:
+        return
+    saved = {a: w for w, a in tiled}
+    tree = split_tree([(a, w["at"][0], w["at"][1], w["size"][0], w["size"][1]) for w, a in tiled])
+    if tree is None:
+        return
+    first = leaves(tree)[0]
+    for _, a in tiled:
+        hypr_eval(f"hl.dispatch(hl.dsp.window.float({{ action = 'enable', window = {lua('address:' + a)} }}))")
+    hypr_eval(f"hl.dispatch(hl.dsp.window.float({{ action = 'disable', window = {lua('address:' + first)} }}))")
+
+    def build(node, anchor):
+        # anchor: the node's first leaf, already tiled and still alone in its part. Split it
+        # for the second part first, then each part inside itself.
+        if not isinstance(node, tuple):
+            return
+        direction, a, b = node
+        other = leaves(b)[0]
+        hypr_eval(f"hl.dispatch(hl.dsp.focus({{ window = {lua('address:' + anchor)} }}))")
+        hypr_eval(f"hl.dispatch(hl.dsp.layout({lua('preselect ' + direction)}))")
+        hypr_eval(f"hl.dispatch(hl.dsp.window.float({{ action = 'disable', window = {lua('address:' + other)} }}))")
+        build(a, anchor)
+        build(b, other)
+
+    build(tree, first)
+    time.sleep(0.3)
+
+    def cuts(node):
+        # The splits outermost first: resize from the first part's window on the cut (resizing
+        # one on the far side moves the edge the other way).
+        if not isinstance(node, tuple):
+            return
+        yield node
+        yield from cuts(node[1])
+        yield from cuts(node[2])
+
+    for _ in range(2):  # a second pass corrects what the inner splits shifted
+        for direction, a, _b in cuts(tree):
+            now = {c["address"]: c for c in hypr("clients")}
+            side = [k for k in leaves(a) if k in now]
+            if not side:
+                continue
+            axis = 0 if direction == "r" else 1  # the cut's right or bottom edge, on its screen
+            origin = (monitor["x"], monitor["y"])[axis]
+            target = max(saved[k]["at"][axis] + saved[k]["size"][axis] for k in side)
+            current = {k: now[k]["at"][axis] - origin + now[k]["size"][axis] for k in side}
+            key = max(current, key=current.get)  # the window on the cut
+            delta = target - current[key]
+            if abs(delta) > 2:
+                dx, dy = (delta, 0) if axis == 0 else (0, delta)
+                hypr_eval(f"hl.dispatch(hl.dsp.window.resize({{ x = {dx}, y = {dy}, relative = true, window = {lua('address:' + key)} }}))")
+            time.sleep(0.05)
+    for w, a in tiled:
+        if w["fullscreen"]:
+            place(a, w, monitor)
+
+
+def settle(address, ws, w, monitor):
+    """Put a window on its workspace (without going there), the workspace on its screen, and the
+    window in its saved state. Launch rules aren't enough: Hyprland ties them to the launched
+    process, and some apps' windows belong to another one (a Flatpak runs under bwrap, started by
+    systemd), so they open wherever the focus is, and the focus follows the mouse."""
+    hypr_eval(f"hl.dispatch(hl.dsp.window.move({{ workspace = {ws}, follow = false, window = {lua('address:' + address)} }}))")
+    on_its_screen(ws, monitor)
+    place(address, w, monitor)
+
+
+def restore():
+    if not STATE.is_dir():
+        return
+    monitors = {m["name"]: m for m in hypr("monitors")}
+    taken = set()  # windows already given a place
+    there = {c["address"] for c in hypr("clients")}  # open before the restore
+    late = []  # launched, no window yet: (window, workspace, screen)
+    placed = {}  # workspace: ([(saved window, address)], screen)
+    for path in sorted(STATE.glob("*.json")):
+        if not path.stem.isdigit():
+            continue
+        try:
+            saved = json.loads(path.read_text())
+        except (OSError, ValueError):
+            continue
+        monitor = monitors.get(saved.get("monitor", ""))
+        if monitor is None:
+            continue  # its screen isn't here: skip it (owner)
+        ws = saved["workspace"]
+        placed[ws] = ([], monitor)
+        for w in saved["windows"]:
+            clients = hypr("clients")
+            match = None
+            for c in sorted(clients, key=lambda c: c["workspace"]["id"] != ws):  # ones already there first
+                if c["address"] in taken or c["class"] != w["class"] or not c["mapped"]:
+                    continue
+                if "terminal" in w:
+                    # A terminal only stands in for one running the same program.
+                    want = program(w["terminal"].get("command", []))
+                    if not want or program(terminal_state(c["pid"]).get("command", [])) != want:
+                        continue
+                match = c
+                break
+            if match:
+                taken.add(match["address"])
+                settle(match["address"], ws, w, monitor)
+                placed[ws][0].append((w, match["address"]))
+                continue
+            # Launch it onto the workspace, without going there.
+            typed, rerun = [], False
+            if "terminal" in w:
+                argv, typed, rerun = terminal_launch(w["terminal"])
+            else:
+                argv = w["command"]
+            if not argv:
+                continue
+            rules = {"workspace": f"{ws} silent"}
+            if w["floating"]:
+                rules.update(float=True, size=f"{w['size'][0]} {w['size'][1]}", move=f"{w['at'][0]} {w['at'][1]}")
+            if w["fullscreen"] == 2:
+                rules["fullscreen"] = True
+            elif w["fullscreen"] == 1:
+                rules["maximize"] = True
+            table = ", ".join(f"{k} = {lua(v) if isinstance(v, str) else str(v).lower()}" for k, v in rules.items())
+            before = {c["address"] for c in clients}
+            hypr_eval(f"hl.exec_cmd({lua(shlex.join(argv))}, {{ {table} }})")
+            # Wait for its window (up to 10 s), so the next one tiles after it, in the saved order.
+            new = None
+            for _ in range(40):
+                time.sleep(0.25)
+                new = next((c for c in hypr("clients") if c["address"] not in before and c["class"] == w["class"]), None)
+                if new:
+                    break
+            if not new:
+                late.append((w, ws, monitor))  # a slow starter (Spotify): looked for below
+            if new:
+                taken.add(new["address"])
+                settle(new["address"], ws, w, monitor)
+                placed[ws][0].append((w, new["address"]))
+                if typed:
+                    for _ in range(20):  # its tmux session takes a moment
+                        session = tmux_session_of(new["pid"])
+                        if session:
+                            subprocess.run(["tmux", "send-keys", "-t", session, "-l", shlex.join(typed)])
+                            if rerun:
+                                subprocess.run(["tmux", "send-keys", "-t", session, "Enter"])
+                            break
+                        time.sleep(0.25)
+
+    # Slow starters: give them 30 s more, then leave them where they open.
+    deadline = time.time() + 30
+    while late and time.time() < deadline:
+        time.sleep(0.5)
+        for c in hypr("clients"):
+            if c["address"] in there or c["address"] in taken or not c["mapped"]:
+                continue
+            found = next((entry for entry in late if entry[0]["class"] == c["class"]), None)
+            if found:
+                late.remove(found)
+                taken.add(c["address"])
+                settle(c["address"], found[1], found[0], found[2])
+                placed[found[1]][0].append((found[0], c["address"]))
+
+    # The tiling, as saved: each workspace shows while it is rebuilt, then the screens go back.
+    if any(sum(not w["floating"] for w, _ in p) > 1 for p, _ in placed.values()):
+        shown = [(m["name"], m["activeWorkspace"]["id"], m["focused"]) for m in hypr("monitors")]
+        for ws, (p, monitor) in placed.items():
+            if sum(not w["floating"] for w, _ in p) > 1:
+                hypr_eval(f"hl.dispatch(hl.dsp.focus({{ workspace = {ws} }}))")
+                time.sleep(0.2)
+                retile(p, monitor)
+        for name, ws, focused in sorted(shown, key=lambda m: m[2]):  # the focused screen last
+            hypr_eval(f"hl.dispatch(hl.dsp.focus({{ monitor = {lua(name)} }}))")
+            hypr_eval(f"hl.dispatch(hl.dsp.focus({{ workspace = {ws} }}))")
+
+
+def main():
+    if len(sys.argv) < 2:
+        sys.exit(__doc__)
+    action = sys.argv[1]
+    if action in ("save", "forget") and len(sys.argv) in (3, 4) and sys.argv[2].isdigit():
+        ws = int(sys.argv[2])
+        number = int(sys.argv[3]) if len(sys.argv) == 4 and sys.argv[3].isdigit() else ws
+        (save if action == "save" else forget)(ws, number)
+    elif action == "restore" and len(sys.argv) == 2:
+        restore()
+    elif action == "list" and len(sys.argv) == 2:
+        print(INDEX.read_text() if INDEX.exists() else "[]")
+    else:
+        sys.exit(__doc__)
+
+
+if __name__ == "__main__":
+    main()

@@ -8,7 +8,9 @@ import Quickshell.Hyprland
 // sample. Each workspace has its own hue (owner, 2026-10-20: hue1-hue6 in turn by its number):
 // with windows a faint tint of it and the glyphs in it; active filled with it, dark glyphs
 // (Theme.textOnAccent: the hues are lit like the accent). Rounded 6. A click goes there: `target` is the workspace ID (hyprsplit's range
-// for this screen, so an empty slot works too).
+// for this screen, so an empty slot works too). A right click saves its windows to open again at
+// login, or forgets that save when it is empty; a saved one has a dot in its top-right corner
+// (owner, 2026-10-20: SavedWorkspaces.qml, .local/bin/workspace-session).
 Rectangle {
     id: group
     property var ws: null
@@ -18,6 +20,7 @@ Rectangle {
     readonly property bool active: ws !== null && ws.active
     readonly property var windows: ws ? ws.toplevels.values : []
     readonly property bool occupied: windows.length > 0
+    readonly property bool saved: target > 0 && SavedWorkspaces.has(target)
     readonly property color hue: [Theme.hue1, Theme.hue2, Theme.hue3, Theme.hue4, Theme.hue5, Theme.hue6][(number - 1) % 6]
 
     width: occupied ? glyphs.width + 16 : 20 // 8px either side of the glyphs
@@ -64,10 +67,28 @@ Rectangle {
         }
     }
 
+    Rectangle { // saved: opens again at login
+        visible: group.saved
+        x: parent.width - width - 3 // inside the corner's curve, in the padding
+        y: 3
+        width: 4
+        height: 4
+        radius: 2
+        color: group.active ? Theme.textOnAccent : group.hue
+    }
+
     MouseArea {
         anchors.fill: parent
         enabled: group.target > 0
-        onClicked: {
+        acceptedButtons: Qt.LeftButton | Qt.RightButton
+        onClicked: mouse => {
+            if (mouse.button === Qt.RightButton) {
+                if (group.occupied)
+                    SavedWorkspaces.save(group.target, group.number)
+                else
+                    SavedWorkspaces.forget(group.target, group.number)
+                return
+            }
             if (!group.ws && group.monitorName !== "")
                 Hyprland.dispatch("hl.dsp.focus({ monitor = \"" + group.monitorName + "\" })")
             Hyprland.dispatch("hl.dsp.focus({ workspace = " + group.target + " })")
