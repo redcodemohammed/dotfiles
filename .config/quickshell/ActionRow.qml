@@ -13,6 +13,7 @@ Flow {
     property int buttonHeight: 40
     property string dismissLabel: ""
     property string family: "JetBrainsMono Nerd Font"
+    property color fill: Edge.control // the plain buttons' fill (the inbox's cards: a step lighter)
     signal invoked
     signal dismissed
 
@@ -42,7 +43,7 @@ Flow {
         width: text.implicitWidth + 24
         height: root.buttonHeight
         radius: 8
-        color: primary ? Edge.accentTint : Edge.control
+        color: primary ? Edge.accentTint : root.fill
         Text {
             id: text
             anchors.centerIn: parent

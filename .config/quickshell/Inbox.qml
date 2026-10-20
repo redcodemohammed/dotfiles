@@ -4,17 +4,19 @@ import Quickshell.Hyprland
 import Quickshell.Wayland
 import Quickshell.Widgets
 
-// Notification inbox. Same look as the island card: 360px wide. A drop-down under the bar's bell
-// like the other panels (owner, 2026-10-17; it was its own layer surface with exclusive keyboard
-// focus, which on Hyprland also swallows every click elsewhere: the bell couldn't close it and
-// nothing else opened). Reveal gives it the panels' slide, focus grab (keyboard, close on an
-// outside click) and one-panel-at-a-time. Rows scroll when the list is long.
-// SUPER + I or a left click on the bell toggles it (Notifs.inboxOpen; the focused screen's bar
+// Notification inbox (owner, 2026-10-17; the "Remaining panels" design since 2026-10-20): a panel
+// from the Arch chip, 380 wide (wider when a notification's actions need it for one line). It was
+// its own layer surface with exclusive keyboard focus, which on Hyprland also swallows every click
+// elsewhere; EdgePanel gives it the panels' focus grab and one-panel-at-a-time.
+// The header: Notifications, a Do Not Disturb pill (Notifs.dnd, lit coral while on) and Clear
+// all. Each notification a card: its app's icon in a rounded box (a bell without one), the app
+// and how long ago, the summary, two lines of body, a dismiss button; the keyboard's one (J/K) a
+// step lighter. Notifications with more than one action (screenshots, recordings) show them as
+// buttons under the body (ActionRow); a click runs one and closes the inbox. None: "All caught
+// up". Cards scroll when the list is long.
+// SUPER + I or a left click on the chip toggles it (Notifs.inboxOpen; the focused screen's bar
 // shows it); Escape, Clear all and dismissing the last one close it. Opening clears the unread
-// count.
-// J/K or arrows move, Enter runs the default action, X dismisses. Letters by keycode.
-// Notifications with more than one action (screenshots, recordings) show them as buttons under
-// the body (ActionRow); a click runs one and closes the inbox.
+// count. J/K or arrows move, Enter runs the default action, X dismisses. Letters by keycode.
 PopupWindow {
     id: root
     required property var bar
@@ -54,10 +56,10 @@ PopupWindow {
                 Notifs.setInbox(false)
         }
     }
-    // 360 as designed; wider when a notification's actions (ActionRow) need it for one line:
-    // 12 + 24 icon + 12 left, 12 right, 2 + 2 frame.
+    // 380 as designed; wider when a notification's actions (ActionRow) need it for one line:
+    // 16 + 12 + 32 icon + 10 left, 12 + 16 right.
     implicitWidth: reveal.implicitWidth
-    readonly property real bodyWidth: Math.min(Math.max(360, widestActions + 64), bar.screen.width - 12 - reveal.r)
+    readonly property real bodyWidth: Math.min(Math.max(380, widestActions + 98), bar.screen.width - 12 - reveal.r)
     readonly property real widestActions: {
         let widest = 0
         for (const child of list.contentItem.children)
@@ -68,13 +70,67 @@ PopupWindow {
     implicitHeight: reveal.implicitHeight
     mask: Region { item: reveal.area }
 
+    function tint(c, a) { return Qt.tint(Edge.fill, Qt.rgba(c.r, c.g, c.b, a)) }
+    property double now: Date.now()
+    Timer { // "how long ago" moves on while it is open
+        running: root.visible
+        interval: 30000
+        repeat: true
+        onTriggered: root.now = Date.now()
+    }
+    function ago(time) { // now, 4 min, 2 h, else the date and time
+        const s = Math.max(0, (now - time.getTime()) / 1000)
+        return s < 60 ? "now" : s < 3600 ? Math.floor(s / 60) + " min" : s < 86400 ? Math.floor(s / 3600) + " h"
+            : Qt.formatDateTime(time, "d MMM HH:mm")
+    }
+
+    component HeadButton: Rectangle {
+        id: headButton
+        property string label
+        property string glyph: ""
+        property bool on
+        signal clicked
+        width: headRow.implicitWidth + 20
+        height: 28
+        radius: glyph !== "" ? 14 : 8
+        color: on ? root.tint(Theme.hue1, headHover.containsMouse ? 0.22 : 0.15)
+            : headHover.containsMouse ? Edge.controlHover : Edge.control
+        Row {
+            id: headRow
+            anchors.centerIn: parent
+            spacing: 6
+            Text {
+                visible: headButton.glyph !== ""
+                anchors.verticalCenter: parent.verticalCenter
+                text: headButton.glyph
+                font.family: headButton.on ? Icons.fill : Icons.regular
+                font.pixelSize: 14
+                color: headButton.on ? Theme.hue1 : Theme.fgMuted
+            }
+            Text {
+                anchors.verticalCenter: parent.verticalCenter
+                text: headButton.label
+                font.family: "JetBrainsMono Nerd Font"
+                font.pixelSize: 12
+                color: headButton.on ? Theme.hue1 : headButton.glyph !== "" ? Theme.fgMuted : Theme.fg
+            }
+        }
+        MouseArea {
+            id: headHover
+            anchors.fill: parent
+            hoverEnabled: true
+            onClicked: headButton.clicked()
+        }
+    }
+
     EdgePanel { // comes out of the frame under the Arch chip (owner, 2026-10-20)
         id: reveal
         window: root
         atLeft: true
         bodyWidth: root.bodyWidth
         // At most the screen under the band, less the frame's bottom side and the spring's room.
-        bodyHeight: Math.min(Math.max(list.contentHeight, 44) + 4 + footer.height,
+        bodyHeight: Math.min(header.y + header.height + 8 + (list.count === 0 ? empty.height : list.contentHeight)
+            + (footer.visible ? 10 + footer.height : 0) + 12,
             root.bar.screen.height - root.bar.height - Settings.look.frame - 32)
 
         focus: true
@@ -108,52 +164,114 @@ PopupWindow {
             }
         }
 
+        Item { // Notifications, Do Not Disturb, Clear all
+            id: header
+            x: 16
+            y: 8
+            width: parent.width - 32
+            height: 32
+            Text {
+                anchors.verticalCenter: parent.verticalCenter
+                text: "Notifications"
+                font.family: "JetBrainsMono Nerd Font"
+                font.pixelSize: 14
+                font.weight: Font.DemiBold
+                color: Theme.fg
+            }
+            Row {
+                anchors.right: parent.right
+                anchors.verticalCenter: parent.verticalCenter
+                spacing: 6
+                HeadButton {
+                    glyph: Notifs.dnd ? Icons.bellSlash : Icons.moon
+                    label: "Do Not Disturb"
+                    on: Notifs.dnd
+                    onClicked: Notifs.dnd = !Notifs.dnd
+                }
+                HeadButton {
+                    visible: Notifs.entries.length > 0
+                    label: "Clear all"
+                    onClicked: {
+                        Notifs.clearAll()
+                        Notifs.setInbox(false)
+                    }
+                }
+            }
+        }
+
+        Column { // nothing here
+            id: empty
+            visible: list.count === 0
+            y: header.y + header.height + 8
+            width: parent.width
+            height: implicitHeight + 40
+            topPadding: 20
+            spacing: 10
+            Rectangle {
+                anchors.horizontalCenter: parent.horizontalCenter
+                width: 48
+                height: 48
+                radius: 12
+                color: Edge.control
+                Text {
+                    anchors.centerIn: parent
+                    text: Notifs.dnd ? Icons.bellSlash : Icons.bellSimple
+                    font.family: Icons.regular
+                    font.pixelSize: 22
+                    color: Theme.hue1
+                }
+            }
+            Text {
+                anchors.horizontalCenter: parent.horizontalCenter
+                text: "All caught up"
+                font.family: "JetBrainsMono Nerd Font"
+                font.pixelSize: 13
+                color: Theme.fg
+            }
+            Text {
+                anchors.horizontalCenter: parent.horizontalCenter
+                width: parent.width - 64
+                horizontalAlignment: Text.AlignHCenter
+                wrapMode: Text.Wrap
+                text: Notifs.dnd ? "Do Not Disturb is on: new ones wait here quietly." : "New notifications wait here."
+                font.family: "JetBrainsMono Nerd Font"
+                font.pixelSize: 12
+                color: Theme.fgMuted
+            }
+        }
+
         ListView {
             id: list
-            x: 2
-            y: 2
-            width: parent.width - 4
-            height: parent.height - 4 - footer.height
+            x: 16
+            y: header.y + header.height + 8
+            width: parent.width - 32
+            height: parent.height - y - 12 - (footer.visible ? 10 + footer.height : 0)
             clip: true
+            spacing: 8
             model: Notifs.entries
             boundsBehavior: Flickable.StopAtBounds
             highlightMoveDuration: 0
 
-            delegate: Item {
+            delegate: Rectangle {
                 id: row
                 required property var modelData
                 required property int index
                 readonly property string icon: modelData.image !== "" ? modelData.image
                     : modelData.appIcon !== "" ? Quickshell.iconPath(modelData.appIcon, true)
                     : ""
+                readonly property bool current: ListView.isCurrentItem
+                readonly property real actionsWidth: actionRow.visible ? actionRow.oneLineWidth : 0
 
                 width: ListView.view.width
                 height: rowContent.implicitHeight + 24
-                readonly property real actionsWidth: actionRow.visible ? actionRow.oneLineWidth : 0
-
-                // Selected: lighter surface plus a 2px amber marker on the left edge.
-                Rectangle {
-                    anchors.fill: parent
-                    visible: row.ListView.isCurrentItem
-                    color: Theme.surfaceSelected
-
-                    Rectangle {
-                        width: 2
-                        height: parent.height
-                        color: Theme.accent
-                    }
-                }
+                radius: 12
+                color: current || rowHover.containsMouse ? Edge.controlHover : Edge.control
 
                 MouseArea {
+                    id: rowHover
                     anchors.fill: parent
+                    hoverEnabled: true
                     onClicked: list.currentIndex = row.index
-                }
-
-                Rectangle {
-                    visible: row.index > 0
-                    width: parent.width
-                    height: 2
-                    color: Theme.border
                 }
 
                 Row {
@@ -161,54 +279,90 @@ PopupWindow {
                     x: 12
                     y: 12
                     width: parent.width - 24
-                    spacing: 12
+                    spacing: 10
 
-                    Item {
-                        width: 24
-                        height: 24
-
+                    Rectangle { // the app's icon, or a bell
+                        width: 32
+                        height: 32
+                        radius: 8
+                        color: row.icon !== "" ? root.tint(Theme.fg, 0.08) : root.tint(Theme.hue1, 0.15)
                         IconImage {
                             visible: row.icon !== ""
+                            anchors.centerIn: parent
                             source: row.icon
-                            implicitSize: 24
+                            implicitSize: 20
                         }
-
                         Text {
                             visible: row.icon === ""
                             anchors.centerIn: parent
-                            text: Icons.bellSimple
+                            text: row.modelData.urgent ? Icons.warningCircle : Icons.bellSimple
                             font.family: Icons.regular
-                            font.pixelSize: 24
-                            color: Theme.fgMuted
+                            font.pixelSize: 16
+                            color: row.modelData.urgent ? Theme.alert : Theme.hue1
                         }
                     }
 
                     Column {
-                        width: parent.width - 36
-                        spacing: 4
+                        width: parent.width - 42
+                        spacing: 3
 
-                        Item {
+                        Item { // the app, how long ago, dismiss
                             width: parent.width
-                            height: title.implicitHeight
-
+                            height: 18
                             Text {
-                                id: title
-                                width: parent.width - time.implicitWidth - 8
-                                text: row.modelData.summary
-                                font.family: "JetBrainsMono Nerd Font"
-                                font.pixelSize: 14
-                                color: Theme.fg
+                                anchors.verticalCenter: parent.verticalCenter
+                                width: parent.width - when.implicitWidth - 40
                                 elide: Text.ElideRight
-                            }
-
-                            Text {
-                                id: time
-                                anchors.right: parent.right
-                                text: Qt.formatDateTime(row.modelData.time, "HH:mm")
+                                text: row.modelData.appName || "Notification"
                                 font.family: "JetBrainsMono Nerd Font"
                                 font.pixelSize: 12
                                 color: Theme.fgMuted
                             }
+                            Text {
+                                id: when
+                                anchors.right: dismiss.left
+                                anchors.rightMargin: 6
+                                anchors.verticalCenter: parent.verticalCenter
+                                text: root.ago(row.modelData.time)
+                                font.family: "JetBrainsMono Nerd Font"
+                                font.pixelSize: 12
+                                color: Theme.fgMuted
+                            }
+                            Rectangle {
+                                id: dismiss
+                                anchors.right: parent.right
+                                anchors.verticalCenter: parent.verticalCenter
+                                width: 24
+                                height: 24
+                                radius: 6
+                                color: dismissHover.containsMouse ? root.tint(Theme.fg, 0.12) : "transparent"
+                                Text {
+                                    anchors.centerIn: parent
+                                    text: Icons.cross
+                                    font.family: Icons.regular
+                                    font.pixelSize: 13
+                                    color: dismissHover.containsMouse ? Theme.fg : Theme.fgMuted
+                                }
+                                MouseArea {
+                                    id: dismissHover
+                                    anchors.fill: parent
+                                    hoverEnabled: true
+                                    onClicked: {
+                                        Notifs.dismiss(row.modelData)
+                                        if (Notifs.entries.length === 0)
+                                            Notifs.setInbox(false)
+                                    }
+                                }
+                            }
+                        }
+
+                        Text {
+                            width: parent.width
+                            text: row.modelData.summary
+                            font.family: "JetBrainsMono Nerd Font"
+                            font.pixelSize: 13
+                            color: Theme.fg
+                            elide: Text.ElideRight
                         }
 
                         Text {
@@ -217,7 +371,7 @@ PopupWindow {
                             text: row.modelData.body
                             textFormat: Text.PlainText
                             font.family: "JetBrainsMono Nerd Font"
-                            font.pixelSize: 14
+                            font.pixelSize: 12
                             color: Theme.fgMuted
                             wrapMode: Text.Wrap
                             maximumLineCount: 2
@@ -228,62 +382,28 @@ PopupWindow {
                             id: actionRow
                             visible: row.modelData.notification
                                 && row.modelData.notification.actions.length > 1
+                            topPadding: 6
                             width: parent.width
                             entry: row.modelData
-                            buttonHeight: 32
+                            buttonHeight: 28
+                            fill: root.tint(Theme.fg, 0.12)
                             onInvoked: Notifs.setInbox(false)
                         }
                     }
                 }
             }
-
-            Text {
-                visible: list.count === 0
-                x: 12
-                y: 12
-                text: "No notifications"
-                font.family: "JetBrainsMono Nerd Font"
-                font.pixelSize: 14
-                color: Theme.fgMuted
-            }
         }
 
-        // Footer: 2px divider, then Clear all on the right.
-        Item {
+        Text { // the keys
             id: footer
-            visible: Notifs.entries.length > 0
-            x: 2
-            y: parent.height - 2 - height
-            width: parent.width - 4
-            height: visible ? 34 : 0
-
-            Rectangle {
-                width: parent.width
-                height: 2
-                color: Theme.border
-            }
-
-            Text {
-                anchors.right: parent.right
-                anchors.rightMargin: 12
-                anchors.verticalCenter: parent.verticalCenter
-                anchors.verticalCenterOffset: 1
-                text: "Clear all"
-                font.family: "JetBrainsMono Nerd Font"
-                font.pixelSize: 12
-                color: clearArea.containsMouse ? Theme.fg : Theme.fgMuted
-
-                MouseArea {
-                    id: clearArea
-                    anchors.fill: parent
-                    anchors.margins: -6
-                    hoverEnabled: true
-                    onClicked: {
-                        Notifs.clearAll()
-                        Notifs.setInbox(false)
-                    }
-                }
-            }
+            visible: list.count > 0
+            x: 20
+            y: parent.height - 12 - height
+            height: 18
+            text: "J K move · Enter opens · X dismisses"
+            font.family: "JetBrainsMono Nerd Font"
+            font.pixelSize: 12
+            color: Theme.fgDim
         }
     }
 }

@@ -72,6 +72,7 @@ PanelWindow {
         id: settingsPanel
         bar: bar
         block: quickBlock
+        onBackRequested: { quickPanel.closedAt = 0; quickPanel.toggle() }
     }
     Connections {
         target: Settings
@@ -98,6 +99,7 @@ PanelWindow {
             if (screen !== bar.modelData.name)
                 return
             if (name === "record") recordPanel.toggle()
+            else if (name === "pomodoro") pomodoroPanel.toggle()
             else if (name === "sound") quickPanel.openView("sound") // quick settings' sound view
             else if (name === "bluetooth") quickPanel.openView("bluetooth")
             else if (name === "network") quickPanel.openView("network")

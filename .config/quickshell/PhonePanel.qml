@@ -1,16 +1,21 @@
 import QtQuick
+import QtQuick.Controls
 import Quickshell
 import Quickshell.Io
 
-// Phone bridge panel (owner's design "Phone bridge", 2026-10-15): drops from the bar's phone
-// block, 420 wide, 4px under the bar, its right edge on the block's. Grabs the keyboard, closes on
-// an outside click or Escape. Header: the phone's name, "Connected · battery · network" (Low and a
-// red battery at 15% or less), Reconnect while it is away (kcd has no disconnect: Unpair in
-// Settings). Tabs: Inbox (unread count), Actions (ring, send clipboard, send file, transfers) and
-// Settings (PhoneSettings.qml); a feature switched off there hides its action. Away: "Phone not
-// connected". Inbox: the phone's notifications (Phone.qml), newest first; opening one marks it
-// read and shows Reply (when the app allows it), Copy code (a verification code) and Dismiss (on
-// the phone too). Clear all empties this list only. A line at the bottom confirms actions.
+// Phone bridge panel (owner's design "Phone bridge", 2026-10-15; the "Remaining panels" design
+// since 2026-10-20): comes out of the frame under the bar's phone block, 380 wide, its right edge
+// on the block's. Closes on an outside click or Escape. One page, no tabs:
+// The header: the phone in a lilac box, its name, "Connected · battery · network" (Low and a red
+// battery at 15% or less), Reconnect while it is away (kcd has no disconnect: Unpair in its
+// settings), and a gear that pushes the settings view (PhoneSettings.qml) on a StackView, as quick
+// settings' views (back or Escape pops it, closing returns to the top level).
+// The actions as tiles, each in its hue: Ring, Clipboard (send it), Send file, Files (browse the
+// phone's); a feature switched off in the settings hides its tile. Transfers under them while any
+// run. Then the inbox: the phone's notifications (Phone.qml) as cards, newest first; opening one
+// marks it read and shows Reply (when the app allows it), Copy code (a verification code) and
+// Dismiss (on the phone too). Clear all empties this list only. Away: "Phone not connected".
+// A green line at the bottom confirms actions.
 PopupWindow {
     id: panel
     required property var bar
@@ -40,10 +45,10 @@ PopupWindow {
             closedAt = Date.now()
             sel = ""
             replyText = ""
+            stack.pop(null, StackView.Immediate)
         }
     }
 
-    property string tab: "inbox"
     property string sel: "" // the open notification
     property string replyText: ""
     property string copied: "" // notification whose code was just copied
@@ -81,43 +86,90 @@ PopupWindow {
     }
 
 
+    function tint(c, a) { return Qt.tint(Edge.fill, Qt.rgba(c.r, c.g, c.b, a)) }
+    // The action tiles shown: a feature switched off in the settings hides its tile.
+    readonly property var tiles: [
+        { id: "ring", label: "Ring", glyph: Icons.bellRinging, hue: Theme.hue1, shown: true },
+        { id: "clipboard", label: "Clipboard", glyph: Icons.clipboardText, hue: Theme.hue4, shown: Phone.settings.clipboard !== false },
+        { id: "send", label: "Send file", glyph: Icons.uploadSimple, hue: Theme.hue2, shown: Phone.settings.share !== false },
+        { id: "files", label: Phone.mounting ? "Opening" : "Files", glyph: Icons.folderOpen, hue: Theme.hue3, shown: true },
+    ].filter(t => t.shown)
+    function act(id) {
+        if (id === "ring") {
+            Phone.ring()
+            say("Phone is ringing (touch it to stop)")
+        } else if (id === "clipboard") {
+            Phone.sendClipboard()
+            say("Clipboard sent to phone")
+        } else if (id === "send") {
+            visible = false // the file picker needs the keyboard
+            Phone.pickAndSend()
+        } else if (id === "files" && !Phone.mounting) {
+            Phone.browseFiles()
+        }
+    }
+
     EdgePanel { // comes out of the frame under its chip (owner, 2026-10-20)
         id: reveal
         window: panel
-        bodyWidth: 420
-        bodyHeight: content.implicitHeight + 28
+        bodyWidth: 380
+        bodyHeight: stack.currentItem ? stack.currentItem.implicitHeight : topLevel.implicitHeight
         focus: true
-        Keys.onEscapePressed: reveal.close()
+        Keys.onEscapePressed: stack.depth > 1 ? stack.pop() : reveal.close()
 
+        // The settings view slides in from the right over the top level, and back out.
+        StackView {
+            id: stack
+            width: parent.width
+            height: reveal.bodyHeight
+            clip: true
+            initialItem: topLevel
+            readonly property int pace: Settings.look.animations ? 250 : 0
+            pushEnter: Transition { XAnimator { from: stack.width; to: 0; duration: stack.pace; easing.type: Easing.OutCubic } }
+            pushExit: Transition { XAnimator { from: 0; to: -stack.width / 3; duration: stack.pace; easing.type: Easing.OutCubic } }
+            popEnter: Transition { XAnimator { from: -stack.width / 3; to: 0; duration: stack.pace; easing.type: Easing.OutCubic } }
+            popExit: Transition { XAnimator { from: 0; to: stack.width; duration: stack.pace; easing.type: Easing.OutCubic } }
+        }
+
+        Item { // the top level
+            id: topLevel
+            implicitHeight: content.implicitHeight + 24
         Column {
             id: content
-            // A child's own `panel` property would shadow the id in `panel: panel`.
-            readonly property var owner: panel
-            x: 14
-            y: 14
-            width: parent.width - 28
-            spacing: 8
+            x: 16
+            y: 8
+            width: stack.width - 32
+            spacing: 14
 
             Item { // the phone
                 width: parent.width
                 height: 40
-                PhoneGlyph {
-                    id: phoneGlyph
+                Rectangle {
+                    id: phoneBox
                     anchors.verticalCenter: parent.verticalCenter
-                    size: 24
-                    stroke: 1.8 // the design's 1.2 at 16 units, scaled by 24/16
+                    width: 32
+                    height: 32
+                    radius: 8
+                    color: panel.tint(Theme.hue5, 0.15)
+                    PhoneGlyph {
+                        anchors.centerIn: parent
+                        size: 18
+                        stroke: 1.4
+                        color: Theme.hue5
+                    }
                 }
                 Column {
-                    x: phoneGlyph.width + 8
+                    x: phoneBox.width + 10
                     anchors.verticalCenter: parent.verticalCenter
                     width: headerRight.x - x - 8
-                    spacing: 4
+                    spacing: 2
                     Text {
                         width: parent.width
                         text: Phone.name || "Phone"
                         elide: Text.ElideRight
                         font.family: "JetBrainsMono Nerd Font"
                         font.pixelSize: 14
+                        font.weight: Font.DemiBold
                         color: Theme.fg
                     }
                     Text {
@@ -151,64 +203,180 @@ PopupWindow {
                             panel.say("Reconnecting")
                         }
                     }
-                }
-            }
-
-            Row { // tabs
-                width: parent.width
-                spacing: 4
-                Repeater {
-                    model: [{ id: "inbox", label: Phone.unread > 0 ? "Inbox " + Phone.unread : "Inbox" },
-                        { id: "actions", label: "Actions" }, { id: "settings", label: "Settings" }]
-                    Rectangle {
-                        id: tabButton
-                        required property var modelData
-                        readonly property bool on: panel.tab === modelData.id
-                        width: (parent.width - 8) / 3
-                        height: 32
+                    Rectangle { // the settings view
+                        anchors.verticalCenter: parent.verticalCenter
+                        width: 28
+                        height: 28
                         radius: 8
-                        color: on ? Edge.accentTint : Edge.control // filled, like the settings tabs
+                        color: gearHover.containsMouse ? Edge.controlHover : Edge.control
                         Text {
                             anchors.centerIn: parent
-                            text: tabButton.modelData.label
-                            font.family: "JetBrainsMono Nerd Font"
-                            font.pixelSize: 13
-                            color: tabButton.on ? Theme.fg : Theme.fgMuted
+                            text: Icons.gear
+                            font.family: Icons.regular
+                            font.pixelSize: 15
+                            color: gearHover.containsMouse ? Theme.fg : Theme.fgMuted
                         }
                         MouseArea {
+                            id: gearHover
                             anchors.fill: parent
-                            onClicked: panel.tab = tabButton.modelData.id
+                            hoverEnabled: true
+                            onClicked: stack.push(settingsView)
                         }
                     }
                 }
             }
 
-            Item { // away
-                visible: !Phone.connected && panel.tab !== "settings"
+            Column { // away
+                visible: !Phone.connected
                 width: parent.width
-                height: 120
-                Column {
-                    anchors.centerIn: parent
-                    spacing: 8
-                    Text {
-                        anchors.horizontalCenter: parent.horizontalCenter
-                        text: "Phone not connected"
-                        font.family: "JetBrainsMono Nerd Font"
-                        font.pixelSize: 13
+                topPadding: 16
+                bottomPadding: 16
+                spacing: 10
+                Rectangle {
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    width: 48
+                    height: 48
+                    radius: 12
+                    color: Edge.control
+                    PhoneGlyph {
+                        anchors.centerIn: parent
+                        size: 22
+                        stroke: 1.6
                         color: Theme.fgMuted
                     }
-                    Text {
-                        anchors.horizontalCenter: parent.horizontalCenter
-                        text: "Same Wi-Fi needed"
-                        font.family: "JetBrainsMono Nerd Font"
-                        font.pixelSize: 12
-                        color: Theme.fgMuted
+                }
+                Text {
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    text: "Phone not connected"
+                    font.family: "JetBrainsMono Nerd Font"
+                    font.pixelSize: 13
+                    color: Theme.fg
+                }
+                Text {
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    text: "It needs to be on the same Wi-Fi."
+                    font.family: "JetBrainsMono Nerd Font"
+                    font.pixelSize: 12
+                    color: Theme.fgMuted
+                }
+            }
+
+            Row { // the actions
+                visible: Phone.connected
+                width: parent.width
+                spacing: 6
+                Repeater {
+                    model: panel.tiles
+                    Rectangle {
+                        id: tile
+                        required property var modelData
+                        width: (content.width - 6 * (panel.tiles.length - 1)) / panel.tiles.length
+                        height: 64
+                        radius: 12
+                        color: tileHover.containsMouse ? Edge.controlHover : Edge.control
+                        opacity: modelData.id === "files" && Phone.mounting ? 0.5 : 1
+                        Column {
+                            anchors.centerIn: parent
+                            spacing: 6
+                            Text {
+                                anchors.horizontalCenter: parent.horizontalCenter
+                                text: tile.modelData.glyph
+                                font.family: Icons.regular
+                                font.pixelSize: 18
+                                color: tile.modelData.hue
+                            }
+                            Text {
+                                anchors.horizontalCenter: parent.horizontalCenter
+                                text: tile.modelData.label
+                                font.family: "JetBrainsMono Nerd Font"
+                                font.pixelSize: 12
+                                color: Theme.fg
+                            }
+                        }
+                        MouseArea {
+                            id: tileHover
+                            anchors.fill: parent
+                            hoverEnabled: true
+                            onClicked: panel.act(tile.modelData.id)
+                        }
                     }
                 }
             }
 
-            Column { // Inbox
-                visible: Phone.connected && panel.tab === "inbox"
+            Column { // transfers
+                visible: Phone.connected && Phone.transfers.length > 0
+                width: parent.width
+                spacing: 6
+                Repeater {
+                    model: Phone.transfers
+                    Rectangle {
+                        id: transfer
+                        required property var modelData
+                        readonly property var t: modelData
+                        readonly property int pct: t.total > 0 ? Math.round(t.current * 100 / t.total) : 0
+                        readonly property color hue: t.state === "failed" ? Theme.alert : Theme.hue2
+                        width: parent.width
+                        height: transferCol.implicitHeight + 20
+                        radius: 12
+                        color: Edge.control
+                        Column {
+                            id: transferCol
+                            x: 12
+                            y: 10
+                            width: parent.width - 24
+                            spacing: 8
+                            Item {
+                                width: parent.width
+                                height: 16
+                                Text {
+                                    width: stateText.x - 8
+                                    text: (transfer.t.up ? "Sending " : "Receiving ") + transfer.t.name
+                                    elide: Text.ElideMiddle
+                                    font.family: "JetBrainsMono Nerd Font"
+                                    font.pixelSize: 12
+                                    color: Theme.fg
+                                }
+                                Text {
+                                    id: stateText
+                                    anchors.right: parent.right
+                                    text: transfer.t.state === "failed" ? "Failed"
+                                        : transfer.t.state === "done" ? (transfer.t.up ? "Sent" : "Saved")
+                                        : transfer.t.total > 0 ? transfer.pct + "%" : ""
+                                    font.family: "JetBrainsMono Nerd Font"
+                                    font.pixelSize: 12
+                                    color: transfer.hue
+                                }
+                            }
+                            Rectangle {
+                                width: parent.width
+                                height: 4
+                                radius: 2
+                                color: panel.tint(Theme.fg, 0.12)
+                                Rectangle {
+                                    height: 4
+                                    radius: 2
+                                    width: transfer.t.state === "done" ? parent.width : parent.width * transfer.pct / 100
+                                    color: transfer.hue
+                                }
+                            }
+                            Text {
+                                visible: text !== ""
+                                width: parent.width
+                                text: transfer.t.state === "failed" ? (transfer.t.error || "")
+                                    : transfer.t.state === "done" && !transfer.t.up ? "In ~/Downloads/kcd"
+                                    : transfer.t.total > 0 ? NetState.amount(transfer.t.total).replace(/^0 MB$/, "< 1 MB") : ""
+                                elide: Text.ElideRight
+                                font.family: "JetBrainsMono Nerd Font"
+                                font.pixelSize: 12
+                                color: Theme.fgMuted
+                            }
+                        }
+                    }
+                }
+            }
+
+            Column { // the inbox
+                visible: Phone.connected
                 width: parent.width
                 spacing: 8
 
@@ -216,25 +384,27 @@ PopupWindow {
                     width: parent.width
                     height: 24
                     Text {
+                        x: 4
                         anchors.verticalCenter: parent.verticalCenter
-                        text: Phone.unread > 0 ? Phone.unread + " unread" : "All read"
+                        text: Phone.unread > 0 ? "Inbox · " + Phone.unread + " unread" : "Inbox"
                         font.family: "JetBrainsMono Nerd Font"
                         font.pixelSize: 12
                         color: Theme.fgMuted
                     }
                     Rectangle {
+                        visible: Phone.notifications.length > 0
                         anchors.right: parent.right
                         width: clearText.implicitWidth + 16
                         height: 24
                         radius: 6
-                        color: clearArea.containsMouse ? Edge.controlHover : Edge.control
+                        color: clearArea.containsMouse ? Edge.controlHover : "transparent"
                         Text {
                             id: clearText
                             anchors.centerIn: parent
                             text: "Clear all"
                             font.family: "JetBrainsMono Nerd Font"
                             font.pixelSize: 12
-                            color: Theme.fgMuted
+                            color: clearArea.containsMouse ? Theme.fg : Theme.fgMuted
                         }
                         MouseArea {
                             id: clearArea
@@ -248,15 +418,17 @@ PopupWindow {
                     }
                 }
 
-                Item {
+                Rectangle {
                     visible: Phone.notifications.length === 0
                     width: parent.width
-                    height: 80
+                    height: 56
+                    radius: 12
+                    color: Edge.control
                     Text {
                         anchors.centerIn: parent
-                        text: Phone.settings.notification === false ? "Mirroring is off (Settings)" : "No notifications"
+                        text: Phone.settings.notification === false ? "Mirroring is off (settings)" : "No notifications"
                         font.family: "JetBrainsMono Nerd Font"
-                        font.pixelSize: 13
+                        font.pixelSize: 12
                         color: Theme.fgMuted
                     }
                 }
@@ -264,14 +436,14 @@ PopupWindow {
                 Flickable {
                     visible: Phone.notifications.length > 0
                     width: parent.width
-                    height: Math.min(items.implicitHeight, 420)
+                    height: Math.min(items.implicitHeight, 400)
                     contentHeight: items.implicitHeight
                     clip: true
                     boundsBehavior: Flickable.StopAtBounds
                     Column {
                         id: items
                         width: parent.width
-                        spacing: 4
+                        spacing: 6
                         Repeater {
                             model: Phone.notifications
                             PhoneNotification {
@@ -285,136 +457,54 @@ PopupWindow {
                 }
             }
 
-            Column { // Actions
-                visible: Phone.connected && panel.tab === "actions"
+            Rectangle { // confirmations
+                visible: panel.toast !== ""
                 width: parent.width
-                spacing: 4
-
-                PanelButton {
-                    width: parent.width
-                    icon: Icons.bellRinging
-                    label: "Ring phone"
-                    onPressed: {
-                        Phone.ring()
-                        panel.say("Phone is ringing (touch it to stop)")
-                    }
-                }
-                PanelButton {
-                    visible: Phone.settings.clipboard !== false
-                    width: parent.width
-                    icon: Icons.clipboardText
-                    label: "Send clipboard to phone"
-                    onPressed: {
-                        Phone.sendClipboard()
-                        panel.say("Clipboard sent to phone")
-                    }
-                }
-                PanelButton {
-                    width: parent.width
-                    icon: Icons.folderOpen
-                    label: Phone.mounting ? "Opening phone files" : "Browse phone files"
-                    available: !Phone.mounting
-                    onPressed: Phone.browseFiles()
-                }
-                PanelButton {
-                    visible: Phone.settings.share !== false
-                    width: parent.width
-                    icon: Icons.uploadSimple
-                    label: "Send file"
-                    onPressed: {
-                        panel.visible = false // the file picker needs the keyboard
-                        Phone.pickAndSend()
-                    }
-                }
-
-                Column {
-                    visible: Phone.transfers.length > 0
-                    width: parent.width
-                    spacing: 4
-                    topPadding: 4
-                    Text {
-                        height: 16
-                        text: "Transfers"
-                        font.family: "JetBrainsMono Nerd Font"
-                        font.pixelSize: 12
-                        color: Theme.fgMuted
-                    }
-                    Repeater {
-                        model: Phone.transfers
-                        Rectangle {
-                            id: transfer
-                            required property var modelData
-                            readonly property var t: modelData
-                            readonly property int pct: t.total > 0 ? Math.round(t.current * 100 / t.total) : 0
-                            width: parent.width
-                            height: transferCol.implicitHeight + 20
-                            radius: 12 // a card
-                            color: Edge.control
-                            Column {
-                                id: transferCol
-                                x: 10
-                                y: 10
-                                width: parent.width - 20
-                                spacing: 4
-                                Item {
-                                    width: parent.width
-                                    height: 16
-                                    Text {
-                                        width: sizeText.x - 8
-                                        text: (transfer.t.up ? "↑ " : "↓ ") + transfer.t.name
-                                        elide: Text.ElideMiddle
-                                        font.family: "JetBrainsMono Nerd Font"
-                                        font.pixelSize: 13
-                                        color: Theme.fg
-                                    }
-                                    Text {
-                                        id: sizeText
-                                        anchors.right: parent.right
-                                        text: transfer.t.total > 0 ? NetState.amount(transfer.t.total).replace(/^0 MB$/, "< 1 MB") : ""
-                                        font.family: "JetBrainsMono Nerd Font"
-                                        font.pixelSize: 13
-                                        color: Theme.fgMuted
-                                    }
-                                }
-                                Rectangle {
-                                    width: parent.width
-                                    height: 4
-                                    color: Theme.border
-                                    Rectangle {
-                                        height: 4
-                                        width: transfer.t.state === "done" ? parent.width : parent.width * transfer.pct / 100
-                                        color: transfer.t.state === "failed" ? Theme.alert : Theme.fg
-                                    }
-                                }
-                                Text {
-                                    width: parent.width
-                                    text: transfer.t.state === "failed" ? "Failed" + (transfer.t.error ? ": " + transfer.t.error : "")
-                                        : transfer.t.state === "done" ? (transfer.t.up ? "Sent" : "Saved to ~/Downloads/kcd")
-                                        : (transfer.t.up ? "Sending" : "Receiving") + (transfer.t.total > 0 ? " " + transfer.pct + "%" : "")
-                                    elide: Text.ElideRight
-                                    font.family: "JetBrainsMono Nerd Font"
-                                    font.pixelSize: 12
-                                    color: transfer.t.state === "failed" ? Theme.alert : Theme.fgMuted
-                                }
-                            }
-                        }
-                    }
+                height: 32
+                radius: 8
+                color: panel.tint(Theme.hue2, 0.15)
+                Text {
+                    x: 12
+                    width: parent.width - 24
+                    anchors.verticalCenter: parent.verticalCenter
+                    elide: Text.ElideRight
+                    text: panel.toast
+                    font.family: "JetBrainsMono Nerd Font"
+                    font.pixelSize: 12
+                    color: Theme.fg
                 }
             }
+        }
+        }
 
-            PhoneSettings {
-                visible: panel.tab === "settings"
-                width: parent.width
-                panel: content.owner
-            }
-
-            Text { // confirmations
-                width: parent.width
-                height: 16
-                text: panel.toast
-                font.family: "JetBrainsMono Nerd Font"
-                font.pixelSize: 12
-                color: Theme.fgMuted
+        Component {
+            id: settingsView
+            Item {
+                id: settingsItem
+                readonly property string viewName: "settings"
+                implicitHeight: Math.min(viewHeader.height + 8 + phoneSettings.implicitHeight + 16,
+                    panel.bar.screen.height - panel.bar.height - Settings.look.frame - 32)
+                ViewHeader {
+                    id: viewHeader
+                    title: "Phone settings"
+                    onBack: stack.pop()
+                }
+                Flickable {
+                    y: viewHeader.height + 8
+                    width: parent.width
+                    height: parent.height - y
+                    contentHeight: phoneSettings.implicitHeight + 16
+                    clip: true
+                    boundsBehavior: Flickable.StopAtBounds
+                    PhoneSettings {
+                        id: phoneSettings
+                        x: 16
+                        width: parent.width - 32
+                        panel: settingsItem.settingsPanelRef
+                    }
+                }
+                // PhoneSettings' own `panel` property would shadow the id in `panel: panel`.
+                readonly property var settingsPanelRef: panel
             }
         }
     }
