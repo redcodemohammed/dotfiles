@@ -21,14 +21,30 @@ and the whole desktop, from the terminal to the boot splash, recolours itself.
 - **Island**: a notch in the bar that shows what's happening: volume and brightness,
   notifications, media with lyrics, recording, Pomodoro, build results, Wi-Fi and Bluetooth
   events.
-- **Panels** that grow from the bar, one open at a time: notifications inbox, screen recording,
-  Pomodoro, phone bridge (KDE Connect through `kcd`), tools (colour picker, text from the screen,
-  clipboard, generators, web tools).
+- **Panels** that grow out of the bar under their chip, one open at a time, in the same look as
+  quick settings. Some have views one click deeper (back or Escape returns):
+  - **Notifications inbox** (Arch chip, SUPER + I): notifications as cards with their actions, a
+    dismiss button and how long ago; Do Not Disturb and Clear all in the header. J/K to move,
+    Enter to open, X to dismiss.
+  - **Tools** (wrench, SUPER + X): pick a colour (recent ones as swatches) and read text from the
+    screen; a clipboard card that recognises a JWT, JSON, base64 or URL-encoded text and offers
+    the fitting transform (format JSON, decode a JWT into its own view with its expiry, base64
+    and URL encode and decode); UUID, ISO and Unix time and lorem ipsum, a click copies them;
+    your local dev servers, with a QR code to open one on the phone.
+  - **Pomodoro**: the time left in a ring, the phase in its colour, this round's sessions, and
+    the focus and break lengths.
+  - **Screen recording**: desktop and mic audio, two tracks, frame rate and quality, then Start;
+    while recording, the time, Pause and Stop and save.
+  - **Phone** (KDE Connect through `kcd`): battery and network, ring it, send the clipboard or a
+    file, browse its files, its notifications with Reply and Copy code, and its settings as a
+    view.
 - **Corner widget**: CPU, memory and disk rings in the frame's bottom-right corner, under the
   windows.
-- **Settings panel** (SUPER + comma): gaps, border, blur, animations, the frame and its corners,
-  the corner widget's screen, terminal opacity, keyboard repeat, pointer, touchpad, clock,
-  workspaces per screen, idle lock and sleep times.
+- **Settings panel** (SUPER + comma, or Settings in quick settings): four sections with a summary
+  of each, Look (gaps, border, the frame and its corners, the corner widget's screen, terminal
+  opacity, blur, animations), Input (keyboard repeat, pointer, touchpad), Bar & island (clock,
+  bars on other screens, workspaces per screen, media in the island) and Power (idle lock,
+  screens off and sleep times). Changes apply at once.
 - **Shortcuts overlay** (SUPER + F1), read live from Hyprland, plus tmux and Neovim.
 - **Wallpaper colours**: an image or a video wallpaper sets the palette for Hyprland,
   Quickshell, Alacritty, tmux, Neovim, fish, fzf, `ls` colours, cava, fastfetch, peaclock, GTK,
