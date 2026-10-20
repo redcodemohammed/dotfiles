@@ -15,7 +15,7 @@ trap 'rm -rf "$tmp"' EXIT
 python3 -I "$src/make-theme.py" "$tmp" "$dots/palette/palette.toml"
 rm -rf "$dest"
 mkdir -p "$dest"
-cp "$tmp"/* "$dest"/
+cp -r "$tmp"/* "$dest"/  # -r: icons/
 
 [ -e /etc/default/grub.pre-hypr-theme ] || cp -p /etc/default/grub /etc/default/grub.pre-hypr-theme
 [ -e /boot/grub/grub.cfg.pre-hypr-theme ] || cp -p /boot/grub/grub.cfg /boot/grub/grub.cfg.pre-hypr-theme
