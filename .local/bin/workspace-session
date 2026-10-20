@@ -3,11 +3,14 @@
 
   workspace-session save <id> [<number>]    save workspace <id>'s windows (replaces its save)
   workspace-session forget <id> [<number>]  drop workspace <id>'s save
+  workspace-session toggle <id> [<number>]  the pill's right click: save, update or forget
   workspace-session restore                 open every saved workspace again (Hyprland's autostart)
   workspace-session list                    the saved workspace IDs
 
-A right click on a workspace pill in the bar saves it, or forgets its save when it is empty; a
-dot on the pill marks a saved one. <number> is only for the notification ("workspace 2"): the
+A right click on a workspace pill in the bar is `toggle`: not saved, it saves; saved and the same
+as now (the same apps, terminal folders and programs, each window's place and size within a few
+pixels), it forgets the save, so a second right click undoes the first; saved and different, it
+updates the save; empty, it forgets (owner, 2026-10-20). A bookmark on the pill marks a saved one. <number> is only for the notification ("workspace 2"): the
 ID is hyprsplit's (11 is the second screen's first workspace).
 
 Saved per window, in ~/.local/state/workspace-session/<id>.json: the app and how it was started
@@ -128,12 +131,12 @@ def write_index():
     INDEX.write_text(json.dumps(ids))
 
 
-def save(ws, number):
+def capture(ws, number):
+    """The record a save writes for workspace ws, or None when it has no windows."""
     monitors = {m["id"]: m for m in hypr("monitors")}
     clients = [c for c in hypr("clients") if c["workspace"]["id"] == ws and c["mapped"] and not c["hidden"]]
     if not clients:
-        forget(ws, number)
-        return
+        return None
     # Tiled ones in reading order (top to bottom, then left to right); floating ones after.
     clients.sort(key=lambda c: (c["floating"], c["at"][1], c["at"][0]))
     monitor = monitors.get(clients[0]["monitor"], {})
@@ -151,12 +154,58 @@ def save(ws, number):
         if c["class"].lower() == "alacritty":
             w["terminal"] = terminal_state(c["pid"])
         windows.append(w)
+    return {"workspace": ws, "number": number, "monitor": monitor.get("name", ""),
+            "saved": time.strftime("%Y-%m-%dT%H:%M:%S"), "windows": windows}
+
+
+def write(ws, record):
     STATE.mkdir(parents=True, exist_ok=True)
-    (STATE / f"{ws}.json").write_text(json.dumps({"workspace": ws, "number": number, "monitor": monitor.get("name", ""),
-                                                  "saved": time.strftime("%Y-%m-%dT%H:%M:%S"), "windows": windows}, indent=2))
+    (STATE / f"{ws}.json").write_text(json.dumps(record, indent=2))
     write_index()
-    count = len(windows)
-    notify(f"Saved {count} window{'s' if count != 1 else ''} on workspace {number}: they open again at login")
+
+
+def windows_text(record):
+    n = len(record["windows"])
+    return f"{n} window{'s' if n != 1 else ''}"
+
+
+def save(ws, number):
+    record = capture(ws, number)
+    if record is None:
+        forget(ws, number)
+        return
+    write(ws, record)
+    notify(f"Saved {windows_text(record)} on workspace {number}: they open again at login")
+
+
+def same(a, b, slack=4):
+    """The same apps (a terminal: its folder and program too) in the same places, within a few
+    pixels: the laptop screen's 1.333 scale rounds sizes by a pixel or two."""
+    if a.get("monitor") != b.get("monitor") or len(a["windows"]) != len(b["windows"]):
+        return False
+    near = lambda p, q: all(abs(x - y) <= slack for x, y in zip(p, q))
+    # A terminal is compared by its folder and program: its command line is restore's own launch line.
+    keys = lambda v: ("class", "floating", "fullscreen") + (("terminal",) if "terminal" in v else ("command",))
+    return all(all(v.get(k) == w.get(k) for k in keys(v)) and near(v["at"], w["at"]) and near(v["size"], w["size"])
+               for v, w in zip(a["windows"], b["windows"]))
+
+
+def toggle(ws, number):
+    """The pill's right click: not saved, save; saved and unchanged, forget; changed, update."""
+    record = capture(ws, number)
+    path = STATE / f"{ws}.json"
+    try:
+        old = json.loads(path.read_text()) if path.exists() else None
+    except ValueError:
+        old = None  # unreadable: saved over
+    if record is None or (old and same(old, record)):
+        forget(ws, number)
+        return
+    write(ws, record)
+    if old:
+        notify(f"Updated workspace {number}: {windows_text(record)} open again at login")
+    else:
+        notify(f"Saved {windows_text(record)} on workspace {number}: they open again at login")
 
 
 def forget(ws, number):
@@ -425,10 +474,10 @@ def main():
     if len(sys.argv) < 2:
         sys.exit(__doc__)
     action = sys.argv[1]
-    if action in ("save", "forget") and len(sys.argv) in (3, 4) and sys.argv[2].isdigit():
+    if action in ("save", "forget", "toggle") and len(sys.argv) in (3, 4) and sys.argv[2].isdigit():
         ws = int(sys.argv[2])
         number = int(sys.argv[3]) if len(sys.argv) == 4 and sys.argv[3].isdigit() else ws
-        (save if action == "save" else forget)(ws, number)
+        {"save": save, "forget": forget, "toggle": toggle}[action](ws, number)
     elif action == "restore" and len(sys.argv) == 2:
         restore()
     elif action == "list" and len(sys.argv) == 2:

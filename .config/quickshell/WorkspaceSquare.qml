@@ -1,16 +1,21 @@
 import QtQuick
 import Quickshell
 import Quickshell.Hyprland
+import Quickshell.Widgets
 
 // One workspace in Workspaces.qml (owner, 2026-10-17: see which app is where). Empty: its number
 // in a 20px square (active: filled, dark number; else dim). With windows: a small number (11px),
-// then one Nerd Font glyph per window (AppGlyphs.qml) on its own background, like the owner's
-// sample. Each workspace has its own hue (owner, 2026-10-20: hue1-hue6 in turn by its number):
-// with windows a faint tint of it and the glyphs in it; active filled with it, dark glyphs
-// (Theme.textOnAccent: the hues are lit like the accent). Rounded 6. A click goes there: `target` is the workspace ID (hyprsplit's range
-// for this screen, so an empty slot works too). A right click saves its windows to open again at
-// login, or forgets that save when it is empty; a saved one has a dot in its top-right corner
-// (owner, 2026-10-20: SavedWorkspaces.qml, .local/bin/workspace-session).
+// then one icon per window. Each workspace has its own hue (owner, 2026-10-20: hue1-hue6 in turn
+// by its number): with windows a faint tint of it. Rounded 6.
+// The icons are the apps' own coloured ones from the icon theme (owner, 2026-10-20, replacing the
+// glyphs in the workspace hue): the window's app ID finds its .desktop file (heuristicLookup),
+// whose Icon= is looked up in the theme; none found, the Nerd Font glyph (AppGlyphs.qml) in the
+// hue. So an occupied active one is no longer filled: a 2px bar in its hue just under it. A
+// window that wants attention (urgent) has a red dot under its icon.
+// A click goes there: `target` is the workspace ID (hyprsplit's range for this screen, so an empty
+// slot works too). A right click toggles its save (open again at login): saves, updates it when
+// the windows changed, forgets it when they are as saved or the pill is empty (owner, 2026-10-20); a saved one shows a bookmark in place of its number (owner, 2026-10-20:
+// SavedWorkspaces.qml, .local/bin/workspace-session).
 Rectangle {
     id: group
     property var ws: null
@@ -26,7 +31,7 @@ Rectangle {
     width: occupied ? glyphs.width + 16 : 20 // 8px either side of the glyphs
     height: 20 // 4px clear of the block's border all round (owner): 28 inside, padding 6
     radius: 6
-    color: active ? hue : occupied ? Qt.rgba(hue.r, hue.g, hue.b, 0.18) : "transparent"
+    color: occupied ? Qt.rgba(hue.r, hue.g, hue.b, 0.18) : active ? hue : "transparent"
     Behavior on color { ColorAnimation { duration: 150 } }
 
     function appId(t) {
@@ -36,10 +41,10 @@ Rectangle {
     Text {
         visible: !group.occupied
         anchors.centerIn: parent
-        text: group.number
-        font.family: "JetBrainsMono Nerd Font"
-        font.pixelSize: 13
-        color: group.active ? Theme.textOnAccent : Theme.fgDim
+        text: group.saved ? Icons.bookmarkSimple : group.number
+        font.family: group.saved ? Icons.fill : "JetBrainsMono Nerd Font"
+        font.pixelSize: group.saved ? 12 : 13
+        color: group.active ? Theme.textOnAccent : group.saved ? group.hue : Theme.fgDim
     }
 
     Row {
@@ -47,34 +52,63 @@ Rectangle {
         visible: group.occupied
         anchors.centerIn: parent
         spacing: 8
-        Text { // its number, small and dim, so SUPER + n still reads off the bar (owner)
+        Text { // its number, small and dim, so SUPER + n still reads off the bar (owner); saved: a bookmark
             anchors.verticalCenter: parent.verticalCenter
-            text: group.number
-            font.family: "JetBrainsMono Nerd Font"
+            text: group.saved ? Icons.bookmarkSimple : group.number
+            font.family: group.saved ? Icons.fill : "JetBrainsMono Nerd Font"
             font.pixelSize: 11
-            color: group.active ? Theme.textOnAccent : group.hue
-            opacity: 0.7
+            color: group.hue
+            opacity: group.saved || group.active ? 1 : 0.7
         }
         Repeater {
             model: group.windows
-            Text {
+            Item {
+                id: app
                 required property var modelData
-                text: AppGlyphs.forApp(group.appId(modelData))
-                font.family: "JetBrainsMono Nerd Font"
-                font.pixelSize: 15
-                color: group.active ? Theme.textOnAccent : group.hue
+                readonly property string icon: {
+                    const entry = DesktopEntries.heuristicLookup(group.appId(modelData))
+                    return entry && entry.icon ? Quickshell.iconPath(entry.icon, true) : ""
+                }
+                anchors.verticalCenter: parent.verticalCenter
+                width: 16
+                height: 16
+
+                IconImage {
+                    visible: app.icon !== ""
+                    anchors.fill: parent
+                    source: app.icon
+                }
+                Text { // no icon in the theme: the glyph, as before
+                    visible: app.icon === ""
+                    anchors.centerIn: parent
+                    text: AppGlyphs.forApp(group.appId(app.modelData))
+                    font.family: "JetBrainsMono Nerd Font"
+                    font.pixelSize: 15
+                    color: group.hue
+                }
+                Rectangle { // urgent: it wants attention, until it is focused
+                    visible: app.modelData.urgent
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    y: parent.height // on the pill's bottom edge, above the active bar
+                    width: 4
+                    height: 4
+                    radius: 2
+                    color: Theme.alert
+                }
             }
         }
     }
 
-    Rectangle { // saved: opens again at login
-        visible: group.saved
-        x: parent.width - width - 3 // inside the corner's curve, in the padding
-        y: 3
-        width: 4
-        height: 4
-        radius: 2
-        color: group.active ? Theme.textOnAccent : group.hue
+    Rectangle { // active with windows: the bar in its hue (filled would hide the icons' colours),
+        // 2px under the pill in the chip's padding, clear of the icons (owner, 2026-10-20)
+        visible: group.active && group.occupied
+        anchors.top: parent.bottom
+        anchors.topMargin: 2
+        anchors.horizontalCenter: parent.horizontalCenter
+        width: parent.width - 8
+        height: 2
+        radius: 1
+        color: group.hue
     }
 
     MouseArea {
@@ -83,10 +117,7 @@ Rectangle {
         acceptedButtons: Qt.LeftButton | Qt.RightButton
         onClicked: mouse => {
             if (mouse.button === Qt.RightButton) {
-                if (group.occupied)
-                    SavedWorkspaces.save(group.target, group.number)
-                else
-                    SavedWorkspaces.forget(group.target, group.number)
+                SavedWorkspaces.toggle(group.target, group.number)
                 return
             }
             if (!group.ws && group.monitorName !== "")

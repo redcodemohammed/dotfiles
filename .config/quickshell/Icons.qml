@@ -25,6 +25,7 @@ Singleton {
     readonly property string caretLeft: "\ue138"  // the bar tray, folded
     readonly property string caretRight: "\ue13a" // the bar tray, open
     readonly property string check: "\ue182" // build ok
+    readonly property string bookmarkSimple: "\ue0ea" // a saved workspace (fill)
     readonly property string cross: "\ue4f6" // build failed
 
     readonly property string batteryFull: "\ue0c0"
