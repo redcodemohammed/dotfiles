@@ -145,11 +145,12 @@ source = auto
 # use one of the predefined ones.
 ; method = noncurses
 
-# Orientation of the visualization. Can be 'bottom', 'top', 'left' or 'right'.
-# Default is 'bottom'. Other orientations are only supported on sdl and ncruses
-# output. Note: many fonts have weird glyphs for 'top' and 'right' characters,
-# which can make ncurses not look right.
-; orientation = bottom
+# 'horizontal' grows the bars from the middle line (noncurses output only); the left
+# channel goes up, the right one down, the gradient c1 at the line to c6 at the tips
+# (owner, 2026-10-20: center mode, not symmetric).
+orientation = horizontal
+horizontal_stereo = 1
+horizontal_gradient = 1
 
 # Visual channels. Can be 'stereo' or 'mono'.
 # 'stereo' mirrors both channels with low frequencies in center.
