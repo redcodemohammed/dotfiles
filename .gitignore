@@ -37,3 +37,6 @@
 /.config/fish/fish_variables
 /.peaclock/history
 /.config/atuin/atuin-receipt.json
+
+# Python bytecode caches (palette/, .local/bin scripts)
+__pycache__/
