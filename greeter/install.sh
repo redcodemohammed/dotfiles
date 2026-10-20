@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # greeter/install.sh: copy the Quickshell greeter into /etc/greetd (run with sudo from ~/dotfiles).
-# The greeter user can't read ~, so everything is copied, Theme.qml and Icons.qml included: run it
+# The greeter user can't read ~, so everything is copied, Theme.qml, Edge.qml and Icons.qml included: run it
 # again after a wallpaper change to give the login screen the new colours (boot-colours does). The
 # mouse cursor theme is built from the palette into /usr/share/icons/hypr-cursors. Enables nothing.
 set -euo pipefail
@@ -15,7 +15,7 @@ sed "s|@USER@|$user|" "$src/shell.qml" >/tmp/greeter-shell.qml.$$
 install -m 644 /tmp/greeter-shell.qml.$$ /etc/greetd/quickshell-greeter/shell.qml
 rm -f /tmp/greeter-shell.qml.$$
 install -m 644 "$src/GreeterContent.qml" /etc/greetd/quickshell-greeter/
-install -m 644 "$dots/.config/quickshell/Theme.qml" "$dots/.config/quickshell/Icons.qml" /etc/greetd/quickshell-greeter/
+install -m 644 "$dots/.config/quickshell/Theme.qml" "$dots/.config/quickshell/Edge.qml" "$dots/.config/quickshell/Icons.qml" /etc/greetd/quickshell-greeter/
 install -m 644 "$src/hyprland.lua" /etc/greetd/hyprland-greeter.lua
 install -m 644 "$dots/.config/hypr/hypr_palette.lua" /etc/greetd/hypr_palette.lua
 monitors="$dots/.config/hypr/monitors.lua" # this machine's screens; a fresh clone has only the example

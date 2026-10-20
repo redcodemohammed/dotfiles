@@ -34,6 +34,15 @@ ShellRoot {
         if (sessions.length > 0)
             sessionIndex = (sessionIndex + step + sessions.length) % sessions.length
     }
+    // Restart and Shut down ("reboot", "poweroff"). Test mode only says so: a test must never
+    // power the machine off (owner, 2026-10-20: a test window's Restart rebooted it).
+    function power(action) {
+        if (test)
+            message = "Test mode: " + action + " skipped"
+        else
+            Quickshell.execDetached(["systemctl", action])
+    }
+
     function submit() {
         if (checking || password === "" || session === null)
             return
@@ -91,7 +100,7 @@ ShellRoot {
         id: lock
         locked: true
         WlSessionLockSurface {
-            color: Theme.bg
+            color: Edge.fill // the frame's colour, under GreeterContent's frame
             GreeterContent {
                 anchors.fill: parent
                 shell: root
