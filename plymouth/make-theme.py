@@ -9,8 +9,9 @@ in the accent in the middle of the ground, "Arch Linux" under it; boot messages 
 muted near the bottom; a password request as the lock screen's field (the accent tint, a filled
 lock, one bullet per key) with its prompt above. Plymouth's script plugin only places, scales and
 fades images, so every rounded shape is a PNG made here: the ground is a 1px image stretched to
-fill, its four corners laid over it. Sizes are the desktop's times its 4/3 scale, for the 2560x1600
-laptop panel. Writes hypr.plymouth, hypr.script and the PNGs. Run by install.sh.
+fill, its four corners laid over it. Every screen gets its own frame, logo and band (Plymouth
+overlaps them on one canvas, so the script spreads them apart); messages and the password go on
+the laptop's (2560x1600). Sizes are the desktop's times its 4/3 scale. Writes hypr.plymouth, hypr.script and the PNGs. Run by install.sh.
 """
 import os
 import re
@@ -121,74 +122,128 @@ Window.SetBackgroundBottomColor({script_rgb(frame)});
 side = {SIDE};
 band = {BAND};
 radius = {RADIUS};
-x0 = Window.GetX();
-y0 = Window.GetY();
-w = Window.GetWidth();
-h = Window.GetHeight();
-
-# The ground inside the frame, and its rounded corners over it.
-ground.image = Image("ground.png").Scale(w - 2 * side, h - band - side);
-ground.sprite = Sprite(ground.image);
-ground.sprite.SetPosition(x0 + side, y0 + band, 0);
-corners[0] = Sprite(Image("corner-tl.png"));
-corners[0].SetPosition(x0 + side, y0 + band, 1);
-corners[1] = Sprite(Image("corner-tr.png"));
-corners[1].SetPosition(x0 + w - side - radius, y0 + band, 1);
-corners[2] = Sprite(Image("corner-bl.png"));
-corners[2].SetPosition(x0 + side, y0 + h - side - radius, 1);
-corners[3] = Sprite(Image("corner-br.png"));
-corners[3].SetPosition(x0 + w - side - radius, y0 + h - side - radius, 1);
-
-cx = x0 + w / 2;
-cy = y0 + band + (h - band - side) / 2;
-
-logo.image = Image("logo.png");
-logo.sprite = Sprite(logo.image);
-logo.sprite.SetPosition(cx - logo.image.GetWidth() / 2, cy - logo.image.GetHeight() + 16, 2);
-name.image = Image.Text("Arch Linux", {script_rgb(ui['fg_muted'])});
-name.sprite = Sprite(name.image);
-name.sprite.SetPosition(cx - name.image.GetWidth() / 2, cy + 44, 2);
-
-# The band: six segments, lit up to the boot's progress; the one in progress pulses.
+seg_w = {SEG_W};
+seg_h = {SEG_H};
+seg_gap = {SEG_GAP};
+field_w = {FIELD_W};
+field_h = {FIELD_H};
+lock_size = {round(20 * SCALE)};
 off_image = Image("seg-off.png");
 for (i = 0; i < 6; i++)
-  {{
-    seg_image[i] = Image("seg" + i + ".png");
-    segs[i] = Sprite(off_image);
-    segs[i].SetPosition(cx - (6 * {SEG_W} + 5 * {SEG_GAP}) / 2 + i * ({SEG_W} + {SEG_GAP}), y0 + (band - {SEG_H}) / 2, 2);
-  }}
+  seg_image[i] = Image("seg" + i + ".png");
+logo_image = Image("logo.png");
+name_image = Image.Text("Arch Linux", {script_rgb(ui['fg_muted'])});
+
+# Plymouth puts every screen on one canvas, each centred on the largest, so they overlap and
+# show slices of one picture. Instead: the screens side by side, apart, each with its own
+# frame, logo and band; messages and the password on the laptop's (2560x1600, else the first).
+# Plymouth re-centres them when a screen is added, so the refresh lays them out again then.
+# A name assigned in a function is the global one only if it exists already (else a new local,
+# dropped on return, and its sprites with it), so every name the functions share is made here.
+laid = 0;
+primary = 0;
+placed[0] = 0;
+screen_cx[0] = 0;
+screen_cy[0] = 0;
+screen_bottom[0] = 0;
+grounds[0] = NULL;
+corners[0] = NULL;
+logos[0] = NULL;
+names[0] = NULL;
+segs[0] = NULL;
 lit = 0;
+fun count_screens ()
+  {{
+    n = 0;
+    while (Window.GetWidth(n))
+      n++;
+    return n;
+  }}
+fun layout ()
+  {{
+    laid = count_screens();
+    primary = 0;
+    for (d = 0; d < laid; d++)
+      if (Window.GetWidth(d) == 2560 && Window.GetHeight(d) == 1600)
+        primary = d;
+    left = 0;
+    for (d = 0; d < laid; d++)
+      {{
+        Window.SetX(d, left);
+        Window.SetY(d, 0);
+        placed[d] = left;
+        w = Window.GetWidth(d);
+        h = Window.GetHeight(d);
+        screen_cx[d] = left + w / 2;
+        screen_cy[d] = band + (h - band - side) / 2;
+        screen_bottom[d] = h - side;
+        # The ground inside the frame, and its rounded corners over it.
+        grounds[d] = Sprite(Image("ground.png").Scale(w - 2 * side, h - band - side));
+        grounds[d].SetPosition(left + side, band, 0);
+        corners[d * 4] = Sprite(Image("corner-tl.png"));
+        corners[d * 4].SetPosition(left + side, band, 1);
+        corners[d * 4 + 1] = Sprite(Image("corner-tr.png"));
+        corners[d * 4 + 1].SetPosition(left + w - side - radius, band, 1);
+        corners[d * 4 + 2] = Sprite(Image("corner-bl.png"));
+        corners[d * 4 + 2].SetPosition(left + side, h - side - radius, 1);
+        corners[d * 4 + 3] = Sprite(Image("corner-br.png"));
+        corners[d * 4 + 3].SetPosition(left + w - side - radius, h - side - radius, 1);
+        logos[d] = Sprite(logo_image);
+        logos[d].SetPosition(screen_cx[d] - logo_image.GetWidth() / 2, screen_cy[d] - logo_image.GetHeight() + 16, 2);
+        names[d] = Sprite(name_image);
+        names[d].SetPosition(screen_cx[d] - name_image.GetWidth() / 2, screen_cy[d] + 44, 2);
+        # The band: six segments, lit up to the boot's progress.
+        for (i = 0; i < 6; i++)
+          {{
+            segs[d * 6 + i] = Sprite(off_image);
+            segs[d * 6 + i].SetPosition(screen_cx[d] - (6 * seg_w + 5 * seg_gap) / 2 + i * (seg_w + seg_gap), (band - seg_h) / 2, 2);
+          }}
+        left = left + w + 64;
+      }}
+    show_progress();
+  }}
+
+fun show_progress ()
+  {{
+    for (d = 0; d < laid; d++)
+      for (i = 0; i < 6; i++)
+        {{
+          if (i <= lit)
+            segs[d * 6 + i].SetImage(seg_image[i]);
+          else
+            segs[d * 6 + i].SetImage(off_image);
+          if (i < lit)
+            segs[d * 6 + i].SetOpacity(1);
+        }}
+  }}
 fun progress_callback (duration, progress)
   {{
     lit = Math.Int(progress * 6);
-    for (i = 0; i < 6; i++)
-      {{
-        if (i <= lit)
-          segs[i].SetImage(seg_image[i]);
-        else
-          segs[i].SetImage(off_image);
-        if (i < lit)
-          segs[i].SetOpacity(1);
-      }}
+    show_progress();
   }}
 Plymouth.SetBootProgressFunction (progress_callback);
 
 time = 0;
 fun refresh_callback ()
   {{
+    n = count_screens();
+    if (n != laid || Window.GetX(n - 1) != placed[n - 1])
+      layout();
     time++;  # 50 per second
     if (lit < 6)
-      segs[lit].SetOpacity(0.35 + 0.65 * (Math.Cos(time / 50 * 2 * 3.14159 / 1.2) + 1) / 2);  # 1.2 s a pulse
+      for (d = 0; d < laid; d++)
+        segs[d * 6 + lit].SetOpacity(0.35 + 0.65 * (Math.Cos(time / 50 * 2 * 3.14159 / 1.2) + 1) / 2);  # 1.2 s a pulse
   }}
 Plymouth.SetRefreshFunction (refresh_callback);
+layout();
 
-# Messages (fsck and such): muted, centred near the bottom.
+# Messages (fsck and such): muted, centred near the laptop's bottom.
 message.sprite = Sprite();
 fun display_message_callback (text)
   {{
     message.image = Image.Text(text, {script_rgb(ui['fg_muted'])});
     message.sprite.SetImage(message.image);
-    message.sprite.SetPosition(cx - message.image.GetWidth() / 2, y0 + h - side - 64, 3);
+    message.sprite.SetPosition(screen_cx[primary] - message.image.GetWidth() / 2, screen_bottom[primary] - 64, 3);
     message.sprite.SetOpacity(1);
   }}
 fun hide_message_callback (text)
@@ -198,34 +253,34 @@ fun hide_message_callback (text)
 Plymouth.SetDisplayMessageFunction (display_message_callback);
 Plymouth.SetHideMessageFunction (hide_message_callback);
 
-# A password request (none expected: no disk encryption): the lock screen's field, the prompt
-# above it, one bullet per key.
+# A password request (none expected: no disk encryption), on the laptop: the lock screen's
+# field, the prompt above it, one bullet per key.
 field.sprite = Sprite(Image("field.png"));
 field.sprite.SetOpacity(0);
 lock.sprite = Sprite(Image("lock.png"));
 lock.sprite.SetOpacity(0);
 prompt.sprite = Sprite();
 bullets.sprite = Sprite();
-fx = cx - {FIELD_W} / 2;
-fy = cy + 110;
-field.sprite.SetPosition(fx, fy, 3);
-lock.sprite.SetPosition(fx + 21, fy + ({FIELD_H} - {round(20 * SCALE)}) / 2, 4);
 fun display_password_callback (text, count)
   {{
+    fx = screen_cx[primary] - field_w / 2;
+    fy = screen_cy[primary] + 110;
+    field.sprite.SetPosition(fx, fy, 3);
+    lock.sprite.SetPosition(fx + 21, fy + (field_h - lock_size) / 2, 4);
     prompt.image = Image.Text(text, {script_rgb(ui['fg_muted'])});
     prompt.sprite.SetImage(prompt.image);
-    prompt.sprite.SetPosition(cx - prompt.image.GetWidth() / 2, fy - prompt.image.GetHeight() - 16, 4);
+    prompt.sprite.SetPosition(screen_cx[primary] - prompt.image.GetWidth() / 2, fy - prompt.image.GetHeight() - 16, 4);
     line = "";
     for (i = 0; i < count; i++)
       line = line + "• ";
     bullets.image = Image.Text(line, {script_rgb(ui['fg'])});
     bullets.sprite.SetImage(bullets.image);
-    bullets.sprite.SetPosition(fx + 64, fy + ({FIELD_H} - bullets.image.GetHeight()) / 2, 4);
+    bullets.sprite.SetPosition(fx + 64, fy + (field_h - bullets.image.GetHeight()) / 2, 4);
     field.sprite.SetOpacity(1);
     lock.sprite.SetOpacity(1);
     prompt.sprite.SetOpacity(1);
     bullets.sprite.SetOpacity(1);
-    name.sprite.SetOpacity(0);
+    names[primary].SetOpacity(0);
   }}
 fun display_normal_callback ()
   {{
@@ -233,7 +288,7 @@ fun display_normal_callback ()
     lock.sprite.SetOpacity(0);
     prompt.sprite.SetOpacity(0);
     bullets.sprite.SetOpacity(0);
-    name.sprite.SetOpacity(1);
+    names[primary].SetOpacity(1);
   }}
 Plymouth.SetDisplayPasswordFunction (display_password_callback);
 Plymouth.SetDisplayNormalFunction (display_normal_callback);
