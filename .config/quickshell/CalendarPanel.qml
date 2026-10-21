@@ -31,11 +31,19 @@ PopupWindow {
         else if (Date.now() - closedAt > 300) // the click that closed it may also land on the chip
             visible = true
     }
+    // The guard counts from when the closing starts, not from when the shrink ends: counted from the
+    // end, a click right after the shrink was swallowed and opening took a second click.
+    Connections {
+        target: reveal
+        function onClosingChanged() { if (reveal.closing) panel.closedAt = Date.now() }
+    }
     onVisibleChanged: {
-        if (!visible)
-            closedAt = Date.now()
-        else
+        if (!visible) {
+            if (!Settings.look.animations) // no shrink: it closed just now
+                closedAt = Date.now()
+        } else {
             offset = 0
+        }
     }
 
     readonly property color hue: Theme.hue6 // the clock chip's
