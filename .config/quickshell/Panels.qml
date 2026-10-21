@@ -8,7 +8,7 @@ import Quickshell.Io
 // any other open one sees `current` change and closes (bar panels shrink back into the band through EdgePanel,
 // the shortcuts overlay just closes). Covers every bar panel and the inbox (all on EdgePanel.qml)
 // and the shortcuts overlay. The island is not a panel.
-// `qs ipc call panel toggle <record|sound|bluetooth|network>` opens one on the focused screen (Bar.qml listens).
+// `qs ipc call panel toggle <record|pomodoro|calendar|sound|bluetooth|network>` opens one on the focused screen (Bar.qml listens).
 Singleton {
     id: root
     property var current: null

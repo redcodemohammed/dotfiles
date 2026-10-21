@@ -100,10 +100,16 @@ PanelWindow {
                 return
             if (name === "record") recordPanel.toggle()
             else if (name === "pomodoro") pomodoroPanel.toggle()
+            else if (name === "calendar") calendarPanel.toggle()
             else if (name === "sound") quickPanel.openView("sound") // quick settings' sound view
             else if (name === "bluetooth") quickPanel.openView("bluetooth")
             else if (name === "network") quickPanel.openView("network")
         }
+    }
+    CalendarPanel { // drops from the clock chip, centred under it
+        id: calendarPanel
+        bar: bar
+        block: clockBlock
     }
     PomodoroPanel { // drops from the Pomodoro block
         id: pomodoroPanel
@@ -341,8 +347,11 @@ PanelWindow {
             }
         }
 
-        BarChip { // the clock (the layout chip went, owner 2026-10-20)
+        BarChip { // the clock (the layout chip went, owner 2026-10-20); a click opens the calendar (2026-10-21)
+            id: clockBlock
             hue: clock.ink
+            clickable: true
+            onClicked: calendarPanel.toggle()
             Clock {
                 id: clock
                 hue: Theme.hue6
