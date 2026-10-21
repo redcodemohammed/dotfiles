@@ -43,7 +43,6 @@ PopupWindow {
     }
     onVisibleChanged: {
         if (!visible) {
-            closedAt = Date.now()
             say("", "")
             Tools.failed = ""
             stack.pop(null, StackView.Immediate)

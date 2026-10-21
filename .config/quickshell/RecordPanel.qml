@@ -33,7 +33,6 @@ PopupWindow {
         else if (Date.now() - closedAt > 300) // the click that closed it may also land on the block
             visible = true
     }
-    onVisibleChanged: if (!visible) closedAt = Date.now()
 
     Connections {
         target: Recording

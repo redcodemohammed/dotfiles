@@ -51,7 +51,6 @@ PopupWindow {
     }
     onVisibleChanged: {
         if (!visible) {
-            closedAt = Date.now()
             if (Notifs.inboxOpen)
                 Notifs.setInbox(false)
         }

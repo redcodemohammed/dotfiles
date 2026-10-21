@@ -42,7 +42,6 @@ PopupWindow {
     }
     onVisibleChanged: {
         if (!visible) {
-            closedAt = Date.now()
             sel = ""
             replyText = ""
             stack.pop(null, StackView.Immediate)

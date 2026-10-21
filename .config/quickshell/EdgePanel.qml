@@ -42,6 +42,11 @@ Item {
     function close() {
         if (!window.visible || shrinking)
             return
+        // The panels' reopen guard (toggle(): the click that closed it may also land on its chip)
+        // counts from here, when the closing starts; counted from the end of the shrink, a click
+        // right after it was swallowed and opening took two clicks (owner, 2026-10-21).
+        if (window.closedAt !== undefined)
+            window.closedAt = Date.now()
         open = false
         if (Settings.look.animations)
             shrinking = true

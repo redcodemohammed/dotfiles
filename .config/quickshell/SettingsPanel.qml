@@ -37,7 +37,6 @@ PopupWindow {
     }
     onVisibleChanged: {
         if (!visible) {
-            closedAt = Date.now()
             stack.pop(null, StackView.Immediate)
         }
     }

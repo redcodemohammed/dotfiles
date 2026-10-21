@@ -32,7 +32,6 @@ PopupWindow {
         else if (Date.now() - closedAt > 300) // the click that closed it may also land on the block
             visible = true
     }
-    onVisibleChanged: if (!visible) closedAt = Date.now()
 
     readonly property string mainLabel: Pomodoro.waiting === "focus" ? "Start focus"
         : Pomodoro.waiting !== "" ? "Start break"
