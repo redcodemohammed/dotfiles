@@ -13,7 +13,7 @@ if screens.laptop then
     hl.monitor({ output = l.output, mode = l.mode, position = l.position, scale = l.scale })
 end
 for _, s in ipairs(screens.screens) do
-    hl.monitor({ output = s.output, mode = s.mode, position = s.position, scale = s.scale })
+    hl.monitor({ output = s.output, mode = s.mode, position = s.position, scale = s.scale, transform = s.transform })
 end
 hl.monitor({ output = "", mode = "preferred", position = "auto", scale = "auto" }) -- catch-all, never remove
 

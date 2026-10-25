@@ -71,7 +71,8 @@ if laptop ~= nil then
     })
 end
 for _, s in ipairs(screens.screens) do
-    hl.monitor({ output = s.output, mode = s.mode, position = s.position, scale = s.scale })
+    -- transform: a turned screen (1 = 90°, 3 = 270°; nil = upright)
+    hl.monitor({ output = s.output, mode = s.mode, position = s.position, scale = s.scale, transform = s.transform })
 end
 
 -- Catch-all fallback: any unmatched screen still lights up. Never remove.
