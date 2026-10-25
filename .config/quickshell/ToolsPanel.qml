@@ -138,7 +138,7 @@ PopupWindow {
         color: Theme.fgMuted
     }
 
-    // A screen tool: its icon in its hue, a name and what it does.
+    // A screen tool: its icon (gray, 2026-10-25), a name and what it does.
     component ToolTile: Rectangle {
         id: tile
         property string glyph
@@ -202,7 +202,7 @@ PopupWindow {
             anchors.fill: parent
             radius: cardButton.corners === "" ? 8 : 3
             color: cardButton.failed ? Edge.alertTint
-                : cardButton.fits ? panel.tint(Theme.hue5, cardHover.containsMouse ? 0.25 : 0.15)
+                : cardButton.fits ? panel.tint(Theme.accent, cardHover.containsMouse ? 0.25 : 0.15)
                 : cardHover.containsMouse ? panel.liftHover : panel.lift
             Rectangle {
                 visible: cardButton.corners !== ""
@@ -222,7 +222,7 @@ PopupWindow {
                 text: cardButton.glyph
                 font.family: cardButton.fits ? Icons.fill : Icons.regular
                 font.pixelSize: 14
-                color: cardButton.failed ? Theme.alert : Theme.hue5
+                color: cardButton.failed ? Theme.alert : Theme.accent
             }
             Text {
                 anchors.verticalCenter: parent.verticalCenter
@@ -278,7 +278,7 @@ PopupWindow {
             text: gen.label
             font.family: "JetBrainsMono Nerd Font"
             font.pixelSize: 12
-            color: Theme.hue6
+            color: Theme.fgMuted
         }
         Text {
             x: 58
@@ -354,7 +354,7 @@ PopupWindow {
                         ToolTile {
                             width: parent.cell
                             glyph: Icons.eyedropper
-                            hue: Theme.hue1
+                            hue: Theme.fgMuted
                             label: "Pick colour"
                             status: "From the screen"
                             onClicked: {
@@ -365,7 +365,7 @@ PopupWindow {
                         ToolTile {
                             width: parent.cell
                             glyph: Icons.textT
-                            hue: Theme.hue4
+                            hue: Theme.fgMuted
                             label: "Read text"
                             status: "Region to clipboard"
                             onClicked: {
@@ -449,7 +449,7 @@ PopupWindow {
                                     text: Icons.clipboardText
                                     font.family: Icons.regular
                                     font.pixelSize: 16
-                                    color: panel.detected ? Theme.hue5 : Theme.fgMuted
+                                    color: panel.detected ? Theme.accent : Theme.fgMuted
                                 }
                                 Text {
                                     x: 26
@@ -474,14 +474,14 @@ PopupWindow {
                                     width: visible ? badgeText.implicitWidth + 16 : 0
                                     height: 20
                                     radius: 6
-                                    color: panel.detected ? panel.tint(Theme.hue5, 0.15) : panel.lift
+                                    color: panel.detected ? panel.tint(Theme.accent, 0.15) : panel.lift
                                     Text {
                                         id: badgeText
                                         anchors.centerIn: parent
                                         text: ({ jwt: "JWT", json: "JSON", base64: "Base64", url: "URL", text: "Text" })[parent.parent.cb.kind] ?? ""
                                         font.family: "JetBrainsMono Nerd Font"
                                         font.pixelSize: 11
-                                        color: panel.detected ? Theme.hue5 : Theme.fgMuted
+                                        color: panel.detected ? Theme.accent : Theme.fgMuted
                                     }
                                 }
                             }
@@ -591,7 +591,7 @@ PopupWindow {
                         text: Icons.qrCode
                         font.family: Icons.regular
                         font.pixelSize: 20
-                        color: Theme.hue3
+                        color: Theme.fgMuted
                     }
                     Column {
                         x: 42
@@ -609,7 +609,7 @@ PopupWindow {
                                     + (parent.parent.lan > 0 ? " · " + parent.parent.lan + " on the LAN" : "")
                             font.family: "JetBrainsMono Nerd Font"
                             font.pixelSize: 12
-                            color: parent.parent.lan > 0 ? Theme.hue3 : Theme.fgMuted
+                            color: parent.parent.lan > 0 ? Theme.accent : Theme.fgMuted
                         }
                     }
                     Text {
@@ -635,7 +635,7 @@ PopupWindow {
                     width: parent.width
                     height: twoLines ? reason.y + reason.height + 9 : 32
                     radius: 8
-                    color: panel.noteKind === "ok" ? panel.tint(Theme.hue3, 0.15)
+                    color: panel.noteKind === "ok" ? panel.tint(Theme.accent, 0.15)
                         : panel.noteKind === "error" ? Edge.alertTint : Edge.control
                     Text {
                         id: noteIcon
@@ -644,7 +644,7 @@ PopupWindow {
                         text: panel.noteKind === "ok" ? Icons.check : panel.noteKind === "error" ? Icons.warningCircle : Icons.info
                         font.family: Icons.regular
                         font.pixelSize: 14
-                        color: panel.noteKind === "ok" ? Theme.hue3 : panel.noteKind === "error" ? Theme.alert : Theme.fgMuted
+                        color: panel.noteKind === "ok" ? Theme.accent : panel.noteKind === "error" ? Theme.alert : Theme.fgMuted
                     }
                     Text {
                         id: noteText

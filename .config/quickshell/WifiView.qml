@@ -256,7 +256,7 @@ Item {
         onVisibleChanged: if (!visible) view.hideRequested()
     }
 
-    readonly property color hue: Theme.hue4
+    readonly property color hue: Theme.accent
 
     component Caption: Text {
         leftPadding: 4
@@ -286,7 +286,7 @@ Item {
             onClicked: iconButton.clicked()
         }
     }
-    // A button pushing a page: its icon (filled and in the hue while `on`), label and state.
+    // A button pushing a page: its icon (filled and in the accent while `on`), label and state.
     component PageButton: Rectangle {
         id: pageButton
         property string glyph

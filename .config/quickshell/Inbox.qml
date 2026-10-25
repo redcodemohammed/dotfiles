@@ -92,7 +92,7 @@ PopupWindow {
         width: headRow.implicitWidth + 20
         height: 28
         radius: glyph !== "" ? 14 : 8
-        color: on ? root.tint(Theme.hue1, headHover.containsMouse ? 0.22 : 0.15)
+        color: on ? root.tint(Theme.accent, headHover.containsMouse ? 0.22 : 0.15)
             : headHover.containsMouse ? Edge.controlHover : Edge.control
         Row {
             id: headRow
@@ -104,14 +104,14 @@ PopupWindow {
                 text: headButton.glyph
                 font.family: headButton.on ? Icons.fill : Icons.regular
                 font.pixelSize: 14
-                color: headButton.on ? Theme.hue1 : Theme.fgMuted
+                color: headButton.on ? Theme.accent : Theme.fgMuted
             }
             Text {
                 anchors.verticalCenter: parent.verticalCenter
                 text: headButton.label
                 font.family: "JetBrainsMono Nerd Font"
                 font.pixelSize: 12
-                color: headButton.on ? Theme.hue1 : headButton.glyph !== "" ? Theme.fgMuted : Theme.fg
+                color: headButton.on ? Theme.accent : headButton.glyph !== "" ? Theme.fgMuted : Theme.fg
             }
         }
         MouseArea {
@@ -217,7 +217,7 @@ PopupWindow {
                     text: Notifs.dnd ? Icons.bellSlash : Icons.bellSimple
                     font.family: Icons.regular
                     font.pixelSize: 22
-                    color: Theme.hue1
+                    color: Theme.fgMuted
                 }
             }
             Text {
@@ -284,7 +284,7 @@ PopupWindow {
                         width: 32
                         height: 32
                         radius: 8
-                        color: row.icon !== "" ? root.tint(Theme.fg, 0.08) : root.tint(Theme.hue1, 0.15)
+                        color: row.icon !== "" ? root.tint(Theme.fg, 0.08) : root.tint(Theme.fg, 0.08)
                         IconImage {
                             visible: row.icon !== ""
                             anchors.centerIn: parent
@@ -297,7 +297,7 @@ PopupWindow {
                             text: row.modelData.urgent ? Icons.warningCircle : Icons.bellSimple
                             font.family: Icons.regular
                             font.pixelSize: 16
-                            color: row.modelData.urgent ? Theme.alert : Theme.hue1
+                            color: row.modelData.urgent ? Theme.alert : Theme.fgMuted
                         }
                     }
 

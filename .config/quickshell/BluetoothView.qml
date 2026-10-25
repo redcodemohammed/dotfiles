@@ -62,7 +62,7 @@ Item {
         }
     }
 
-    readonly property color hue: Theme.hue5
+    readonly property color hue: Theme.accent
     readonly property color lift: Qt.tint(Edge.fill, Qt.rgba(Theme.fg.r, Theme.fg.g, Theme.fg.b, 0.12)) // a button on a row
     readonly property color liftHover: Qt.tint(Edge.fill, Qt.rgba(Theme.fg.r, Theme.fg.g, Theme.fg.b, 0.18))
 
@@ -104,7 +104,7 @@ Item {
         }
     }
 
-    // The agent's question, or the code to type on the device: a card in the hue.
+    // The agent's question, or the code to type on the device: a card in the accent.
     component Prompt: Rectangle {
         id: prompt
         readonly property var req: BtAgent.request
@@ -191,7 +191,7 @@ Item {
     }
 
     // A paired device: its icon and name, the battery when reported, Connect or Disconnect, and
-    // a › to its page. Connected: tinted with the hue.
+    // a › to its page. Connected: tinted with the accent.
     component Device: Rectangle {
         id: device
         required property var modelData
@@ -228,7 +228,7 @@ Item {
                 text: Math.round(device.dev.battery * 100) + "%"
                 font.family: "JetBrainsMono Nerd Font"
                 font.pixelSize: 12
-                color: Theme.hue3
+                color: Theme.fgMuted
             }
             Action {
                 anchors.verticalCenter: parent.verticalCenter

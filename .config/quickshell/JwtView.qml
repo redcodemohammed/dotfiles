@@ -36,7 +36,7 @@ Item {
         return d.toDateString() === new Date().toDateString() ? time
             : d.getFullYear() + "-" + p(d.getMonth() + 1) + "-" + p(d.getDate()) + " " + time
     }
-    readonly property color hue: !hasExp ? Theme.fgMuted : expired ? Theme.alert : Theme.hue3
+    readonly property color hue: !hasExp ? Theme.fgMuted : expired ? Theme.alert : Theme.accent
 
     ViewHeader {
         id: titleRow
@@ -47,14 +47,14 @@ Item {
             width: algText.implicitWidth + 16
             height: 22
             radius: 6
-            color: Qt.tint(Edge.fill, Qt.rgba(Theme.hue5.r, Theme.hue5.g, Theme.hue5.b, 0.15))
+            color: Qt.tint(Edge.fill, Qt.rgba(Theme.fg.r, Theme.fg.g, Theme.fg.b, 0.08))
             Text {
                 id: algText
                 anchors.centerIn: parent
                 text: view.header.alg ?? ""
                 font.family: "JetBrainsMono Nerd Font"
                 font.pixelSize: 11
-                color: Theme.hue5
+                color: Theme.fgMuted
             }
         }
     }
@@ -78,7 +78,7 @@ Item {
                 height: 52
                 radius: 12
                 color: !view.hasExp ? Edge.control : view.expired ? Edge.alertTint
-                    : Qt.tint(Edge.fill, Qt.rgba(Theme.hue3.r, Theme.hue3.g, Theme.hue3.b, 0.15))
+                    : Qt.tint(Edge.fill, Qt.rgba(Theme.accent.r, Theme.accent.g, Theme.accent.b, 0.15))
                 Text {
                     x: 12
                     anchors.verticalCenter: parent.verticalCenter

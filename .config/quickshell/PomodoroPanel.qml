@@ -4,10 +4,10 @@ import Quickshell
 
 // Pomodoro panel (owner, 2026-10-17; the "Remaining panels" design since 2026-10-20): comes out of
 // the frame under the bar's Pomodoro block, 340 wide, its right edge on the block's. Closes on an
-// outside click or Escape; Space is the main button. The phase as a pill in its hue (focus hue1,
-// short break hue2, long break hue3), the time left inside a ring that empties as the phase runs,
+// outside click or Escape; Space is the main button. The phase as a pill in the accent (less colour (owner, 2026-10-25): gray, the accent only for a state;
+// a hue per phase before), the time left inside a ring that empties as the phase runs,
 // this round's finished focus sessions as dots and today's count, then Start / Pause / Resume (or
-// the waiting phase) tinted in the phase's hue, Skip and Reset, then the three timings on a card
+// the waiting phase) tinted in the accent, Skip and Reset, then the three timings on a card
 // with - and + (5 min steps, 5-120).
 PopupWindow {
     id: panel
@@ -39,7 +39,7 @@ PopupWindow {
         : Pomodoro.running ? "Pause" : "Resume"
     // The phase shown: the running one, else the one waiting to start, else focus.
     readonly property string shown: Pomodoro.phase !== "idle" ? Pomodoro.phase : Pomodoro.waiting !== "" ? Pomodoro.waiting : "focus"
-    function hueOf(p) { return p === "focus" ? Theme.hue1 : p === "short" ? Theme.hue2 : Theme.hue3 }
+    function hueOf(p) { return Theme.accent } // every phase the same since 2026-10-25
     function tint(c, a) { return Qt.tint(Edge.fill, Qt.rgba(c.r, c.g, c.b, a)) }
     readonly property color hue: hueOf(shown)
     // How much of the phase is left, 0-1 (full while idle).
@@ -200,7 +200,7 @@ PopupWindow {
                         width: 8
                         height: 8
                         radius: 4
-                        color: index < Pomodoro.cycle ? Theme.hue1 : Edge.controlHover
+                        color: index < Pomodoro.cycle ? Theme.accent : Edge.controlHover
                     }
                 }
                 Text {

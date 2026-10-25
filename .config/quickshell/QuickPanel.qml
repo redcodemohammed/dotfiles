@@ -12,7 +12,7 @@ import Quickshell.Services.UPower
 // Disturb and Keep awake; the volume, mic and brightness levels (click, drag or scroll; the
 // volume's › opens the sound view); the battery card with the power profiles (laptop only); the
 // power row (Lock, Log out, Suspend, Reboot, Shut down: .local/bin/power-action, the ones marked
-// asking "Again?" within 3 s) and Settings. Each control in its own hue, idle ones neutral.
+// asking "Again?" within 3 s) and Settings. Gray, the accent for what is on (less colour (owner, 2026-10-25): gray, the accent only for a state).
 // The views (SoundView, BluetoothView, WifiView) go on a StackView: a › pushes
 // one (a view can push its own pages: push(component, properties)), its back button or Escape pops it, closing the panel goes back to the top level. The panel
 // keeps the top level's height (owner); a view scrolls inside it. openView(name) opens the panel
@@ -127,7 +127,7 @@ PopupWindow {
     }
 
     // A tile: an icon, its name and state; a click switches it. `drill`: a › at the right end
-    // that opens its view. On: the frame tinted with its hue (as a chip), the icon filled.
+    // that opens its view. On: the frame tinted with the accent, the icon filled.
     component Tile: Rectangle {
         id: tile
         property string glyph
@@ -205,7 +205,7 @@ PopupWindow {
         }
     }
 
-    // A level: its icon (a click mutes, where `mutable`), a pill track filled in its hue with a
+    // A level: its icon (a click mutes, where `mutable`), a pill track filled in the accent with a
     // round knob, the number; click or drag sets it, the wheel steps 5%. `drill`: a › after it.
     component Level: Item {
         id: level
@@ -416,7 +416,7 @@ PopupWindow {
                         : panel.wired ? "Connected"
                         : !Networking.wifiEnabled ? "Off"
                         : "Not connected"
-                    hue: Theme.hue4
+                    hue: Theme.accent
                     on: Networking.wifiEnabled && (panel.wifiNet !== null || panel.wired) || panel.wired
                     drill: true
                     onOpened: stack.push(wifiView)
@@ -428,7 +428,7 @@ PopupWindow {
                     glyph: panel.btConnected > 0 ? Icons.bluetoothConnected : panel.btOn ? Icons.bluetooth : Icons.bluetoothSlash
                     label: "Bluetooth"
                     status: !panel.btOn ? "Off" : panel.btConnected > 0 ? panel.btConnected + " connected" : "On"
-                    hue: Theme.hue5
+                    hue: Theme.accent
                     on: panel.btOn
                     drill: true
                     onOpened: stack.push(bluetoothView)
@@ -439,7 +439,7 @@ PopupWindow {
                     glyph: Notifs.dnd ? Icons.bellSlash : Icons.bellSimple
                     label: "Do Not Disturb"
                     status: Notifs.dnd ? "On" : "Off"
-                    hue: Theme.hue1
+                    hue: Theme.accent
                     on: Notifs.dnd
                     onToggled: Notifs.dnd = !Notifs.dnd
                 }
@@ -448,7 +448,7 @@ PopupWindow {
                     glyph: Icons.coffee
                     label: "Keep awake"
                     status: Tools.keepAwake ? "On" : "Off"
-                    hue: Theme.hue2
+                    hue: Theme.accent
                     on: Tools.keepAwake
                     onToggled: Tools.setKeepAwake(!Tools.keepAwake)
                 }
@@ -461,7 +461,7 @@ PopupWindow {
                     readonly property var audio: panel.sink && panel.sink.audio ? panel.sink.audio : null
                     visible: audio !== null
                     glyph: off ? Icons.speakerSlash : value <= 0 ? Icons.speakerNone : value < 0.5 ? Icons.speakerLow : Icons.speakerHigh
-                    hue: Theme.hue6
+                    hue: Theme.accent
                     value: audio ? audio.volume : 0
                     off: audio ? audio.muted : false
                     mutable: true
@@ -474,7 +474,7 @@ PopupWindow {
                     readonly property var audio: panel.source && panel.source.audio ? panel.source.audio : null
                     visible: audio !== null
                     glyph: off ? Icons.microphoneSlash : Icons.microphone
-                    hue: Theme.hue1
+                    hue: Theme.accent
                     value: audio ? audio.volume : 0
                     off: audio ? audio.muted : false
                     mutable: true
@@ -484,7 +484,7 @@ PopupWindow {
                 Level {
                     visible: IslandState.hasBrightness
                     glyph: Icons.sun
-                    hue: Theme.hue2
+                    hue: Theme.accent
                     value: panel.brightnessWanted >= 0 && brightnessTimer.running ? panel.brightnessWanted / 100 : IslandState.brightness
                     onMoved: v => panel.setBrightness(v)
                 }
@@ -499,7 +499,7 @@ PopupWindow {
                 color: Edge.control
                 readonly property int levelNow: Math.round(panel.battery.percentage * 100)
                 readonly property bool critical: UPower.onBattery && levelNow <= 10
-                readonly property color ink: critical ? Theme.alert : Theme.hue3
+                readonly property color ink: critical ? Theme.alert : Theme.fg
                 readonly property string timeText: {
                     const charging = panel.battery.state === UPowerDeviceState.Charging
                     const secs = UPower.onBattery ? panel.battery.timeToEmpty : charging ? panel.battery.timeToFull : 0
@@ -576,7 +576,7 @@ PopupWindow {
                 Power { width: parent.cell; glyph: Icons.signOut; action: "logout"; confirm: true }
                 Power { width: parent.cell; glyph: Icons.moon; action: "suspend" }
                 Power { width: parent.cell; glyph: Icons.arrowClockwise; action: "reboot"; confirm: true }
-                Power { width: parent.cell; glyph: Icons.power; action: "poweroff"; confirm: true; ink: Theme.hue1 }
+                Power { width: parent.cell; glyph: Icons.power; action: "poweroff"; confirm: true }
                 Power { width: parent.cell; glyph: Icons.gear; action: "settings"; ink: Theme.fgMuted }
             }
         }

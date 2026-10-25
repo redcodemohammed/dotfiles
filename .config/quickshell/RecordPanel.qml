@@ -5,7 +5,7 @@ import Quickshell.Hyprland
 // Recording panel (owner, 2026-10-17; the "Remaining panels" design since 2026-10-20): comes out of
 // the frame under the bar's record block, 360 wide, its right edge on the block's. Not recording:
 // the setup, all saved (Recording.set) and used by SUPER + R too: the screen it would record;
-// Audio as two tiles, Desktop and Mic (lit in their hue while on), and Two tracks, a switch that
+// Audio as two tiles, Desktop and Mic (lit in the accent while on), and Two tracks, a switch that
 // only matters with both on; Frame rate (30-144) and Quality (gpu-screen-recorder presets) as
 // segmented rows; Start recording (red). Starting closes the panel, so it isn't in the video.
 // Recording: a REC pill, the time on a card with the screen, audio and size, Pause / Resume and
@@ -101,7 +101,7 @@ PopupWindow {
         }
     }
 
-    // An audio source: lit in its hue while on.
+    // An audio source: lit in the accent while on.
     component AudioTile: Rectangle {
         id: tile
         property string label
@@ -264,7 +264,7 @@ PopupWindow {
                         width: (parent.width - 6) / 2
                         label: "Desktop"
                         glyph: Icons.speakerHigh
-                        hue: Theme.hue3
+                        hue: Theme.accent
                         on: Recording.systemSetting
                         onClicked: Recording.set("system", !Recording.systemSetting)
                     }
@@ -272,7 +272,7 @@ PopupWindow {
                         width: (parent.width - 6) / 2
                         label: "Mic"
                         glyph: Icons.microphone
-                        hue: Theme.hue2
+                        hue: Theme.accent
                         on: Recording.micSetting
                         onClicked: Recording.set("mic", !Recording.micSetting)
                     }

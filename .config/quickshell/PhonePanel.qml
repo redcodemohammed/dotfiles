@@ -10,7 +10,7 @@ import Quickshell.Io
 // battery at 15% or less), Reconnect while it is away (kcd has no disconnect: Unpair in its
 // settings), and a gear that pushes the settings view (PhoneSettings.qml) on a StackView, as quick
 // settings' views (back or Escape pops it, closing returns to the top level).
-// The actions as tiles, each in its hue: Ring, Clipboard (send it), Send file, Files (browse the
+// The actions as tiles, gray (less colour (owner, 2026-10-25): gray, the accent only for a state): Ring, Clipboard (send it), Send file, Files (browse the
 // phone's); a feature switched off in the settings hides its tile. Transfers under them while any
 // run. Then the inbox: the phone's notifications (Phone.qml) as cards, newest first; opening one
 // marks it read and shows Reply (when the app allows it), Copy code (a verification code) and
@@ -88,10 +88,10 @@ PopupWindow {
     function tint(c, a) { return Qt.tint(Edge.fill, Qt.rgba(c.r, c.g, c.b, a)) }
     // The action tiles shown: a feature switched off in the settings hides its tile.
     readonly property var tiles: [
-        { id: "ring", label: "Ring", glyph: Icons.bellRinging, hue: Theme.hue1, shown: true },
-        { id: "clipboard", label: "Clipboard", glyph: Icons.clipboardText, hue: Theme.hue4, shown: Phone.settings.clipboard !== false },
-        { id: "send", label: "Send file", glyph: Icons.uploadSimple, hue: Theme.hue2, shown: Phone.settings.share !== false },
-        { id: "files", label: Phone.mounting ? "Opening" : "Files", glyph: Icons.folderOpen, hue: Theme.hue3, shown: true },
+        { id: "ring", label: "Ring", glyph: Icons.bellRinging, hue: Theme.fgMuted, shown: true },
+        { id: "clipboard", label: "Clipboard", glyph: Icons.clipboardText, hue: Theme.fgMuted, shown: Phone.settings.clipboard !== false },
+        { id: "send", label: "Send file", glyph: Icons.uploadSimple, hue: Theme.fgMuted, shown: Phone.settings.share !== false },
+        { id: "files", label: Phone.mounting ? "Opening" : "Files", glyph: Icons.folderOpen, hue: Theme.fgMuted, shown: true },
     ].filter(t => t.shown)
     function act(id) {
         if (id === "ring") {
@@ -149,12 +149,12 @@ PopupWindow {
                     width: 32
                     height: 32
                     radius: 8
-                    color: panel.tint(Theme.hue5, 0.15)
+                    color: panel.tint(Theme.fg, 0.08)
                     PhoneGlyph {
                         anchors.centerIn: parent
                         size: 18
                         stroke: 1.4
-                        color: Theme.hue5
+                        color: Theme.fgMuted
                     }
                 }
                 Column {
@@ -313,7 +313,7 @@ PopupWindow {
                         required property var modelData
                         readonly property var t: modelData
                         readonly property int pct: t.total > 0 ? Math.round(t.current * 100 / t.total) : 0
-                        readonly property color hue: t.state === "failed" ? Theme.alert : Theme.hue2
+                        readonly property color hue: t.state === "failed" ? Theme.alert : Theme.accent
                         width: parent.width
                         height: transferCol.implicitHeight + 20
                         radius: 12
@@ -461,7 +461,7 @@ PopupWindow {
                 width: parent.width
                 height: 32
                 radius: 8
-                color: panel.tint(Theme.hue2, 0.15)
+                color: panel.tint(Theme.accent, 0.15)
                 Text {
                     x: 12
                     width: parent.width - 24

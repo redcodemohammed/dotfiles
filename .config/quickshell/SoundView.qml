@@ -3,7 +3,7 @@ import Quickshell.Services.Pipewire
 
 // Quick settings' sound view (owner, 2026-10-20; the sound panel before, SoundPanel.qml): opened
 // by the volume level's › or `qs ipc call panel toggle sound`. The output and input devices (a
-// click makes one the default, the current one in its hue), then every app playing or recording
+// click makes one the default, the current one in the accent), then every app playing or recording
 // with its own level and device (AppStream.qml). The levels themselves stay on the top level.
 // Scrolls inside the panel's fixed height.
 Item {
@@ -11,7 +11,7 @@ Item {
     readonly property string viewName: "sound"
     signal back
 
-    // A device row: its icon and name; the current one tinted with the hue, its icon filled.
+    // A device row: its icon and name; the current one tinted with the accent, its icon filled.
     component Device: Rectangle {
         id: device
         required property var modelData
@@ -85,7 +85,7 @@ Item {
                 Device {
                     current: Pipewire.defaultAudioSink
                     glyph: Icons.speakerHigh
-                    hue: Theme.hue6
+                    hue: Theme.accent
                     onPicked: Pipewire.preferredDefaultAudioSink = modelData
                 }
             }
@@ -97,7 +97,7 @@ Item {
                 Device {
                     current: Pipewire.defaultAudioSource
                     glyph: Icons.microphone
-                    hue: Theme.hue1
+                    hue: Theme.accent
                     onPicked: Pipewire.preferredDefaultAudioSource = modelData
                 }
             }

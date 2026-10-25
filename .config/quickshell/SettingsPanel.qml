@@ -6,7 +6,7 @@ import Quickshell
 // quick settings' Settings button (or `qs ipc call settings toggle`), it comes out of the frame
 // under the same chip, 380 wide. Values live in Settings.qml; a change is saved at once and
 // reaches Hyprland and Alacritty 300 ms later.
-// The top level: back (to quick settings), then the four sections as rows, each in its hue with
+// The top level: back (to quick settings), then the four sections as rows, gray (less colour (owner, 2026-10-25): gray, the accent only for a state), with
 // a live summary: Look (4a), Input (4b), Bar & island (4c), Power (4d: the idle chain). A row
 // pushes its view on a StackView, as quick settings' views: it slides in, back or Escape pops it,
 // closing returns to the top level. In a view the settings sit on cards by group, steppers (−
@@ -186,7 +186,7 @@ PopupWindow {
             }
         }
     }
-    // A section on the top level: its hue, name and summary, a › to its view.
+    // A section on the top level: its icon, name and summary, a › to its view.
     component SectionRow: Rectangle {
         id: sectionRow
         property string label
@@ -286,7 +286,7 @@ PopupWindow {
                 SectionRow {
                     label: "Look"
                     glyph: Icons.eye
-                    hue: Theme.hue1
+                    hue: Theme.fgMuted
                     summary: "Gaps " + Settings.look.gapsBetween + " · frame " + Settings.look.frame
                         + " · blur " + (Settings.look.blur ? "on" : "off") + " · animations " + (Settings.look.animations ? "on" : "off")
                     view: lookView
@@ -294,7 +294,7 @@ PopupWindow {
                 SectionRow {
                     label: "Input"
                     glyph: Icons.lightning
-                    hue: Theme.hue3
+                    hue: Theme.fgMuted
                     summary: "Repeat " + Settings.input.repeatDelay + " ms, " + Settings.input.repeatRate + "/s · pointer "
                         + (Settings.input.pointerSpeed / 10).toFixed(1)
                     view: inputView
@@ -302,7 +302,7 @@ PopupWindow {
                 SectionRow {
                     label: "Bar & island"
                     glyph: Icons.monitor
-                    hue: Theme.hue2
+                    hue: Theme.fgMuted
                     summary: (Settings.bar.clock24 ? "24-hour" : "12-hour") + " clock · " + Settings.bar.workspaces + " workspaces"
                         + (Settings.bar.islandMedia ? " · media" : "")
                     view: barView
@@ -310,7 +310,7 @@ PopupWindow {
                 SectionRow {
                     label: "Power"
                     glyph: Icons.power
-                    hue: Theme.hue4
+                    hue: Theme.fgMuted
                     summary: "Lock " + Settings.power.lockAfter + " min · screens off " + Settings.power.screenOffAfter + " min"
                         + (Settings.power.sleep ? " · sleep " + Settings.power.sleepAfter + " min" : "")
                     view: powerView

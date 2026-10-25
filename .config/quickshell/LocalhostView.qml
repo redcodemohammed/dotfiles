@@ -87,7 +87,7 @@ Item {
                     text: Icons.qrCode
                     font.family: Icons.regular
                     font.pixelSize: 22
-                    color: Theme.hue3
+                    color: Theme.fgMuted
                 }
             }
             Text {
@@ -144,7 +144,7 @@ Item {
                     width: column.width
                     height: serverColumn.implicitHeight + 24
                     radius: 12
-                    color: open ? Qt.tint(Edge.fill, Qt.rgba(Theme.hue3.r, Theme.hue3.g, Theme.hue3.b, 0.15))
+                    color: open ? Qt.tint(Edge.fill, Qt.rgba(Theme.accent.r, Theme.accent.g, Theme.accent.b, 0.15))
                         : serverHover.containsMouse && lan ? Edge.controlHover : Edge.control
 
                     Column {
@@ -162,7 +162,7 @@ Item {
                                 text: server.lan ? Icons.broadcast : Icons.laptop
                                 font.family: server.open ? Icons.fill : Icons.regular
                                 font.pixelSize: 18
-                                color: server.lan ? Theme.hue3 : Theme.fgMuted
+                                color: server.lan ? Theme.accent : Theme.fgMuted
                             }
                             Column {
                                 x: 30
@@ -181,7 +181,7 @@ Item {
                                     text: server.lan ? "On the LAN" : "Localhost only"
                                     font.family: "JetBrainsMono Nerd Font"
                                     font.pixelSize: 12
-                                    color: server.lan ? Theme.hue3 : Theme.fgMuted
+                                    color: server.lan ? Theme.accent : Theme.fgMuted
                                 }
                             }
                             Text {
@@ -207,8 +207,8 @@ Item {
                             width: parent.width
                             wrapMode: Text.Wrap
                             textFormat: Text.StyledText
-                            text: "The phone can't reach it. Start it again bound to the LAN, with <font color=\"" + Theme.hue2
-                                + "\">--host</font> (vite, next) or <font color=\"" + Theme.hue2 + "\">--bind 0.0.0.0</font> (python)."
+                            text: "The phone can't reach it. Start it again bound to the LAN, with <font color=\"" + Theme.fg
+                                + "\">--host</font> (vite, next) or <font color=\"" + Theme.fg + "\">--bind 0.0.0.0</font> (python)."
                             font.family: "JetBrainsMono Nerd Font"
                             font.pixelSize: 12
                             lineHeight: 1.2

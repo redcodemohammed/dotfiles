@@ -3,9 +3,9 @@ import Quickshell
 
 // Calendar and clock (owner, 2026-10-21; the "Calendar and clock panel" design, option A): comes
 // out of the frame under the bar's clock chip, centred on it, 380 wide. The time as a poster (the
-// colon in the clock's hue, the seconds smaller and muted), the date in words, the ISO week and
+// seconds smaller and muted), the date in words, the ISO week and
 // the day of the year; then the month: its name, Today (while another month shows), < and >, the
-// weekday initials and six weeks of days, today filled in the hue. Weeks start on the locale's
+// weekday initials and six weeks of days, today filled in the accent (less colour (owner, 2026-10-25): gray, the accent only for a state). Weeks start on the locale's
 // first day. The arrows, the wheel over the month and PgUp / PgDn move a month, Home goes back to
 // today, Escape closes. It opens on today's month every time.
 PopupWindow {
@@ -33,7 +33,7 @@ PopupWindow {
     }
     onVisibleChanged: if (visible) offset = 0
 
-    readonly property color hue: Theme.hue6 // the clock chip's
+    readonly property color hue: Theme.accent // today's and the Today pill's
     property int offset: 0 // the month shown, in months from today's
 
     SystemClock {
@@ -126,10 +126,10 @@ PopupWindow {
                 spacing: 4
                 Row {
                     height: 48
-                    Repeater { // hours, the colon in the hue, minutes; then the seconds, small
+                    Repeater { // hours, the colon, minutes; then the seconds, small
                         model: [
                             { t: Qt.formatTime(panel.now, Settings.bar.clock24 ? "HH" : "h"), big: true, ink: Theme.fg },
-                            { t: ":", big: true, ink: panel.hue },
+                            { t: ":", big: true, ink: Theme.fgMuted },
                             { t: Qt.formatTime(panel.now, "mm"), big: true, ink: Theme.fg },
                             { t: Qt.formatTime(panel.now, ":ss") + (Settings.bar.clock24 ? "" : Qt.formatTime(panel.now, " AP")),
                               big: false, ink: Theme.fgMuted }
