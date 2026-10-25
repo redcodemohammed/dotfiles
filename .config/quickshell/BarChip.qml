@@ -1,11 +1,9 @@
 import QtQuick
 
-// One bar item on its own chip (owner, 2026-10-20: more colour; BarBlock and BarCell before):
-// 32px tall, rounded 8, no border, 8px side padding. The chip is the frame's colour with 15% of
-// its hue mixed in, and its widget draws in the hue (palette hue1-hue6, lifted to 4.5:1 on such
-// a chip by from-wallpaper.py). Only the hue's colour counts here, not its alpha, so a widget's
-// dimmed ink (an idle state) still gives a full chip. `neutral`: no hue, a faint lift of the
-// frame (the title, the tray, the workspaces, recording while idle). Clickable chips deepen on
+// One bar item on its own chip (owner, 2026-10-20; BarBlock and BarCell before): 32px tall,
+// rounded 8, no border, 8px side padding. `neutral` (every chip since 2026-10-25, owner: less
+// colour): a faint lift of the frame. Otherwise the frame with 15% of `hue` mixed in: only a
+// chip that alerts (red) does that now. Only the hue's colour counts, not its alpha. Clickable chips deepen on
 // hover and emit clicked(); a panel anchored to a chip drops under it.
 Rectangle {
     id: chip

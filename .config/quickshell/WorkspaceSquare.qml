@@ -5,12 +5,12 @@ import Quickshell.Widgets
 
 // One workspace in Workspaces.qml (owner, 2026-10-17: see which app is where). Empty: its number
 // in a 20px square (active: filled, dark number; else dim). With windows: a small number (11px),
-// then one icon per window. Each workspace has its own hue (owner, 2026-10-20: hue1-hue6 in turn
-// by its number): with windows a faint tint of it. Rounded 6.
+// then one icon per window. Gray, the active one in the accent (owner, 2026-10-25: less colour;
+// a hue per workspace from 2026-10-20 before): with windows a faint lift. Rounded 6.
 // The icons are the apps' own coloured ones from the icon theme (owner, 2026-10-20, replacing the
 // glyphs in the workspace hue): the window's app ID finds its .desktop file (heuristicLookup),
-// whose Icon= is looked up in the theme; none found, the Nerd Font glyph (AppGlyphs.qml) in the
-// hue. So an occupied active one is no longer filled: a 2px bar in its hue just under it. A
+// whose Icon= is looked up in the theme; none found, the Nerd Font glyph (AppGlyphs.qml) in gray.
+// So an occupied active one is not filled: a 2px bar in the accent just under it. A
 // window that wants attention (urgent) has a red dot under its icon.
 // A click goes there: `target` is the workspace ID (hyprsplit's range for this screen, so an empty
 // slot works too). A right click toggles its save (open again at login): saves, updates it when
@@ -26,12 +26,12 @@ Rectangle {
     readonly property var windows: ws ? ws.toplevels.values : []
     readonly property bool occupied: windows.length > 0
     readonly property bool saved: target > 0 && SavedWorkspaces.has(target)
-    readonly property color hue: [Theme.hue1, Theme.hue2, Theme.hue3, Theme.hue4, Theme.hue5, Theme.hue6][(number - 1) % 6]
+    readonly property color hue: Theme.accent // the active one's
 
     width: occupied ? glyphs.width + 16 : 20 // 8px either side of the glyphs
     height: 20 // 4px clear of the block's border all round (owner): 28 inside, padding 6
     radius: 6
-    color: occupied ? Qt.rgba(hue.r, hue.g, hue.b, 0.18) : active ? hue : "transparent"
+    color: occupied ? Qt.rgba(Theme.fg.r, Theme.fg.g, Theme.fg.b, active ? 0.12 : 0.06) : active ? hue : "transparent"
     Behavior on color { ColorAnimation { duration: 150 } }
 
     function appId(t) {
@@ -44,7 +44,7 @@ Rectangle {
         text: group.saved ? Icons.bookmarkSimple : group.number
         font.family: group.saved ? Icons.fill : "JetBrainsMono Nerd Font"
         font.pixelSize: group.saved ? 12 : 13
-        color: group.active ? Theme.textOnAccent : group.saved ? group.hue : Theme.fgDim
+        color: group.active ? Theme.textOnAccent : group.saved ? Theme.fgMuted : Theme.fgDim
     }
 
     Row {
@@ -57,7 +57,7 @@ Rectangle {
             text: group.saved ? Icons.bookmarkSimple : group.number
             font.family: group.saved ? Icons.fill : "JetBrainsMono Nerd Font"
             font.pixelSize: 11
-            color: group.hue
+            color: group.active ? group.hue : Theme.fgMuted
             opacity: group.saved || group.active ? 1 : 0.7
         }
         Repeater {
@@ -84,7 +84,7 @@ Rectangle {
                     text: AppGlyphs.forApp(group.appId(app.modelData))
                     font.family: "JetBrainsMono Nerd Font"
                     font.pixelSize: 15
-                    color: group.hue
+                    color: Theme.fgMuted
                 }
                 Rectangle { // urgent: it wants attention, until it is focused
                     visible: app.modelData.urgent
@@ -99,7 +99,7 @@ Rectangle {
         }
     }
 
-    Rectangle { // active with windows: the bar in its hue (filled would hide the icons' colours),
+    Rectangle { // active with windows: the bar in the accent (filled would hide the icons' colours),
         // 2px under the pill in the chip's padding, clear of the icons (owner, 2026-10-20)
         visible: group.active && group.occupied
         anchors.top: parent.bottom

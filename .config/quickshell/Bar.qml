@@ -157,10 +157,10 @@ PanelWindow {
         }
     }
 
-    // Chips (BarChip.qml, owner 2026-10-20): each item its own hue from the palette (hue1-hue6,
-    // the accent round the colour wheel), placed so no two neighbours share one; 4px between the
-    // chips of a group, 10px between groups. Red stays the alert's: a chip turns red while it
-    // alerts (its widget's `ink`).
+    // Chips (BarChip.qml): all neutral, the icons gray (owner, 2026-10-25: less colour, the
+    // 2026-10-20 hue per chip undone). Colour only means a state: the accent for what is on or
+    // running (the active workspace, Keep awake, a running Pomodoro, unread phone notifications),
+    // red while a chip alerts (its widget's `ink`). 4px between the chips of a group, 10px between groups.
     // The Arch chip at the band's left end (owner, 2026-10-20): the notifications, in place of the
     // bell (Vicinae is SUPER + / only). A dot while something is unread; dimmed with Do Not
     // Disturb. Left click: the inbox; right click: Do Not Disturb.
@@ -169,7 +169,7 @@ PanelWindow {
         visible: !bar.onlyWorkspaces
         anchors.left: parent.left
         y: 6
-        hue: Theme.hue1
+        neutral: true
         clickable: true
         onClicked: Notifs.toggleInbox()
         Item {
@@ -180,7 +180,7 @@ PanelWindow {
                 text: "\uf303"
                 font.family: "JetBrainsMono Nerd Font"
                 font.pixelSize: 16
-                color: Notifs.dnd ? Qt.rgba(Theme.hue1.r, Theme.hue1.g, Theme.hue1.b, 0.6) : Theme.hue1
+                color: Notifs.dnd ? Theme.fgDim : Theme.fgMuted
             }
             Rectangle { // unread
                 visible: Notifs.unread > 0
@@ -252,7 +252,8 @@ PanelWindow {
         BarChip {
             x: 10
             padding: 4
-            hue: islandSlot.alert ? Theme.alert : Theme.hue2 // not the launcher's, its neighbour
+            neutral: !islandSlot.alert
+            hue: Theme.alert
             clickable: true
             onClicked: IslandState.click(bar.modelData.name) // opens it, out of the corner
             Item {
@@ -372,12 +373,11 @@ PanelWindow {
 
         BarChip { // the clock (the layout chip went, owner 2026-10-20); a click opens the calendar (2026-10-21)
             id: clockBlock
-            hue: clock.ink
+            neutral: true
             clickable: true
             onClicked: calendarPanel.toggle()
             Clock {
                 id: clock
-                hue: Theme.hue6
             }
         }
 
@@ -387,22 +387,21 @@ PanelWindow {
             BarChip { // the phone bridge (owner's design): while a phone is paired
                 id: phoneBlock
                 visible: Phone.paired
-                hue: phoneStatus.ink
+                neutral: true
                 clickable: true
                 onClicked: phonePanel.toggle()
                 PhoneStatus {
                     id: phoneStatus
-                    hue: Theme.hue4
+                    hue: phoneStatus.lit ? Theme.accent : Theme.fgMuted
                 }
             }
             BarChip { // Pomodoro: glyph and time left
                 id: pomodoroBlock
-                hue: pomodoroStatus.ink
+                neutral: true
                 clickable: true
                 onClicked: pomodoroPanel.toggle()
                 PomodoroStatus {
                     id: pomodoroStatus
-                    hue: Theme.hue1 // a tomato
                 }
             }
             BarChip { // screen recording: neutral when idle, red while recording
@@ -429,20 +428,20 @@ PanelWindow {
 
         BarChip { // tools (owner, 2026-10-18: its own chip, apart from power)
             id: toolsBlock
-            hue: Theme.hue2
+            neutral: true
             clickable: true
             onClicked: toolsPanel.toggle()
-            Text { // full colour and filled while Keep awake holds the idle chain, dimmed otherwise
+            Text { // the accent and filled while Keep awake holds the idle chain, gray otherwise
                 text: Icons.wrench
                 font.family: Tools.keepAwake ? Icons.fill : Icons.regular
                 font.pixelSize: 16
-                color: Tools.keepAwake ? Theme.hue2 : Qt.rgba(Theme.hue2.r, Theme.hue2.g, Theme.hue2.b, 0.6)
+                color: Tools.keepAwake ? Theme.accent : Theme.fgMuted
             }
         }
 
         // Quick settings (owner, 2026-10-20, the "Quick settings panel" design): one neutral chip
-        // with the sound, network, Bluetooth (while on), battery (laptop) and power icons, each in
-        // its hue; red when the network fails or the battery is critical. Opens QuickPanel, and
+        // with the sound, network, Bluetooth (while on), battery (laptop) and power icons, in gray
+        // (2026-10-25); red when the network fails or the battery is critical. Opens QuickPanel, and
         // the settings panel hangs from it too. It took the sound, network, Bluetooth, battery
         // and power chips' places.
         BarChip {
@@ -457,29 +456,25 @@ PanelWindow {
                 spacing: 10
                 Volume {
                     anchors.verticalCenter: parent.verticalCenter
-                    hue: Theme.hue6
                 }
                 Network {
                     id: quickNetwork
                     anchors.verticalCenter: parent.verticalCenter
-                    hue: Theme.hue4
                 }
                 BluetoothStatus {
                     anchors.verticalCenter: parent.verticalCenter
                     visible: on
-                    hue: Theme.hue5
                 }
                 Battery {
                     id: quickBattery
                     anchors.verticalCenter: parent.verticalCenter
-                    hue: Theme.hue3
                 }
                 Text {
                     anchors.verticalCenter: parent.verticalCenter
                     text: Icons.power
                     font.family: Icons.regular
                     font.pixelSize: 16
-                    color: Theme.hue1
+                    color: Theme.fgMuted
                 }
             }
         }
