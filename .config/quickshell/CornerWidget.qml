@@ -111,14 +111,15 @@ PanelWindow {
             x: 20
             y: 20
             spacing: 20
-            Ring { label: "CPU"; value: SystemStats.cpu; hue: Theme.hue3 }
-            Ring { label: "RAM"; value: SystemStats.mem; hue: Theme.hue4 }
-            Ring { label: "DISK"; value: SystemStats.rootDisk; hue: Theme.hue5 }
+            Ring { label: "CPU"; value: SystemStats.cpu; hue: Theme.fg }
+            Ring { label: "RAM"; value: SystemStats.mem; hue: Theme.fg }
+            Ring { label: "DISK"; value: SystemStats.rootDisk; hue: Theme.fg }
         }
     }
 
     // One reading: a 64px ring (a faint track, the used share in the hue, round ends from the top,
-    // clockwise) with the percent inside and its name under it.
+    // clockwise) with the percent inside and its name under it. The hue is gray for all three
+    // (owner, 2026-10-25: less colour; three hues before).
     component Ring: Column {
         id: ring
         property string label
