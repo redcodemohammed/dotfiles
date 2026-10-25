@@ -1,11 +1,13 @@
 // Hand-written Vicinae settings, imported by settings.json.
-// settings.json is rewritten by the Vicinae GUI and wins over this file,
-// so keep it to the imports line and set everything here. It is not stowed
+// settings.json is rewritten by the Vicinae GUI and wins over this file. It
+// holds what was set in Vicinae's window (owner, 2026-10-25: committed as set);
+// those values are repeated here so this file reads true. It is not stowed
 // (each machine keeps its own, owner 2026-10-18): Vicinae replaces the link
 // with a real file whenever a setting changes in its window.
 {
-	// Closes when it loses focus, and back to the root search when closed.
-	"close_on_focus_loss": true,
+	// Stays open when it loses focus (owner, 2026-10-25, in its window); back to
+	// the root search when closed.
+	"close_on_focus_loss": false,
 	"pop_to_root_on_close": true,
 	"escape_key_behavior": "close_window",
 	"encrypt_sensitive_data": true,
@@ -16,9 +18,31 @@
 	},
 
 	// No input monitoring helper. Clipboard entries copy instead of paste,
-	// and snippet expansion is off.
+	// and snippets expand only once it is on.
 	"input_server": {
 		"enabled": false
+	},
+
+	// No tray icon (owner, 2026-10-25, in its window).
+	"tray": {
+		"enabled": false
+	},
+
+	// Set in its window (owner, 2026-10-25): numen does the calculator's maths;
+	// snippets on.
+	"providers": {
+		"calculator": {
+			"preferences": { "backend": "numen" }
+		},
+		"snippets": {
+			"preferences": {
+				"enabled": true,
+				"undo": true,
+				"layout": "",
+				"prePasteDelay": "0",
+				"keyDelay": "2"
+			}
+		}
 	},
 
 	// Generated from the shared palette: themes/hypr.toml.
@@ -33,12 +57,13 @@
 		"normal": { "family": "JetBrainsMono Nerd Font", "size": 15 }
 	},
 
-	// Sharp, flat, solid. 960 x 600 (owner, 2026-10-25: bigger twice, with the text;
+	// Sharp and flat. 960 x 600 (owner, 2026-10-25: bigger twice, with the text;
 	// 640 x 416 before, itself up from the spec's 560 wide).
 	"launcher_window": {
-		// See-through, blurred by Hyprland's layer rule (owner, 2026-10-17); 1 is solid.
-		"opacity": 0.9,
-		"material": "none",
+		// Half see-through with Vicinae's own blur (owner, 2026-10-25, in its window;
+		// 0.9 and no material before, with Hyprland's layer-rule blur); 1 is solid.
+		"opacity": 0.5,
+		"material": "blur",
 		"rounding": 0,
 		"client_side_decorations": {
 			"enabled": true,
@@ -49,7 +74,9 @@
 			"width": 960,
 			"height": 600
 		},
-		"compact_mode": { "enabled": false },
+		// Compact (owner, 2026-10-25, in its window): only the search field until
+		// you type, then the full 960 x 600 with the results.
+		"compact_mode": { "enabled": true },
 		"floating_status_bar": true
 	}
 }
