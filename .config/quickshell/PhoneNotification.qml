@@ -2,7 +2,7 @@ import QtQuick
 import Quickshell
 
 // One phone notification in the phone panel's Inbox (owner's design "Phone bridge"; a card since the
-// "Remaining panels" design, 2026-10-20, a step lighter while open): a lilac dot while unread, the app and time (muted), the title, and the text (two lines, all of it when open).
+// "Remaining panels" design, 2026-10-20, a step lighter while open): a dot in the accent while unread (2026-10-25: less colour), the app and time (muted), the title, and the text (two lines, all of it when open).
 // A click opens it (and marks it read): Reply when the app accepts replies (Enter or Send), Copy
 // code when the text carries a verification code, and Dismiss (on the phone too).
 Rectangle {
@@ -43,7 +43,7 @@ Rectangle {
                         width: 8
                         height: 8
                         radius: height / 2 // a pill (owner, 2026-10-20: rounded)
-                        color: Theme.hue5
+                        color: Theme.accent
                     }
                     Text {
                         x: dot.visible ? 16 : 0

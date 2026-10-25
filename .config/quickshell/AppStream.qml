@@ -93,10 +93,11 @@ Column {
     }
 
     // Level and device on one line (owner, 2026-10-20, with quick settings' look): a pill track
-    // in the stream's hue with a round knob (click or drag sets it, the wheel steps 5%), then the
+    // in the accent with a round knob (click or drag sets it, the wheel steps 5%), then the
     // device as a small pill; a click on it lists the devices under it as rounded rows, the one
     // in use tinted.
-    readonly property color hue: recording ? Theme.hue1 : Theme.hue6
+    readonly property color hue: Theme.accent // owner, 2026-10-25: less colour (playing and recording
+    // were two hues; the speaker or microphone icon tells them apart)
     readonly property color lift: Qt.tint(Edge.fill, Qt.rgba(Theme.fg.r, Theme.fg.g, Theme.fg.b, 0.12)) // on the apps card
     readonly property color liftHover: Qt.tint(Edge.fill, Qt.rgba(Theme.fg.r, Theme.fg.g, Theme.fg.b, 0.18))
     Item {
