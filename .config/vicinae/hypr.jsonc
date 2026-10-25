@@ -28,13 +28,13 @@
 		"dark": { "name": "hypr" }
 	},
 
-	// Same font as the bar and terminal. Size left to Vicinae.
+	// Same font as the bar and terminal. 15 (owner, 2026-10-25: bigger twice; 12.5 before).
 	"font": {
-		"normal": { "family": "JetBrainsMono Nerd Font", "size": 12.5 }
+		"normal": { "family": "JetBrainsMono Nerd Font", "size": 15 }
 	},
 
-	// Sharp, flat, solid. 640px wide (owner asked for a bit bigger than the
-	// spec's 560 on the laptop). Height: 48 search + 8 rows of 40 + footer.
+	// Sharp, flat, solid. 960 x 600 (owner, 2026-10-25: bigger twice, with the text;
+	// 640 x 416 before, itself up from the spec's 560 wide).
 	"launcher_window": {
 		// See-through, blurred by Hyprland's layer rule (owner, 2026-10-17); 1 is solid.
 		"opacity": 0.9,
@@ -46,8 +46,8 @@
 			"shadow_size": 0
 		},
 		"size": {
-			"width": 640,
-			"height": 416
+			"width": 960,
+			"height": 600
 		},
 		"compact_mode": { "enabled": false },
 		"floating_status_bar": true
