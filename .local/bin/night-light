@@ -1,0 +1,34 @@
+#!/usr/bin/env bash
+# night-light on|off|start|status: quick settings' Night light tile (owner, 2026-10-25: real
+# colours for colour work). on runs hyprsunset (hypr/hyprsunset.conf: 4500K from 21:00 to 06:30,
+# applied for the current time as it starts). off sets the screens to their real colours and
+# stops it until the next morning (06:30, the day profile's time): the off file in ~/.local/state
+# holds that moment, so a reboot or a login keeps it off till then. start (Hyprland, at login)
+# runs hyprsunset unless it is off till a morning not yet come. status prints on or off; an off
+# whose morning has come turns it on first (Quickshell asks once a minute while it is off).
+set -euo pipefail
+morning="6:30" # hyprsunset.conf's day profile
+offfile="${XDG_STATE_HOME:-$HOME/.local/state}/night-light-off"
+off_now() { [ -f "$offfile" ] && [ "$(date +%s)" -lt "$(cat "$offfile")" ]; }
+run() { pgrep -x hyprsunset >/dev/null || setsid -f hyprsunset >/dev/null 2>&1 </dev/null; }
+stop() {
+    hyprctl hyprsunset identity >/dev/null 2>&1 || true # real colours even if quitting kept the filter
+    pkill -x hyprsunset || true
+}
+case "${1:-status}" in
+    on) rm -f "$offfile"; run ;;
+    off)
+        until=$(date -d "today $morning" +%s)
+        [ "$until" -gt "$(date +%s)" ] || until=$(date -d "tomorrow $morning" +%s)
+        mkdir -p "$(dirname "$offfile")"
+        echo "$until" >"$offfile"
+        stop
+        ;;
+    start) if off_now; then stop; else rm -f "$offfile"; run; fi ;;
+    status)
+        if off_now; then echo off; exit 0; fi
+        if [ -f "$offfile" ]; then "$0" on; fi
+        echo on
+        ;;
+    *) echo "usage: night-light on|off|start|status" >&2; exit 2 ;;
+esac

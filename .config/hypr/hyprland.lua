@@ -114,7 +114,7 @@ hl.on("hyprland.start", function ()
     -- Vicinae (SUPER + /) starts from its systemd user service, vicinae.service (graphical-session.target).
     hl.exec_cmd("qs")           -- Quickshell: bar, notifications, OSD
     hl.exec_cmd("hypridle")       -- idle chain: lock 5 min, screens off 6 min, suspend 30 min on battery
-    hl.exec_cmd("hyprsunset")     -- night light, 21:00 to 06:30 (hypr/hyprsunset.conf)
+    hl.exec_cmd("~/.local/bin/night-light start") -- hyprsunset: night light, 21:00 to 06:30 (hypr/hyprsunset.conf), unless quick settings turned it off till the morning
     -- Wallpaper image (hypr/hyprpaper.conf): Quickshell starts hyprpaper at login under its
     -- entrance sheet (quickshell/Entrance.qml), so the image never shows before the fade. This
     -- only starts it when that didn't happen (Quickshell broken). background_color stays below.

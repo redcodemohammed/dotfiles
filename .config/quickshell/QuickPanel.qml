@@ -9,7 +9,7 @@ import Quickshell.Services.UPower
 // Quick settings (owner, 2026-10-20, from the "Quick settings panel" design): one panel from the
 // chip at the bar's right end, merged into the frame's right side (EdgePanel's atRight), 380 wide.
 // The top level: Wi-Fi and Bluetooth tiles (a click switches it, the › opens its view), Do Not
-// Disturb and Keep awake; the volume, mic and brightness levels (click, drag or scroll; the
+// Disturb, Keep awake and Night light (2026-10-25: off till the next morning; NightLight.qml); the volume, mic and brightness levels (click, drag or scroll; the
 // volume's › opens the sound view); the battery card with the power profiles (laptop only); the
 // power row (Lock, Log out, Suspend, Reboot, Shut down: .local/bin/power-action, the ones marked
 // asking "Again?" within 3 s) and Settings. Gray, the accent for what is on (less colour (owner, 2026-10-25): gray, the accent only for a state).
@@ -451,6 +451,15 @@ PopupWindow {
                     hue: Theme.accent
                     on: Tools.keepAwake
                     onToggled: Tools.setKeepAwake(!Tools.keepAwake)
+                }
+                Tile {
+                    width: parent.cell
+                    glyph: Icons.moon
+                    label: "Night light"
+                    status: NightLight.on ? "On · 21:00-06:30" : "Off till 06:30" // hypr/hyprsunset.conf's times
+                    hue: Theme.accent
+                    on: NightLight.on
+                    onToggled: NightLight.set(!NightLight.on)
                 }
             }
 
