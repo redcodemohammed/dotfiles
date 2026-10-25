@@ -26,16 +26,25 @@ PanelWindow {
     readonly property bool mainPresent: mainModel !== "" && [...Quickshell.screens].some(s => s.model === mainModel)
     readonly property bool full: Quickshell.screens.length === 1 || mainModel === "" || modelData.model === mainModel
         || (laptop && !mainPresent)
+    // A turned (portrait) screen shows only the workspaces, along its bottom (owner, 2026-10-25:
+    // the LF24T stood upright on the left): the launcher, the compact island, the title and the
+    // right zone hide, and the band is the frame's bottom side instead of its top.
+    readonly property bool onlyWorkspaces: modelData.height > modelData.width
     // The settings panel can hide the slim bars (Bar & island, "Bars on other screens").
     visible: full || Settings.bar.otherScreens
 
     anchors {
-        top: true
+        top: !onlyWorkspaces
+        bottom: onlyWorkspaces
         left: true
         right: true
     }
     // Flush with the top: 44px, the 32px blocks 6px from its top and bottom, its ends in line
-    // with the frame's sides. Its height is the strip Hyprland keeps windows out of.
+    // with the frame's sides. Its height is the strip Hyprland keeps windows out of. At the
+    // bottom it keeps out the band less the frame's side, since hyprland.lua's bottom gap
+    // already counts the side (and the spacer below reserves the top side).
+    exclusionMode: ExclusionMode.Normal
+    exclusiveZone: onlyWorkspaces ? implicitHeight - Settings.look.frame : implicitHeight
     margins {
         left: Settings.look.frame
         right: Settings.look.frame
@@ -45,7 +54,18 @@ PanelWindow {
 
     Frame { // on every screen; without a bar its top is as wide as its sides
         screen: bar.modelData
-        top: bar.visible ? bar.implicitHeight : Settings.look.frame
+        top: bar.visible && !bar.onlyWorkspaces ? bar.implicitHeight : Settings.look.frame
+        bottom: bar.visible && bar.onlyWorkspaces ? bar.implicitHeight : Settings.look.frame
+    }
+    PanelWindow { // with the bar at the bottom: keeps windows off the frame's top side, as the bar does at the top
+        screen: bar.modelData
+        visible: bar.visible && bar.onlyWorkspaces
+        anchors { top: true; left: true; right: true }
+        implicitHeight: Settings.look.frame
+        exclusionMode: ExclusionMode.Normal
+        exclusiveZone: Settings.look.frame
+        mask: Region {}
+        color: "transparent"
     }
 
     PhoneCall { // while the phone rings: under the phone block, above the panel
@@ -146,6 +166,7 @@ PanelWindow {
     // Disturb. Left click: the inbox; right click: Do Not Disturb.
     BarChip {
         id: launcherBlock
+        visible: !bar.onlyWorkspaces
         anchors.left: parent.left
         y: 6
         hue: Theme.hue1
@@ -197,6 +218,7 @@ PanelWindow {
     // workspaces at most; a state's content elides in less (media's compact is 640px wide).
     Item {
         id: islandSlot
+        visible: !bar.onlyWorkspaces
         anchors.left: launcherBlock.right
         y: 6
         height: 32
@@ -283,7 +305,7 @@ PanelWindow {
         y: 6
         neutral: true
         readonly property real room: workspacesBlock.x - x - 10
-        visible: title.text !== "" && room > 64
+        visible: !bar.onlyWorkspaces && title.text !== "" && room > 64
         WindowTitle {
             id: title
             screen: bar.modelData
@@ -299,6 +321,7 @@ PanelWindow {
     // reads as hidden), so the 10px gaps don't double up.
     property bool trayOpen: false
     Row {
+        visible: !bar.onlyWorkspaces
         anchors.right: parent.right
         y: 6
         height: 32

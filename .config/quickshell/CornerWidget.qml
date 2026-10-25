@@ -27,12 +27,17 @@ PanelWindow {
     mask: Region {}
     color: "transparent"
 
-    readonly property int side: Settings.look.frame // the frame's bottom and right sides
+    readonly property int side: Settings.look.frame // the frame's right side
+    // The frame's bottom side: the bar's band on a portrait screen, where the bar sits at the
+    // bottom (Bar.qml's onlyWorkspaces, while that bar shows), else as wide as the others.
+    readonly property bool bandBelow: modelData.height > modelData.width
+        && (Settings.bar.otherScreens || Quickshell.screens.length === 1 || mainModel === "" || modelData.model === mainModel)
+    readonly property int floorSide: bandBelow ? 44 : side
     readonly property int radius: Settings.look.frameRadius
     readonly property int boxWidth: rings.implicitWidth + 40
     readonly property int boxHeight: rings.implicitHeight + 40
     implicitWidth: side + boxWidth + radius + 32 // room for the spring's overshoot
-    implicitHeight: side + boxHeight + radius + 32
+    implicitHeight: floorSide + boxHeight + radius + 32
 
     // The box's size; nothing while away, so it grows out of the corner.
     property bool shown: false
@@ -63,7 +68,7 @@ PanelWindow {
         readonly property real h: Math.max(0, root.h)
         readonly property real r: Math.min(root.radius, w / 2, h / 2)
         readonly property real inner: root.width - root.side   // the right side's inner edge
-        readonly property real floor: root.height - root.side  // the bottom side's inner edge
+        readonly property real floor: root.height - root.floorSide // the bottom side's inner edge
         readonly property real boxLeft: inner - w
         readonly property real boxTop: floor - h
         ShapePath {

@@ -6,12 +6,14 @@ import Quickshell
 // corners, that the bar, the island and the panels grow out of. One window per screen (Bar.qml
 // makes it), under the windows and over the wallpaper, taking no input. It is one shape: the
 // screen's rectangle with a rounded rectangle cut out of it (OddEvenFill: where the two overlap,
-// nothing is filled). The top side is the bar's band (`top`), the others Settings.look.frame
+// nothing is filled). The top side is the bar's band (`top`; `bottom` when the bar is at the
+// bottom, Bar.qml's portrait screens), the others Settings.look.frame
 // wide. Windows keep clear of it through Hyprland: the bar reserves the top, and hyprland.lua
 // widens gaps_out on the other sides by the same width. A floating window can still cover it.
 PanelWindow {
     id: frame
     property int top: Settings.look.frame // the bar's height, while the bar shows
+    property int bottom: Settings.look.frame // or here, while it shows at the bottom
     readonly property int side: Settings.look.frame
     readonly property int radius: Settings.look.frameRadius
 
@@ -42,7 +44,7 @@ PanelWindow {
                 x: frame.side
                 y: frame.top
                 width: frame.width - 2 * frame.side
-                height: frame.height - frame.top - frame.side
+                height: frame.height - frame.top - frame.bottom
                 radius: frame.radius
             }
         }
