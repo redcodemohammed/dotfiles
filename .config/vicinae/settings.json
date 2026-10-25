@@ -1,12 +1,44 @@
-// The starting settings.json for a new machine: copy it, don't link it (owner, 2026-10-18).
-//   cp ~/dotfiles/.config/vicinae/settings.json ~/.config/vicinae/settings.json
-// Vicinae rewrites this file whenever a setting changes in its window, which replaced the stow
-// link with a real file and blocked `stow -R .`; so it is in .stow-local-ignore. Shared settings
-// live in hypr.jsonc (stowed); this machine's extension settings in local.jsonc (not in git).
+// This configuration is merged with the default vicinae configuration file, which you can obtain by running the `vicinae config default` command.
+// Every item defined in this file takes precedence over the values defined in the default config or any other imported file.
+//
+// You can make manual edits to this file, however you should keep in mind that this file may be written to by vicinae when a configuration change is made through the GUI.
+// When that happens, any custom comments or formatting will be lost.
+//
+// If you want to maintain a configuration file with your own comments and formatting, you should create a separate file and add it to the 'imports' array.
+//
+// Learn more about configuration at https://docs.vicinae.com/config
+
 {
    "$schema": "https://vicinae.com/schemas/config.json",
    "imports": [
       "hypr.jsonc",
       "local.jsonc"
-   ]
+   ],
+   "close_on_focus_loss": false,
+   "tray": {
+      "enabled": false
+   },
+   "launcher_window": {
+      "opacity": 0.5,
+      "compact_mode": {
+         "enabled": true
+      },
+      "material": "blur"
+   },
+   "providers": {
+      "calculator": {
+         "preferences": {
+            "backend": "numen"
+         }
+      },
+      "snippets": {
+         "preferences": {
+            "enabled": true,
+            "undo": true,
+            "layout": "",
+            "prePasteDelay": "0",
+            "keyDelay": "2"
+         }
+      }
+   }
 }
